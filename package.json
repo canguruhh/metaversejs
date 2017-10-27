@@ -1,0 +1,19 @@
+{
+  "name": "metaversejs",
+  "version": "0.1.0",
+  "description": "MetaverseJS library",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "author": "Sven Mutzl",
+  "license": "ISC",
+  "dependencies": {
+    "base58check": "^2.0.0",
+    "bip39": "^2.4.0",
+    "bitcoinjs-lib": "^3.2.1"
+  }
+}
