@@ -3,6 +3,8 @@ var bitcoin = require('bitcoinjs-lib');
 
 var Transaction = require('../transaction');
 
+var Networks = require('../networks.js');
+
 const MNEMONIC_SIZE = 256;
 
 function Wallet() {
@@ -23,17 +25,21 @@ Wallet.mnemonicToSeed = (mnemonic) => {
     });
 }
 
-Wallet.fromSeed = (seed) => {
+Wallet.fromSeed = (seed, network) => {
     return new Promise((resolve) => {
         let wallet = new Wallet();
-        wallet.rootnode = bitcoin.HDNode.fromSeedBuffer(seed);
+        wallet.rootnode = bitcoin.HDNode.fromSeedBuffer(seed, network);
         resolve(wallet);
     });
 }
 
-Wallet.fromMnemonic = (mnemonic) => {
+Wallet.fromMnemonic = (mnemonic, network) => {
+    if(network==undefined)
+        network='mainnet';
+    if(Networks[network]==undefined)
+        throw "illegal network"
     return Wallet.mnemonicToSeed(mnemonic)
-        .then((seed) => Wallet.fromSeed(seed));
+        .then((seed) => Wallet.fromSeed(seed, Networks[network]));
 }
 
 Wallet.findDeriveNodeByAddress = (node, address, maxDepth) => {
@@ -58,6 +64,7 @@ Wallet.prototype.sign = function(tx) {
     return Promise.all(tx.inputs.map((input, index) => {
         return this.findDeriveNodeByAddess(input.address)
             .then((node) => {
+                //TODO: Cleanup this mess
                 let tmptx = Object.create(tx);
                 tmptx.clearInputScripts();
                 let unsigned_tx = tmptx.encode(index);
@@ -75,8 +82,6 @@ Wallet.prototype.sign = function(tx) {
         return tx;
     });
 }
-
-
 
 Wallet.findDeriveIndexByAddress = (node, address, maxDepth) => {
     return new Promise((resolve, reject) => {

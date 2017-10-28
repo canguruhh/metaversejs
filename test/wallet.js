@@ -1,5 +1,6 @@
 var assert = require('assert')
-var Metaverse = require('..');
+var Metaverse = require('../index.js');
+
 
 describe('Wallet recreation', function() {
     var signed_tx, wallet;

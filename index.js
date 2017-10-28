@@ -1,7 +1,17 @@
-var wallet=require('./wallet/');
-var transaction=require('./transaction/');
+/*
+ ███╗   ███╗███████╗████████╗ █████╗ ██╗   ██╗███████╗██████╗ ███████╗███████╗
+ ████╗ ████║██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔════╝██╔══██╗██╔════╝██╔════╝
+ ██╔████╔██║█████╗     ██║   ███████║██║   ██║█████╗  ██████╔╝███████╗█████╗
+ ██║╚██╔╝██║██╔══╝     ██║   ██╔══██║╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██╔══╝
+ ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║ ╚████╔╝ ███████╗██║  ██║███████║███████╗
+ ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
+*/
+var wallet = require('./wallet/');
+var transaction = require('./transaction/');
+var networks = require('./networks');
 
-module.exports ={
-	wallet: wallet,
-	  transaction: transaction
+module.exports = {
+    wallet: wallet,
+    transaction: transaction,
+    networks: networks
 };
