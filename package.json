@@ -15,5 +15,9 @@
     "base58check": "^2.0.0",
     "bip39": "^2.4.0",
     "bitcoinjs-lib": "^3.2.1"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.2.0"
   }
 }
