@@ -19,8 +19,9 @@ npm install metaversejs
 ``` javascript
 let Metaverse = require('metaversejs');
 ```
+<a href="https://nodei.co/npm/metaversejs/"><img src="https://nodei.co/npm/metaversejs.png?downloads=true&downloadRank=true&stars=true"></a>
 ### Browser
-For` use is webapps the npm package contains a dist/metaverse.min.js. You can generate this file from source using grunt.
+For use is webapps the npm package contains a dist/metaverse.min.js. You can generate this file from source using grunt.
 
 ## Testing
 To run the unit tests just execute:
