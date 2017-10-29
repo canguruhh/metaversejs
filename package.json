@@ -5,7 +5,7 @@
     "main": "index.js",
     "keywords": ["metaverse", "blockchain", "browserify", "bitcoin"],
     "engines": {
-        "node": ">=4.0.0"
+        "node": ">=6.0.0"
     },
     "directories": {
         "test": "test"
