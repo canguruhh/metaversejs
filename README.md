@@ -9,8 +9,25 @@
 
 A javascript library for the Metaverse blockchain.
 
+## Installation
 Install using npm:
 `
 npm install metaversejs
 `
+
+## Setup
+### NodeJS
+`
+let Metaverse = require('metaversejs');
+`
+### Browser
+For use is webapps the npm package contains a dist/metaverse.min.js. You can generate this file from source using grunt.
+
+## Testing
+To run the unit tests just execute:
+`
+npm test
+`
+
+
 
