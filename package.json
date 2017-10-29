@@ -1,29 +1,38 @@
 {
-  "name": "metaversejs",
-  "version": "0.1.0",
-  "description": "MetaverseJS library",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "mocha test"
-  },
-  "author": "Sven Mutzl",
-  "license": "ISC",
-  "dependencies": {
-    "base58check": "^2.0.0",
-    "bip39": "^2.4.0",
-    "bitcoinjs-lib": "^3.2.1"
-  },
-  "devDependencies": {
-    "babel-core": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "grunt": "^1.0.1",
-    "grunt-babel": "^7.0.0",
-    "grunt-browserify": "^5.2.0",
-    "grunt-contrib-uglify": "^3.1.0",
-    "grunt-mocha-test": "^0.13.3",
-    "mocha": "^4.0.1"
-  }
+    "name": "metaversejs",
+    "version": "0.1.0",
+    "description": "MetaverseJS library",
+    "main": "index.js",
+    "keywords": ["metaverse","blockchain","browserify","bitcoin"]
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "mocha test"
+    },
+    "author": "Sven Mutzl",
+    "license": "GPL-3.0",
+    "dependencies": {
+        "base58check": "^2.0.0",
+        "bip39": "^2.4.0",
+        "bitcoinjs-lib": "^3.2.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/canguruhh/metaversejs.git"
+    },
+    "bugs": {
+        "url": "https://github.com/canguruhh/metaversejs/issues",
+        "email": "sven@mutzl.org"
+    },
+    "devDependencies": {
+        "babel-core": "^6.26.0",
+        "babel-preset-env": "^1.6.1",
+        "grunt": "^1.0.1",
+        "grunt-babel": "^7.0.0",
+        "grunt-browserify": "^5.2.0",
+        "grunt-contrib-uglify": "^3.1.0",
+        "grunt-mocha-test": "^0.13.3",
+        "mocha": "^4.0.1"
+    }
 }
