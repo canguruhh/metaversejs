@@ -1,6 +1,6 @@
 {
     "name": "metaversejs",
-    "version": "0.2.9",
+    "version": "0.2.10",
     "description": "MetaverseJS library",
     "main": "index.js",
     "keywords": ["metaverse", "blockchain", "browserify", "bitcoin"],

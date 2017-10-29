@@ -23,14 +23,14 @@ let Metaverse = require('metaversejs');
 ### Browser
 For use is webapps the npm package contains a dist/metaverse.min.js. You can generate this file from source using grunt.
 
-You can then use the library like this:
-
+## Usage
 ``` javascript
 Metaverse.wallet.generateMnemonic()
   .then((mnemonic)=>Metaverse.wallet.fromMnemonic(mnemonic))
   .then((wallet)=>{let addr=[]; for(let i=0;i<10;i++){addr.push(wallet.getAddress(i))} return addr;})
   .then(console.log);
 ```
+Or check the examples folder.
 
 ## Testing
 To run the unit tests just execute:
