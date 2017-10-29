@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "MetaverseJS library",
     "main": "index.js",
-    "keywords": ["metaverse","blockchain","browserify","bitcoin"]
+    "keywords": ["metaverse","blockchain","browserify","bitcoin"],
     "directories": {
         "test": "test"
     },
