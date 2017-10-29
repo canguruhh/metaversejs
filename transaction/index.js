@@ -1,3 +1,5 @@
+'use strict';
+
 var bufferutils = require('./bufferutils.js');
 var base58check = require('base58check');
 

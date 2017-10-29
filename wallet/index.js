@@ -1,3 +1,5 @@
+'use strict';
+
 var bip39 = require('bip39');
 var bitcoin = require('bitcoinjs-lib');
 

@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
 	mainnet: {
 		    messagePrefix: '\x18Bitcoin Signed Message:\n',
