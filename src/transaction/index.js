@@ -128,6 +128,7 @@ Transaction.prototype.clearInputScripts = function() {
     this.inputs.forEach((input) => {
         input.script = "";
     });
+    return this;
 }
 
 Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data_type) {

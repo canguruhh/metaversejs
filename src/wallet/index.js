@@ -36,9 +36,9 @@ Wallet.fromSeed = (seed, network) => {
 }
 
 Wallet.fromMnemonic = (mnemonic, network) => {
-    if(network==undefined)
-        network='mainnet';
-    if(Networks[network]==undefined)
+    if (network == undefined)
+        network = 'mainnet';
+    if (Networks[network] == undefined)
         throw "illegal network"
     return Wallet.mnemonicToSeed(mnemonic)
         .then((seed) => Wallet.fromSeed(seed, Networks[network]));
@@ -62,26 +62,28 @@ Wallet.prototype.findDeriveNodeByAddess = function(address, maxDepth) {
     return Wallet.findDeriveNodeByAddress(this.rootnode, address, maxDepth);
 }
 
-Wallet.prototype.sign = function(tx) {
-    return Promise.all(tx.inputs.map((input, index) => {
-        return this.findDeriveNodeByAddess(input.address)
-            .then((node) => {
-                //TODO: Cleanup this mess
-                let tmptx = Object.create(tx);
-                tmptx.clearInputScripts();
-                let unsigned_tx = tmptx.encode(index);
-                let script_buffer = new Buffer(4);
-                script_buffer.writeUInt32LE(1, 0);
-                var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
-                var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
-                let sig = node.sign(sig_hash);
-                return "[ " + sig.toDER().toString('hex') + "01 ] [ " + node.getPublicKeyBuffer().toString('hex') + " ]";
-            });
-    })).then((input_scripts) => {
-        input_scripts.forEach((script, index) => {
-            tx.inputs[index].script = script;
-        });
-        return tx;
+Wallet.prototype.sign = function(transaction) {
+    return Promise.all(transaction.inputs.map((input, index) => this.generateInputScript(transaction, input.address, index)))
+        .then((input_scripts) => Promise.all(input_scripts.map((script, index) => {
+            transaction.inputs[index].script = script;
+        })))
+        .then(()=>transaction);
+}
+
+Wallet.prototype.generateInputScript = function(transaction, input_address, index) {
+    return this.findDeriveNodeByAddess(input_address)
+        .then((node) => Wallet.generateInputScript(node, transaction, index));
+}
+
+Wallet.generateInputScript = function(hdnode, transaction, index) {
+    return new Promise((resolve, reject) => {
+        let unsigned_tx = Object.create(transaction).clearInputScripts().encode(index);
+        let script_buffer = new Buffer(4);
+        script_buffer.writeUInt32LE(1, 0);
+        var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
+        var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
+        let sig = hdnode.sign(sig_hash);
+        resolve("[ " + sig.toDER().toString('hex') + "01 ] [ " + hdnode.getPublicKeyBuffer().toString('hex') + " ]");
     });
 }
 
