@@ -1,0 +1,33 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="./dist/metaverse.min.js"></script>
+</head>
+
+<body>
+    <h2>Your Mnemonic words:</h2>
+    <p id="mnemonic"></p>
+    <h2>Your first 10 addresses addresses</h2>
+    <p id="addresses"></p>
+    <script>
+        Metaverse.wallet.generateMnemonic()
+            .then((mnemonic) => {
+                document.getElementById('mnemonic').innerHTML = mnemonic;
+                return Metaverse.wallet.fromMnemonic(mnemonic)
+            })
+            .then((wallet) => {
+                let addr = [];
+                for (let i = 0; i < 10; i++) {
+                    addr.push(wallet.getAddress(i))
+                }
+                return addr;
+            })
+            .then((addresses) => {
+                addresses.forEach((address) => {
+                    document.getElementById('addresses').innerHTML += address + "<br>";
+                });
+            });
+    </script>
+</body>
+
+</html>

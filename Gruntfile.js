@@ -7,14 +7,22 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     captureFile: './dist/result.txt',
                     quiet: false,
-                    clearRequireCache: false, 
+                    clearRequireCache: false,
                     noFail: false
                 },
                 src: ['./test/*.js']
             }
         },
         browserify: {
-            './dist/metaverse.js': ['./index.js']
+            all: {
+                options: {
+                    browserifyOptions: {
+                        standalone: 'Metaverse'
+                    }
+                },
+                src: ['./index.js'],
+                dest: './dist/metaverse.js',
+            }
         },
         babel: {
             options: {
@@ -30,7 +38,12 @@ module.exports = function(grunt) {
         uglify: {
             js: {
                 src: ['./dist/metaverse.js'],
-                dest: './dist/metaverse.min.js'
+                dest: './dist/metaverse.min.js',
+                options: {
+                    mangle: {
+                        reserved: ['BigInteger', 'ECPair', 'Point']
+                    }
+                }
             }
         }
 
@@ -39,6 +52,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-babel');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-mocha-test');
-    
+
     grunt.registerTask('default', ['mochaTest', 'browserify', 'babel', 'uglify']);
 };
