@@ -17,7 +17,13 @@
     "bitcoinjs-lib": "^3.2.1"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "grunt": "^1.0.1",
-    "grunt-browserify": "^5.2.0"
+    "grunt-babel": "^7.0.0",
+    "grunt-browserify": "^5.2.0",
+    "grunt-contrib-uglify": "^3.1.0",
+    "grunt-mocha-test": "^0.13.3",
+    "mocha": "^4.0.1"
   }
 }
