@@ -21,7 +21,7 @@ module.exports = function(grunt) {
                         standalone: 'Metaverse'
                     }
                 },
-                src: ['./src/index.js'],
+                src: ['./index.js'],
                 dest: './dist/metaverse.js',
             }
         },
