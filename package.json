@@ -31,8 +31,6 @@
         "get": "^1.4.0",
         "http": "0.0.0",
         "request": "^2.83.0",
-        "request-json": "^0.6.2",
-        "requestify": "^0.2.5"
     },
     "repository": {
         "type": "git",
