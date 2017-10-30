@@ -1,9 +1,14 @@
 {
     "name": "metaversejs",
-    "version": "0.2.10",
+    "version": "0.2.11",
     "description": "MetaverseJS library",
     "main": "index.js",
-    "keywords": ["metaverse", "blockchain", "browserify", "bitcoin"],
+    "keywords": [
+        "metaverse",
+        "blockchain",
+        "browserify",
+        "bitcoin"
+    ],
     "engines": {
         "node": ">=6.0.0"
     },
@@ -11,15 +16,22 @@
         "test": "test"
     },
     "scripts": {
-        "test": "mocha test"
+        "test": "mocha -t 10000 test"
     },
-    "files": ["dist","examples"],
+    "files": [
+        "dist",
+        "examples"
+    ],
     "author": "Sven Mutzl",
     "license": "GPL-3.0",
     "dependencies": {
+        "awesome-typescript-loader": "^3.2.3",
+        "babel-project-relative-import": "^2.0.1",
         "base58check": "^2.0.0",
         "bip39": "^2.4.0",
-        "bitcoinjs-lib": "^3.2.1"
+        "bitcoinjs-lib": "^3.2.1",
+        "request": "^2.83.0",
+        "requestify": "^0.2.5"
     },
     "repository": {
         "type": "git",

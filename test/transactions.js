@@ -1,7 +1,6 @@
 var assert = require('assert')
 var Metaverse = require('..');
 
-
 describe('Single input ETP transaction', function() {
     var signed_tx, wallet, script;
     beforeEach(function(done) {
@@ -9,37 +8,9 @@ describe('Single input ETP transaction', function() {
             .then((w) => {
                 wallet = w;
                 var tx = new Metaverse.transaction();
-                tx.inputs = [{
-                    "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                    "previous_output": {
-                        "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                        "hash": "5554b27dbf657d008511df56e747ffb2173749fd933b03317cee3c1fde271aea",
-                        "index": 1
-                    },
-                    script: "",
-                    "sequence": 4294967295
-                }];
-                tx.outputs = [{
-                        "index": 0,
-                        "address": "MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd",
-                        "script": "dup hash160 [ f087200b95bd043a134a0cead903e0a3600d79eb ] equalverify checksig",
-                        "value": 1,
-                        "attachment": {
-                            type: 0,
-                            version: 1
-                        }
-                    },
-                    {
-                        "index": 1,
-                        "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                        "script": "dup hash160 [ 7f8ac2a0179a4eb308c7ae837aed878b5ed25de2 ] equalverify checksig",
-                        "value": 4939995,
-                        "attachment": {
-                            type: 0,
-                            version: 1
-                        }
-                    }
-                ];
+                tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB","5554b27dbf657d008511df56e747ffb2173749fd933b03317cee3c1fde271aea",1)
+                tx.addOutput("MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd","ETP",1,"dup hash160 [ f087200b95bd043a134a0cead903e0a3600d79eb ] equalverify checksig");
+                tx.addOutput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB","ETP",4939995,"dup hash160 [ 7f8ac2a0179a4eb308c7ae837aed878b5ed25de2 ] equalverify checksig");
                 return wallet.sign(tx);
             })
             .then((stx) => {
@@ -68,48 +39,10 @@ describe('Multi input ETP transaction', function() {
             .then((w) => {
                 wallet = w;
                 var tx = new Metaverse.transaction();
-                tx.inputs = [{
-                        "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "previous_output": {
-                            "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                            "hash": "c9c32b0723a57ce087f42df5bb5f98db404a886ef651842f844d59eca6412b27",
-                            "index": 0
-                        },
-                        "script": "",
-                        "sequence": 4294967295
-                    },
-                    {
-                        "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                        "previous_output": {
-                            "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                            "hash": "707cd4f639e292bd7cbf15c40e9c86d3bbec4c505ca09f6a72eded8313a927be",
-                            "index": 1
-                        },
-                        "script": "",
-                        "sequence": 4294967295
-                    }
-                ];
-                tx.outputs = [{
-                        "index": 0,
-                        "address": "MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd",
-                        "script": "dup hash160 [ f087200b95bd043a134a0cead903e0a3600d79eb ] equalverify checksig",
-                        "value": 729995,
-                        "attachment": {
-                            type: 0,
-                            version: 1
-                        }
-                    },
-                    {
-                        "index": 1,
-                        "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "script": "dup hash160 [ e782fbba93466771c63d7a9fcc54d85efa26fd34 ] equalverify checksig",
-                        "value": 619995,
-                        "attachment": {
-                            type: 0,
-                            version: 1
-                        }
-                    }
-                ];
+                tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf","c9c32b0723a57ce087f42df5bb5f98db404a886ef651842f844d59eca6412b27",0);
+                tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB","707cd4f639e292bd7cbf15c40e9c86d3bbec4c505ca09f6a72eded8313a927be",1);
+                tx.addOutput("MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd","ETP",729995,"dup hash160 [ f087200b95bd043a134a0cead903e0a3600d79eb ] equalverify checksig");
+                tx.addOutput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf","ETP",619995,"dup hash160 [ e782fbba93466771c63d7a9fcc54d85efa26fd34 ] equalverify checksig");
                 return wallet.sign(tx);
             })
             .then((stx) => {
@@ -133,65 +66,12 @@ describe('Asset transaction', function() {
             .then((w) => {
                 wallet = w;
                 var tx = new Metaverse.transaction();
-                tx.inputs = [{
-                        "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "previous_output": {
-                            "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                            "hash": "795481c6fca77b699830d3e6c3b38ed9e89a74b4a9ea01a9d0f2c43fab91f9df",
-                            "index": 1
-                        },
-                        "script": "",
-                        "sequence": 4294967295
-                    },
-                    {
-                        "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "previous_output": {
-                            "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                            "hash": "068096506bfb962f8ea661514c0221602dcff20502eb91aa8e57e65db3e1dc3f",
-                            "index": 0
-                        },
-                        "script": "",
-                        "sequence": 4294967295
-                    },
-                    {
-                        "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                        "previous_output": {
-                            "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                            "hash": "376fb20af80491dc29f8539a85522d9260060c82fb347584f78702918e2c6707",
-                            "index": 0
-                        },
-                        "script": "",
-                        "sequence": 4294967295
-                    }
-                ];
-                tx.outputs = [{
-                        "index": 0,
-                        "address": "MUqH3bW9nTVHFZVPAhsYj2CjEyvU2RiyE8",
-                        "script": "dup hash160 [ e59eaa3c5f229767fd8190691b58c916ab89fbfd ] equalverify checksig",
-                        "value": 0,
-                        "attachment": {
-                            type: 2,
-                            version: 1,
-                            attachment_data_type: {
-                                asset_data_type: {
-                                    "address": "MVS.ZDC",
-                                    "quantity": 2
-                                },
-                                status: 2,
-                            },
-                        }
-                    },
-                    {
-                        "index": 1,
-                        "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "script": "dup hash160 [ e782fbba93466771c63d7a9fcc54d85efa26fd34 ] equalverify checksig",
-                        "value": 609995,
-                        "attachment": {
-                            type: 0,
-                            version: 1,
-                        }
-                    }
-                ];
+                var builder = new Metaverse.transaction_builder();
+                tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf","795481c6fca77b699830d3e6c3b38ed9e89a74b4a9ea01a9d0f2c43fab91f9df",1);
+                tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf","068096506bfb962f8ea661514c0221602dcff20502eb91aa8e57e65db3e1dc3f",0);
+                tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB","376fb20af80491dc29f8539a85522d9260060c82fb347584f78702918e2c6707",0);
+                tx.addOutput("MUqH3bW9nTVHFZVPAhsYj2CjEyvU2RiyE8","MVS.ZDC",2,"dup hash160 [ e59eaa3c5f229767fd8190691b58c916ab89fbfd ] equalverify checksig");
+                tx.addOutput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf","ETP",609995,"dup hash160 [ e782fbba93466771c63d7a9fcc54d85efa26fd34 ] equalverify checksig");
                 return wallet.sign(tx);
             })
             .then((stx) => {

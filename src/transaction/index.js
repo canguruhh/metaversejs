@@ -12,6 +12,7 @@ function Transaction() {
 
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER = 2;
+Transaction.DEFAULT_FEE = 10000;
 
 function encodeVersion(version) {
     var buffer = Buffer.allocUnsafe(4);
@@ -45,6 +46,7 @@ function encodeOutputs(outputs){
     } else
         throw Error("Wow so many outputs! Get a full node please");
 
+
     outputs.forEach((output) => {
         //Write value as 8byte integer
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
@@ -59,7 +61,7 @@ function encodeOutputs(outputs){
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
                 break;
             case Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER:
-                offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment.attachment_data_type);
+                offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
                 break;
             default:
                 throw Error("What kind of an output is that?!");
@@ -132,14 +134,14 @@ Transaction.prototype.clearInputScripts = function() {
 }
 
 Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data_type) {
-    if (attachment_data_type.asset_data_type.address == undefined)
-        throw Error('Specify output address');
-    if (attachment_data_type.asset_data_type.quantity == undefined)
+    if (attachment_data_type.asset == undefined)
+        throw Error('Specify output asset');
+    if (attachment_data_type.quantity == undefined)
         throw Error('Specify output quanity');
     offset = buffer.writeUInt32LE(attachment_data_type.status, offset);
-    offset = buffer.writeUInt8(attachment_data_type.asset_data_type.address.length, offset);
-    offset += new Buffer(attachment_data_type.asset_data_type.address).copy(buffer, offset);
-    offset = bufferutils.writeUInt64LE(buffer, attachment_data_type.asset_data_type.quantity, offset);
+    offset = buffer.writeUInt8(attachment_data_type.asset.length, offset);
+    offset += new Buffer(attachment_data_type.asset).copy(buffer, offset);
+    offset = bufferutils.writeUInt64LE(buffer, attachment_data_type.quantity, offset);
     return offset;
 }
 
@@ -158,5 +160,43 @@ Transaction.encodeInputScript = function(script_string) {
     }
     return buffer.slice(0, offset);
 }
+
+Transaction.prototype.addInput= function(previous_output_address, previous_output_hash, previous_output_index){
+    this.inputs.push({
+        "address": previous_output_address,
+        "previous_output":{
+            "address": previous_output_address,
+            "hash": previous_output_hash,
+            "index": previous_output_index
+        },
+        "script": "",
+        "sequence": 4294967295
+    });
+};
+
+Transaction.prototype.addOutput= function(address, asset, value, script){
+    let output={
+        "address": address,
+        "script": script
+    };
+    if(asset=="ETP"){
+        output.attachment={
+            type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
+            version: 1
+        };
+        output.value= value;
+    } else {
+        output.attachment={
+            "type" : Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER,
+            "version": 1,
+            "asset": asset,
+            "quantity": value,
+            "status": 2
+        };
+        output.value= 0;
+    }
+    this.outputs.push(output);
+};
+
 
 module.exports = Transaction;
