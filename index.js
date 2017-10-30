@@ -8,8 +8,8 @@
  ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
 */
 module.exports = {
-    wallet: require('./wallet.js'),
-    transaction: require('./transaction.js'),
-    transaction_builder: require('./transaction_builder.js'),
-    networks: require('./networks.js')
+    wallet: require('./src/wallet.js'),
+    transaction: require('./src/transaction.js'),
+    transaction_builder: require('./src/transaction_builder.js'),
+    networks: require('./src/networks.js')
 };

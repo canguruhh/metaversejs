@@ -1,5 +1,5 @@
 var assert = require('assert')
-var Metaverse = require('../src/index.js');
+var Metaverse = require('../index.js');
 var request = require('request');
 
 const HOST = 'https://explorer.mvs.org/api/';

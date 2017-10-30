@@ -1,5 +1,5 @@
 var assert = require('assert')
-var Metaverse = require('../src');
+var Metaverse = require('../');
 
 describe('Single input ETP transaction', function() {
     var signed_tx, wallet, script;
