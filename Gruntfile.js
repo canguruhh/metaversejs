@@ -7,6 +7,7 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     captureFile: './dist/result.txt',
                     quiet: false,
+		    timeout: 10000,
                     clearRequireCache: false,
                     noFail: false
                 },
@@ -20,7 +21,7 @@ module.exports = function(grunt) {
                         standalone: 'Metaverse'
                     }
                 },
-                src: ['./index.js'],
+                src: ['./src/index.js'],
                 dest: './dist/metaverse.js',
             }
         },
