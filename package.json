@@ -1,6 +1,6 @@
 {
     "name": "metaversejs",
-    "version": "0.2.13",
+    "version": "0.2.15",
     "description": "MetaverseJS library",
     "main": "index.js",
     "keywords": [
@@ -19,6 +19,8 @@
         "test": "mocha -t 10000 test"
     },
     "files": [
+	    "src",
+	    "test",
         "dist",
         "examples"
     ],
