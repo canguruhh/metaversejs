@@ -3,9 +3,7 @@
 var bip39 = require('bip39');
 var bitcoin = require('bitcoinjs-lib');
 
-var Transaction = require('../transaction');
-
-var Networks = require('../networks.js');
+var Networks = require('./networks.js');
 
 const MNEMONIC_SIZE = 256;
 

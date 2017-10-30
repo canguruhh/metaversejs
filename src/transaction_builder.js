@@ -1,29 +1,7 @@
 'use strict';
-var Transaction = require('./index.js');
-var request = require('request');
-
-const HOST = 'https://explorer.mvs.org/api/';
+var Transaction = require('./transaction.js');
 
 function TransactionBuilder() {}
-
-TransactionBuilder.prototype.getUtxo = function(addresses) {
-    return TransactionBuilder.getInOuts(addresses)
-}
-
-TransactionBuilder.getInOuts = function(addresses) {
-    return new Promise((resolve, reject) => {
-        var string = HOST + 'inouts?';
-        addresses.forEach((address) => {
-            string += 'addresses[]=' + address;
-        });
-        request(string, function(err, response, body) {
-            if (err)
-                reject(Error('ERR_FETCH_IO'));
-            else
-                resolve(body);
-        });
-    });
-}
 
 TransactionBuilder.filterUtxo = function(outputs, inputs) {
     return new Promise((resolve, reject) => {
@@ -85,7 +63,5 @@ function targetComplete(targets) {
     });
     return complete;
 }
-
-
 
 module.exports = TransactionBuilder;

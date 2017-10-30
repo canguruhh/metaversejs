@@ -25,12 +25,13 @@
     "author": "Sven Mutzl",
     "license": "GPL-3.0",
     "dependencies": {
-        "awesome-typescript-loader": "^3.2.3",
-        "babel-project-relative-import": "^2.0.1",
         "base58check": "^2.0.0",
         "bip39": "^2.4.0",
         "bitcoinjs-lib": "^3.2.1",
+        "get": "^1.4.0",
+        "http": "0.0.0",
         "request": "^2.83.0",
+        "request-json": "^0.6.2",
         "requestify": "^0.2.5"
     },
     "repository": {

@@ -7,14 +7,9 @@
  ██║ ╚═╝ ██║███████╗   ██║   ██║  ██║ ╚████╔╝ ███████╗██║  ██║███████║███████╗
  ╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝
 */
-var wallet = require('./src/wallet/');
-var transaction = require('./src/transaction/');
-var transaction_builder = require('./src/transaction/builder.js');
-var networks = require('./src/networks');
-
 module.exports = {
-    wallet: wallet,
-    transaction: transaction,
-    transaction_builder: transaction_builder,
-    networks: networks
+    wallet: require('./wallet.js'),
+    transaction: require('./transaction.js'),
+    transaction_builder: require('./transaction_builder.js'),
+    networks: require('./networks.js')
 };

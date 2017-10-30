@@ -1,6 +1,8 @@
 var assert = require('assert')
-var Metaverse = require('../index.js');
+var Metaverse = require('../src/index.js');
+var request = require('request');
 
+const HOST = 'https://explorer.mvs.org/api/';
 
 describe('Transaction building', function() {
 
@@ -11,7 +13,8 @@ describe('Transaction building', function() {
 
     before(function(done) {
         var builder = new Metaverse.transaction_builder();
-        builder.getUtxo(["MEXMMsiaWnW8UyukA7SeTRYR1i6oonahxa"])
+
+        getInOuts(["MEXMMsiaWnW8UyukA7SeTRYR1i6oonahxa"])
             .then((response) => {
                 let ioputs = JSON.parse(response).result;
                 outputs = ioputs[1];
@@ -44,3 +47,17 @@ describe('Transaction building', function() {
         assert.equal(1+Metaverse.transaction.DEFAULT_FEE, tx_info.outputs[0].value+tx_info.change['ETP']);
     });
 });
+
+function getInOuts(addresses) {
+    return new Promise((resolve,reject)=>{
+        
+        var string = 'inouts?';
+        addresses.forEach((address) => {
+            string += 'addresses[]=' + address;
+        });
+        request.get(HOST+string, function(err,_,body){
+            if(err) throw err;
+            else resolve(body);
+        });
+    })
+}
