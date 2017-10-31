@@ -7,7 +7,7 @@ function TransactionBuilder() {}
  * Filters the given outputs by the given inputs. Return the unspent transaction outputs.
  * @param {Array<Output>} outputs
  * @param {Array<Input>} inputs
- * @promise {Array<Output>}
+ * @return {Promise.Array<Output>}
  */
 TransactionBuilder.filterUtxo = function(outputs, inputs) {
     return new Promise((resolve, reject) => {

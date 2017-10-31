@@ -13,7 +13,7 @@ Wallet.MNEMONIC_SIZE = 256;
 
 /**
  * Generate a new mnemonic.
- * @promise {String}
+ * @return {Promise.String}
  */
 Wallet.generateMnemonic = () => {
     return new Promise((resolve) => {
@@ -25,7 +25,7 @@ Wallet.generateMnemonic = () => {
 /**
  * Generates a seed from the given mnemonic.
  * @param String mnemonic
- * @promise {Buffer} Seed for wallet generation.
+ * @return {Promise.Buffer} Seed for wallet generation.
  */
 Wallet.mnemonicToSeed = (mnemonic) => {
     return new Promise((resolve) => {
@@ -38,7 +38,7 @@ Wallet.mnemonicToSeed = (mnemonic) => {
  * Generates a new wallet from the given seed.
  * @param {Buffer} seed
  * @param {network} network (optional)
- * @promise {Wallet}
+ * @return {Promise.Wallet}
  */
 Wallet.fromSeed = (seed, network) => {
     return new Promise((resolve) => {
@@ -52,7 +52,7 @@ Wallet.fromSeed = (seed, network) => {
  * Generates a new wallet from the given mnemonic.
  * @param {String} mnemonic Menmonic words
  * @param {network} network (optional)
- * @promise {Wallet}
+ * @return {Promise.Wallet}
  */
 Wallet.fromMnemonic = (mnemonic, network) => {
     if (network == undefined)
@@ -68,7 +68,7 @@ Wallet.fromMnemonic = (mnemonic, network) => {
  * @param {HDNode} node Start node to
  * @param {String} address Target address.
  * @param {Number} maxDepth Max index before algorithm stops.
- * @promise {HDNode}
+ * @return {Promise.HDNode}
  */
 Wallet.findDeriveNodeByAddress = (node, address, maxDepth) => {
     return Wallet.findDeriveIndexByAddress(node, address, maxDepth)
@@ -79,7 +79,7 @@ Wallet.findDeriveNodeByAddress = (node, address, maxDepth) => {
  * Finds the wallets HD index thats public key corresponds to the given address.
  * @param {String} address
  * @param {Number} maxDepth
- * @promise {Number}
+ * @return {Promise.Number}
  */
 Wallet.prototype.findDeriveIndexByAddress = function(address, maxDepth) {
     return Wallet.findDeriveIndexByAddress(this.rootnode, address, maxDepth);
@@ -90,7 +90,7 @@ Wallet.prototype.findDeriveIndexByAddress = function(address, maxDepth) {
  * @param {HDNode} node Start node to
  * @param {String} address Target address.
  * @param {Number} maxDepth Max index before algorithm stops.
- * @promise {HDNode}
+ * @return {Promise.HDNode}
  */
 Wallet.findDeriveIndexByAddress = (node, address, maxDepth) => {
     return new Promise((resolve, reject) => {
@@ -115,7 +115,7 @@ Wallet.findDeriveIndexByAddress = (node, address, maxDepth) => {
  * Finds the wallets HD node thats public key corresponds to the given address.
  * @param {String} address
  * @param {Number} maxDepth
- * @promise {HDNode}
+ * @return {Promise.HDNode}
  */
 Wallet.prototype.findDeriveNodeByAddess = function(address, maxDepth) {
     return Wallet.findDeriveNodeByAddress(this.rootnode, address, maxDepth);
@@ -134,7 +134,7 @@ Wallet.prototype.getAddress = function(index) {
 /**
  * Sign the given transaction.
  * @param {Transaction} transaction
- * @promise {Transaction} Signed transaction.
+ * @return{Promise.Transaction} Signed transaction.
  */
 Wallet.prototype.sign = function(transaction) {
     return Promise.all(transaction.inputs.map((input, index) => this.generateInputScript(transaction, input.address, index)))
@@ -149,7 +149,7 @@ Wallet.prototype.sign = function(transaction) {
  * @param {Transaction} transaction
  * @param {String} input_address
  * @param {Number} index
- * @promise {String}
+ * @return {Promise.String}
  */
 Wallet.prototype.generateInputScript = function(transaction, input_address, index) {
     return this.findDeriveNodeByAddess(input_address)
@@ -161,7 +161,7 @@ Wallet.prototype.generateInputScript = function(transaction, input_address, inde
  * @param {HDNode} node HD node used for signature
  * @param {Transaction} transaction
  * @param {Number} index
- * @promise {String}
+ * @return {Promise.String}
  */
 Wallet.generateInputScript = function(hdnode, transaction, index) {
     return new Promise((resolve, reject) => {
