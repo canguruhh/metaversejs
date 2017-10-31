@@ -1,6 +1,6 @@
 {
     "name": "metaversejs",
-    "version": "0.2.17",
+    "version": "0.2.18",
     "description": "MetaverseJS library",
     "main": "index.js",
     "keywords": [
@@ -29,8 +29,7 @@
     "dependencies": {
         "base58check": "^2.0.0",
         "bip39": "^2.4.0",
-        "bitcoinjs-lib": "^3.2.1",
-        "request": "^2.83.0"
+        "bitcoinjs-lib": "^3.2.1"
     },
     "repository": {
         "type": "git",
@@ -41,6 +40,7 @@
         "email": "sven@mutzl.org"
     },
     "devDependencies": {
+        "request": "^2.83.0",
         "babel-core": "^6.26.0",
         "babel-preset-env": "^1.6.1",
         "grunt": "^1.0.1",
