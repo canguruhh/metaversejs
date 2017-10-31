@@ -10,6 +10,7 @@ function Transaction() {
     this.lock_time = 0;
 }
 
+
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER = 2;
 Transaction.DEFAULT_FEE = 10000;
