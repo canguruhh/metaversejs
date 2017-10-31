@@ -3,6 +3,12 @@ var Transaction = require('./transaction.js');
 
 function TransactionBuilder() {}
 
+/**
+ * Filters the given outputs by the given inputs. Return the unspent transaction outputs.
+ * @param {Array<Output>} outputs
+ * @param {Array<Input>} inputs
+ * @promise {Array<Output>}
+ */
 TransactionBuilder.filterUtxo = function(outputs, inputs) {
     return new Promise((resolve, reject) => {
         let ins = JSON.parse(JSON.stringify(inputs));
@@ -23,8 +29,16 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
         }
         resolve(utxo);
     });
-}
+};
 
+/**
+ * Generates an array of outputs that can be used to perform a transaction with the given requirements.
+ * @param {Array<Output>} utxo
+ * @param {String} asset
+ * @param {Number} value
+ * @param {Number} fee (optional) Default fee is 10000 ETP.
+ * @returns {Object} Object containing the selected outputs and an object that contains the surplus change that should be transfered back.
+ */
 TransactionBuilder.findUtxo = function(utxo, asset, value, fee = Transaction.DEFAULT_FEE) {
     return new Promise((resolve, reject) => {
         let outputs = [];
@@ -54,6 +68,11 @@ TransactionBuilder.findUtxo = function(utxo, asset, value, fee = Transaction.DEF
     });
 };
 
+/**
+ * Helper function to check a target object if there are no more positive values.
+ * @param {Object} targets
+ * @returns {Boolean}
+ */
 function targetComplete(targets) {
     let complete = 1;
     Object.keys(targets).forEach((key) => {
