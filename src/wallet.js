@@ -11,6 +11,7 @@ function Wallet() {
 
 Wallet.MNEMONIC_SIZE = 256;
 
+
 /**
  * Generate a new mnemonic.
  * @return {Promise.String}
