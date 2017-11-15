@@ -19,7 +19,6 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
                 if (ins.length)
                     ins.forEach((input, index) => {
                         if (!spent && input.belong_tx_id == output.tx_id && input.output_index == output.index) {
-                            ins=ins.splice(index,1);
                             spent = 1;
                         }
                     });

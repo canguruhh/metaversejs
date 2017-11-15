@@ -154,7 +154,7 @@ Wallet.prototype.sign = function(transaction) {
  */
 Wallet.prototype.generateInputScript = function(transaction, input_address, index) {
     return this.findDeriveNodeByAddess(input_address)
-        .then((node) => Wallet.generateInputScript(node, transaction, index));
+        .then((node) => Wallet.generateInputScriptParameters(node, transaction, index));
 };
 
 /**
@@ -164,7 +164,7 @@ Wallet.prototype.generateInputScript = function(transaction, input_address, inde
  * @param {Number} index
  * @return {Promise.String}
  */
-Wallet.generateInputScript = function(hdnode, transaction, index) {
+Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
     return new Promise((resolve, reject) => {
         let unsigned_tx = Object.create(transaction).clearInputScripts().encode(index);
         let script_buffer = new Buffer(4);
@@ -172,7 +172,14 @@ Wallet.generateInputScript = function(hdnode, transaction, index) {
         var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
         var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
         let sig = hdnode.sign(sig_hash);
-        resolve("[ " + sig.toDER().toString('hex') + "01 ] [ " + hdnode.getPublicKeyBuffer().toString('hex') + " ]");
+        let parameters = [sig.toDER().toString('hex') + "01",hdnode.getPublicKeyBuffer().toString('hex') ];
+        //Check if the previous output was locked etp
+        let lockregex = /\[\ (\d+)(?:\ \]\ numequalverify)/gi;
+        if(transaction.inputs[index].previous_output.script && transaction.inputs[index].previous_output.script.match(lockregex)){
+            let number = lockregex.exec(transaction.inputs[index].previous_output.script.match(lockregex)[0])[1];
+            parameters.push(number.toString('hex'));
+        }
+        resolve(parameters);
     });
 };
 

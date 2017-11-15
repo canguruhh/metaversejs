@@ -1,6 +1,6 @@
 {
     "name": "metaversejs",
-    "version": "0.2.18",
+    "version": "0.2.19",
     "description": "MetaverseJS library",
     "main": "index.js",
     "keywords": [
@@ -19,8 +19,8 @@
         "test": "mocha -t 10000 test"
     },
     "files": [
-	    "src",
-	    "test",
+        "src",
+        "test",
         "dist",
         "examples"
     ],
@@ -40,14 +40,15 @@
         "email": "sven@mutzl.org"
     },
     "devDependencies": {
-        "request": "^2.83.0",
         "babel-core": "^6.26.0",
         "babel-preset-env": "^1.6.1",
+        "chai": "^4.1.2",
         "grunt": "^1.0.1",
         "grunt-babel": "^7.0.0",
         "grunt-browserify": "^5.2.0",
         "grunt-contrib-uglify": "^3.1.0",
         "grunt-mocha-test": "^0.13.3",
-        "mocha": "^4.0.1"
+        "mocha": "^4.0.1",
+        "request": "^2.83.0"
     }
 }

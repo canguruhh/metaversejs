@@ -21,12 +21,13 @@ Transaction.DEFAULT_FEE = 10000;
  * @param {String} previous_output_hash
  * @param {Number} previous_output_index
  */
-Transaction.prototype.addInput= function(previous_output_address, previous_output_hash, previous_output_index){
+Transaction.prototype.addInput = function(previous_output_address, previous_output_hash, previous_output_index, previous_output_script) {
     this.inputs.push({
         "address": previous_output_address,
-        "previous_output":{
+        "previous_output": {
             "address": previous_output_address,
             "hash": previous_output_hash,
+            "script": previous_output_script,
             "index": previous_output_index
         },
         "script": "",
@@ -41,28 +42,29 @@ Transaction.prototype.addInput= function(previous_output_address, previous_outpu
  * @param {Number} value
  * @param {String} script
  */
-Transaction.prototype.addOutput= function(address, asset, value, script){
-    let output={
-        "address": address,
-        "script": script
-    };
-    if(asset=="ETP"){
-        output.attachment={
-            type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-            version: 1
-        };
-        output.value= value;
+Transaction.prototype.addOutput = function(address, asset, value) {
+    if (asset == "ETP") {
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
+                version: 1
+            },
+            "value": value
+        });
     } else {
-        output.attachment={
-            "type" : Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER,
-            "version": 1,
-            "asset": asset,
-            "quantity": value,
-            "status": 2
-        };
-        output.value= 0;
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                "type": Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER,
+                "version": 1,
+                "asset": asset,
+                "quantity": value,
+                "status": 2
+            },
+            "value": 0
+        });
     }
-    this.outputs.push(output);
 };
 
 /**
@@ -71,7 +73,7 @@ Transaction.prototype.addOutput= function(address, asset, value, script){
  */
 Transaction.prototype.clearInputScripts = function() {
     this.inputs.forEach((input) => {
-        input.script = "";
+        input.script = [];
     });
     return this;
 };
@@ -107,7 +109,7 @@ Transaction.prototype.encode = function(add_address_to_previous_output_index) {
  * @returns {Buffer} Encoded outputs
  * @throws {Error}
  */
-function encodeOutputs(outputs){
+function encodeOutputs(outputs) {
 
     //Initialize buffer and offset
     let offset = 0;
@@ -125,7 +127,7 @@ function encodeOutputs(outputs){
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
         //Output script
         //Static transfer stuff
-        offset = writeAddress(output.address, buffer, offset);
+        offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
         // attachment
         offset = buffer.writeUInt32LE(output.attachment.version, offset);
         offset = buffer.writeUInt32LE(output.attachment.type, offset);
@@ -141,7 +143,7 @@ function encodeOutputs(outputs){
         }
     });
 
-    return buffer.slice(0,offset);
+    return buffer.slice(0, offset);
 }
 
 /**
@@ -169,9 +171,17 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
         offset += new Buffer(input.previous_output.hash, 'hex').reverse().copy(buffer, offset);
         //Index
         offset = buffer.writeUInt32LE(input.previous_output.index, offset);
-        if (add_address_to_previous_output_index!==undefined) {
+        if (add_address_to_previous_output_index !== undefined) {
             if (index == add_address_to_previous_output_index) {
-                offset = writeAddress(input.previous_output.address, buffer, offset);
+                let lockregex = /\[\ (\d+)(?:\ \]\ numequalverify)/gi;
+                //Check if previous output was locked before
+                if(input.previous_output.script && input.previous_output.script.match(lockregex)){
+                    let locktime = lockregex.exec(input.previous_output.script.match(lockregex)[0])[1];
+                    offset = writeScriptLockedPayToPubKeyHash(input.previous_output.address, locktime , buffer, offset);
+                } else{
+                    //Previous output was p2pkh
+                    offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
+                }
             } else {
                 offset = buffer.writeUInt8(0, offset);
             }
@@ -185,7 +195,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
         buffer.writeUInt32BE(input.sequence, offset);
         offset += 4;
     });
-    return buffer.slice(0,offset);
+    return buffer.slice(0, offset);
 }
 
 /**
@@ -193,7 +203,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
  * @param {Number} lock_time
  * @returns {Buffer}
  */
-function encodeLockTime(lock_time){
+function encodeLockTime(lock_time) {
     var buffer = Buffer.allocUnsafe(4);
     buffer.writeInt32LE(lock_time, 0);
     return buffer;
@@ -224,15 +234,13 @@ Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_
  * @param {String} script_string
  * @returns {Buffer}
  */
-Transaction.encodeInputScript = function(script_string) {
+Transaction.encodeInputScript = function(parameters) {
     var buffer = new Buffer(10000),
         offset = 0;
-    //TODO: more general regex
-    let operations = script_string.match(/\[ (\w+) \] \[ (\w+) \]/i);
-    if (operations != null && operations.length > 1) {
-        operations.forEach(function(op, i) {
-            if (!i) return;
-            var res = new Buffer(op, 'hex');
+
+    if (parameters) {
+        parameters.forEach((parameter) => {
+            var res = new Buffer(parameter, 'hex');
             offset = buffer.writeUInt8(res.length, offset);
             offset += res.copy(buffer, offset);
         });
@@ -241,23 +249,47 @@ Transaction.encodeInputScript = function(script_string) {
 };
 
 /**
- * Write an address to the given buffer.
+ * Write p2pkh to the given buffer.
  * @param {String} address
  * @param {Buffer} buffer
  * @param {Number} offset
  * @returns {Number} new offset
  */
-function writeAddress(address, buffer, offset){
-    offset = buffer.writeUInt8(25, offset);
-    offset = buffer.writeUInt8(118, offset);
-    offset = buffer.writeUInt8(169, offset);
-    offset = buffer.writeUInt8(20, offset);
+function writeScriptPayToPubKeyHash(address, buffer, offset) {
+    offset = buffer.writeUInt8(25, offset); //Script length
+    offset = buffer.writeUInt8(118, offset); //DUP
+    offset = buffer.writeUInt8(169, offset); //OP_HASH160
+    offset = buffer.writeUInt8(20, offset); //Address length
     //Write previous output address
     offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
     //Static transfer stuff
-    offset = buffer.writeUInt8(136, offset);
-    offset = buffer.writeUInt8(172, offset);
+    offset = buffer.writeUInt8(136, offset); //OP_EQUALVERIFY
+    offset = buffer.writeUInt8(172, offset); //OP_CHECKSIG
     return offset;
 }
 
+/**
+ * Write locked p2pkh to the given buffer.
+ * @param {String} address
+ * @param {String} locktime little endian hex
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @returns {Number} new offset
+ */
+function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
+    let locktime_buffer=new Buffer(locktime, 'hex');
+    offset = buffer.writeUInt8(27+locktime_buffer.length, offset); //Script length
+    offset = buffer.writeUInt8(locktime_buffer.length, offset); //Length of locktime
+    offset += locktime_buffer.copy(buffer, offset);
+    offset = buffer.writeUInt8(157, offset); //NUMEQUALVERIFY
+    offset = buffer.writeUInt8(118, offset); //DUP
+    offset = buffer.writeUInt8(169, offset); //OP_HASH160
+    offset = buffer.writeUInt8(20, offset); //Address length
+    //Write previous output address
+    offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
+    //Static transfer stuff
+    offset = buffer.writeUInt8(136, offset); //OP_EQUALVERIFY
+    offset = buffer.writeUInt8(172, offset); //OP_CHECKSIG
+    return offset;
+}
 module.exports = Transaction;
