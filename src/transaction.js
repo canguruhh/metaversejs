@@ -173,7 +173,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
         offset = buffer.writeUInt32LE(input.previous_output.index, offset);
         if (add_address_to_previous_output_index !== undefined) {
             if (index == add_address_to_previous_output_index) {
-                let lockregex = /\[\ (\d+)(?:\ \]\ numequalverify)/gi;
+                let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
                 //Check if previous output was locked before
                 if(input.previous_output.script && input.previous_output.script.match(lockregex)){
                     let locktime = lockregex.exec(input.previous_output.script.match(lockregex)[0])[1];

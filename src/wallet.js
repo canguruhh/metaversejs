@@ -174,7 +174,7 @@ Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
         let sig = hdnode.sign(sig_hash);
         let parameters = [sig.toDER().toString('hex') + "01",hdnode.getPublicKeyBuffer().toString('hex') ];
         //Check if the previous output was locked etp
-        let lockregex = /\[\ (\d+)(?:\ \]\ numequalverify)/gi;
+        let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
         if(transaction.inputs[index].previous_output.script && transaction.inputs[index].previous_output.script.match(lockregex)){
             let number = lockregex.exec(transaction.inputs[index].previous_output.script.match(lockregex)[0])[1];
             parameters.push(number.toString('hex'));
