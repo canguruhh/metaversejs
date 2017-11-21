@@ -1,6 +1,14 @@
 language: node_js
 node_js:
-  - "6"
-  - "7"
-  - "8"
-
+- '6'
+- '7'
+- '8'
+deploy:
+  provider: npm
+  email: canguruhh@mutzl.org
+  on:
+    branch: master
+    repo: canguruhh/metaversejs
+    tag: latest
+  api_key:
+    secure: iodPtbnGARU94L48cjrLjH343/i1zKroaVK19ZyahSiBkqICvO50fwtRzU/p+692CNWt2UvZn57qgQ9FEbjM5ApPiwmMUon6vb4lrDSv8mo5pqEQkSF8YFlobZLR7jjD1hvvbAXaztR0tOtSInoxRaXQkNJzPzYAqp9cdWC/lrGjhSLQ3Owr72Vd9DrsQKAGV79U8w1eS4+zXf0bzuC2gocLzosEDFNS71K7NfDbkTCmm9oVqISTLXssP6/k5CtW9sNAzmA3IxtlRNI1KJ7cNLE1qOUxkHe/97pj3w6lGGJTFsYYIAaVAYix2y+G90vdiU+TlglGHUIN3IGkudeEBZ9WFtA505dfmyW3ZSzY9iIKjgd1aAviiolg9CSMNGuGx98othNAY2qYq6N40MIWRP/E0/WJPvBt9EHl6xkbAtLgigaounXUQDTwIHh5xgf4Ujh3laClRvCqewfi6H2jd3lNgNGpw+8ykWs5OQcHQKVu+xs3Hahwfz6iQ09vgUfZ/C1IgiDFtorsgrQAjQxr+AblJuyf/LBd8RGQdEHHmGfvTp4Q3seAQTPp0j2RrBW6ToLIDjDt45SDPAi3o+Cj+AWPjDCSw0uN43ASG2SKVDkskyft9E7H2rL3OIahO+OA+8GeA+TTV8Iia7TvyjJcn2sMU/OnKrdxIMfGzVlvgz0=
