@@ -166,13 +166,13 @@ Wallet.prototype.generateInputScript = function(transaction, input_address, inde
  */
 Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
     return new Promise((resolve, reject) => {
-        let unsigned_tx = Object.create(transaction).clearInputScripts().encode(index);
+        let unsigned_tx = transaction.clone().clearInputScripts().encode(index);
         let script_buffer = new Buffer(4);
         script_buffer.writeUInt32LE(1, 0);
         var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
         var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
-        let sig = hdnode.sign(sig_hash);
-        let parameters = [sig.toDER().toString('hex') + "01",hdnode.getPublicKeyBuffer().toString('hex') ];
+        let signature = hdnode.sign(sig_hash).toDER().toString('hex')+'01';
+        let parameters = [signature,hdnode.getPublicKeyBuffer().toString('hex') ];
         //Check if the previous output was locked etp
         let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
         if(transaction.inputs[index].previous_output.script && transaction.inputs[index].previous_output.script.match(lockregex)){
