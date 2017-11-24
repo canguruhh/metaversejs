@@ -1,7 +1,8 @@
 'use strict';
 
-var bufferutils = require('./bufferutils.js');
-var base58check = require('base58check');
+var bufferutils = require('./bufferutils.js'),
+    base58check = require('base58check'),
+    OPS = require('bitcoin-ops');
 
 function Transaction() {
     this.version = 2;
@@ -14,6 +15,16 @@ function Transaction() {
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER = 2;
 Transaction.DEFAULT_FEE = 10000;
+
+Transaction.prototype.clone = function(){
+    let tx = new Transaction();
+    tx.version=this.version;
+    this.inputs.forEach((input)=>{
+        tx.addInput(input.previous_output.address,input.previous_output.hash,input.previous_output.index,input.previous_output.script);
+    });
+    tx.outputs=JSON.parse(JSON.stringify(this.outputs));
+    return tx;
+};
 
 /**
  * Add an input to the transaction.
@@ -40,7 +51,6 @@ Transaction.prototype.addInput = function(previous_output_address, previous_outp
  * @param {String} address
  * @param {String} asset
  * @param {Number} value
- * @param {String} script
  */
 Transaction.prototype.addOutput = function(address, asset, value) {
     if (asset == "ETP") {
@@ -50,6 +60,7 @@ Transaction.prototype.addOutput = function(address, asset, value) {
                 type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
                 version: 1
             },
+            "script_type": "pubkeyhash",
             "value": value
         });
     } else {
@@ -62,8 +73,38 @@ Transaction.prototype.addOutput = function(address, asset, value) {
                 "quantity": value,
                 "status": 2
             },
+            "script_type": "pubkeyhash",
             "value": 0
         });
+    }
+};
+
+/**
+ * Add locked etp output to the transaction.
+ * @param {String} address
+ * @param {Number} value
+ * @param {Number} locktime Number of blocks
+ */
+Transaction.prototype.addLockOutput = function(address, value, locktime) {
+    switch(locktime){
+    case 25200:
+    case 108000:
+    case 331200:
+    case 655200:
+    case 1314000:
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
+                version: 1
+            },
+            "value": value,
+            "script_type": "lock",
+            "locktime": locktime
+        });
+        break;
+    default:
+        throw "Illegal locktime";
     }
 };
 
@@ -126,8 +167,15 @@ function encodeOutputs(outputs) {
         //Write value as 8byte integer
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
         //Output script
-        //Static transfer stuff
-        offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
+        if(output.script_type==="pubkeyhash"){
+            offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
+        } else if(output.script_type==="lock"){
+            let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
+            offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
+        } else{
+            throw 'Unknown script type: '+output.script_type;
+        }
+
         // attachment
         offset = buffer.writeUInt32LE(output.attachment.version, offset);
         offset = buffer.writeUInt32LE(output.attachment.type, offset);
@@ -257,14 +305,14 @@ Transaction.encodeInputScript = function(parameters) {
  */
 function writeScriptPayToPubKeyHash(address, buffer, offset) {
     offset = buffer.writeUInt8(25, offset); //Script length
-    offset = buffer.writeUInt8(118, offset); //DUP
-    offset = buffer.writeUInt8(169, offset); //OP_HASH160
-    offset = buffer.writeUInt8(20, offset); //Address length
+    offset = buffer.writeUInt8(OPS.OP_DUP, offset);
+    offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address
+    offset = buffer.writeUInt8(20, offset); //Address length
     offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
     //Static transfer stuff
-    offset = buffer.writeUInt8(136, offset); //OP_EQUALVERIFY
-    offset = buffer.writeUInt8(172, offset); //OP_CHECKSIG
+    offset = buffer.writeUInt8(OPS.OP_EQUALVERIFY, offset);
+    offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
     return offset;
 }
 
@@ -281,15 +329,14 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     offset = buffer.writeUInt8(27+locktime_buffer.length, offset); //Script length
     offset = buffer.writeUInt8(locktime_buffer.length, offset); //Length of locktime
     offset += locktime_buffer.copy(buffer, offset);
-    offset = buffer.writeUInt8(157, offset); //NUMEQUALVERIFY
-    offset = buffer.writeUInt8(118, offset); //DUP
-    offset = buffer.writeUInt8(169, offset); //OP_HASH160
-    offset = buffer.writeUInt8(20, offset); //Address length
+    offset = buffer.writeUInt8(OPS.OP_NUMEQUALVERIFY, offset);
+    offset = buffer.writeUInt8(OPS.OP_DUP, offset);
+    offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address
+    offset = buffer.writeUInt8(20, offset); //Address length
     offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
-    //Static transfer stuff
-    offset = buffer.writeUInt8(136, offset); //OP_EQUALVERIFY
-    offset = buffer.writeUInt8(172, offset); //OP_CHECKSIG
+    offset = buffer.writeUInt8(OPS.OP_EQUALVERIFY, offset);
+    offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
     return offset;
 }
 module.exports = Transaction;
