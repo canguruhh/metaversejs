@@ -267,15 +267,15 @@ function encodeLockTime(lock_time) {
  * @returns {Number} New offset
  * @throws {Error}
  */
-Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data_type) {
-    if (attachment_data_type.asset == undefined)
+Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data) {
+    if (attachment_data.asset == undefined)
         throw Error('Specify output asset');
-    if (attachment_data_type.quantity == undefined)
+    if (attachment_data.quantity == undefined)
         throw Error('Specify output quanity');
-    offset = buffer.writeUInt32LE(attachment_data_type.status, offset);
-    offset = buffer.writeUInt8(attachment_data_type.asset.length, offset);
-    offset += new Buffer(attachment_data_type.asset).copy(buffer, offset);
-    offset = bufferutils.writeUInt64LE(buffer, attachment_data_type.quantity, offset);
+    offset = buffer.writeUInt32LE(attachment_data.status, offset);
+    offset = buffer.writeUInt8(attachment_data.asset.length, offset);
+    offset += new Buffer(attachment_data.asset).copy(buffer, offset);
+    offset = bufferutils.writeUInt64LE(buffer, attachment_data.quantity, offset);
     return offset;
 };
 
