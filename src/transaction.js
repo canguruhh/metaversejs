@@ -13,8 +13,10 @@ function Transaction() {
 
 
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
+Transaction.ATTACHMENT_TYPE_ASSET_ISSUE = 1;
 Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER = 2;
 Transaction.DEFAULT_FEE = 10000;
+Transaction.ASSET_ISSUE_DEFAULT_FEE = 100000;
 
 Transaction.prototype.clone = function(){
     let tx = new Transaction();
@@ -77,6 +79,51 @@ Transaction.prototype.addOutput = function(address, asset, value) {
             "value": 0
         });
     }
+};
+
+/**
+ * Add an asset issue output to the transaction.
+ * @param {String} symbol Up to 63 alphanumeric or . characters
+ * @param {Number} max_supply
+ * @param {Number} precision Number of decimals from range 0..19
+ * @param {String} issuer Name of issuer length < 64 characters
+ * @param {String} address Recepient address
+ * @param {String} description Description for asset < 64 characters
+ */
+Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precision, issuer, address, description) {
+    if(!/^([A-Z0-9\.]{3,63})$/.test(symbol))
+        throw Error('ERR_SYMBOL_NAME');
+    else if(!/^([A-Z0-9\.]{3,63})$/.test(issuer))
+        throw Error('ERR_ISSUER_NAME');
+    else if(max_supply<=0)
+        throw Error('ERR_MAX_SUPPLY_TOO_LOW');
+    else if(precision<0)
+        throw Error('ERR_PRECISION_NEGATIVE');
+    else if(precision>=20)
+        throw Error('ERR_PRECISION_TOO_HIGH');
+    else if(description.length>=64)
+        throw Error('ERR_DESCRIPTION_TOO_LONG');
+    else if(description.length>=64)
+        throw Error('ERR_DESCRIPTION_TOO_LONG');
+    else if(!Transaction.isAddress(address))
+        throw Error('ERR_ADDRESS_FORMAT');
+    else
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                "type": Transaction.ATTACHMENT_TYPE_ASSET_ISSUE,
+                "version": 1,
+                "status": 1,
+                "symbol": symbol,
+                "max_supply": max_supply,
+                "precision": precision,
+                "issuer": issuer,
+                "address": address,
+                "description": description
+            },
+            "script_type": "pubkeyhash",
+            "value": 0
+        });
 };
 
 /**
@@ -183,6 +230,9 @@ function encodeOutputs(outputs) {
         switch (output.attachment.type) {
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
                 break;
+            case Transaction.ATTACHMENT_TYPE_ASSET_ISSUE:
+                offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
+                break;
             case Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER:
                 offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
                 break;
@@ -265,17 +315,42 @@ function encodeLockTime(lock_time) {
  * @returns {Number} New offset
  * @throws {Error}
  */
-Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data_type) {
-    if (attachment_data_type.asset == undefined)
+Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data) {
+    if (attachment_data.asset == undefined)
         throw Error('Specify output asset');
-    if (attachment_data_type.quantity == undefined)
+    if (attachment_data.quantity == undefined)
         throw Error('Specify output quanity');
-    offset = buffer.writeUInt32LE(attachment_data_type.status, offset);
-    offset = buffer.writeUInt8(attachment_data_type.asset.length, offset);
-    offset += new Buffer(attachment_data_type.asset).copy(buffer, offset);
-    offset = bufferutils.writeUInt64LE(buffer, attachment_data_type.quantity, offset);
+    offset = buffer.writeUInt32LE(attachment_data.status, offset);
+    offset = buffer.writeUInt8(attachment_data.asset.length, offset);
+    offset += new Buffer(attachment_data.asset).copy(buffer, offset);
+    offset = bufferutils.writeUInt64LE(buffer, attachment_data.quantity, offset);
     return offset;
 };
+
+/**
+ * Helper function to encode the attachment for a new asset.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {Number} attachment_data
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_data) {
+    //Encode symbol
+    offset += encodeString(buffer, attachment_data.symbol, offset);
+    //Encode maximum supply
+    offset = bufferutils.writeUInt64LE(buffer, attachment_data.max_supply, offset);
+    //Encode precision
+    offset = buffer.writeUInt8(attachment_data.precision, offset);
+    //Encode issuer
+    offset += encodeString(buffer, attachment_data.symbol, offset);
+    //Encode recipient address
+    offset += encodeString(buffer, attachment_data.address, offset);
+    //Encode description
+    offset += encodeString(buffer, attachment_data.description, offset);
+    return offset;
+};
+
 
 /**
  * Enodes the given input script.
@@ -339,4 +414,19 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
     return offset;
 }
+
+function encodeString(buffer, str, offset){
+    var payload = new Buffer(str, 'hex');
+    if (payload.length < 0xfd) {
+        offset = buffer.writeUInt8(payload.length, offset);
+    } else if (payload.length <= 0xffff) {
+        offset = buffer.writeUInt8(0xfd, offset);
+        offset = buffer.writeInt16LE(payload.length, offset);
+    } else
+        throw Error("Wow so much data!");
+    return payload.copy(buffer, offset);
+}
+
 module.exports = Transaction;
+
+Transaction.isAddress = (address) => (address.length == 34) && ( address.charAt(0) == 'M' || address.charAt(0) == 'T' || address.charAt(0) == '3');
