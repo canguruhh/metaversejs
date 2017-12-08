@@ -280,6 +280,31 @@ Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_
 };
 
 /**
+ * Helper function to encode the attachment for a new asset.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {Number} attachment_data
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_data) {
+    //Encode symbol
+    offset += encodeString(buffer, attachment_data.symbol, offset);
+    //Encode maximum supply
+    offset = bufferutils.writeUInt64LE(buffer, attachment_data.max_supply, offset);
+    //Encode precision
+    offset = buffer.writeUInt8(attachment_data.precision, offset);
+    //Encode issuer
+    offset += encodeString(buffer, attachment_data.symbol, offset);
+    //Encode recipient address
+    offset += encodeString(buffer, attachment_data.address, offset);
+    //Encode description
+    offset += encodeString(buffer, attachment_data.description, offset);
+    return offset;
+};
+
+
+/**
  * Enodes the given input script.
  * @param {String} script_string
  * @returns {Buffer}
