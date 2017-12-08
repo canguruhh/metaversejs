@@ -342,3 +342,5 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     return offset;
 }
 module.exports = Transaction;
+
+Transaction.isAddress = (address) => (address.length == 34) && ( address.charAt(0) == 'M' || address.charAt(0) == 'T' || address.charAt(0) == '3');
