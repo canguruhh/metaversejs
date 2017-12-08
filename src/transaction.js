@@ -50,6 +50,24 @@ Transaction.prototype.addInput = function(previous_output_address, previous_outp
 };
 
 /**
+ * Add a message to the transaction.
+ * @param {String} address
+ * @param {String} asset
+ * @param {Number} value
+ */
+Transaction.prototype.addMessage = function(address, message) {
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                type: Transaction.ATTACHMENT_TYPE_MESSAGE,
+                version: 1,
+                message: message
+            },
+            "script_type": "pubkeyhash",
+            "value": 0
+        });};
+
+/**
  * Add an output to the transaction.
  * @param {String} address
  * @param {String} asset
