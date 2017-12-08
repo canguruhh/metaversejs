@@ -255,6 +255,9 @@ function encodeOutputs(outputs) {
             case Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER:
                 offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
                 break;
+            case Transaction.ATTACHMENT_TYPE_MESSAGE:
+                offset = Transaction.encodeAttachmentMessage(buffer, offset, output.attachment.message);
+                break;
             default:
                 throw Error("What kind of an output is that?!");
         }
@@ -325,6 +328,21 @@ function encodeLockTime(lock_time) {
     buffer.writeInt32LE(lock_time, 0);
     return buffer;
 }
+
+/**
+ * Helper function to encode the attachment for a message.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {string} message
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentMessage = function(buffer, offset, message) {
+    if (message == undefined)
+        throw Error('Specify message');
+    offset += encodeString(buffer, message, offset);
+    return offset;
+};
 
 /**
  * Helper function to encode the attachment for an asset transfer.
@@ -435,7 +453,7 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
 }
 
 function encodeString(buffer, str, offset){
-    var payload = new Buffer(str, 'hex');
+    var payload = new Buffer.from(str, 'utf-8');
     if (payload.length < 0xfd) {
         offset = buffer.writeUInt8(payload.length, offset);
     } else if (payload.length <= 0xffff) {
