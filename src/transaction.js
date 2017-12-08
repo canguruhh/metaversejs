@@ -425,7 +425,7 @@ function encodeString(buffer, str, offset){
         offset = buffer.writeInt16LE(payload.length, offset);
     } else
         throw Error("Wow so much data!");
-    return payload.copy(buffer, offset);
+    return payload.copy(buffer, offset)+1;
 }
 
 module.exports = Transaction;
