@@ -341,6 +341,19 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
     return offset;
 }
+
+function encodeString(buffer, str, offset){
+    var payload = new Buffer(str, 'hex');
+    if (payload.length < 0xfd) {
+        offset = buffer.writeUInt8(payload.length, offset);
+    } else if (payload.length <= 0xffff) {
+        offset = buffer.writeUInt8(0xfd, offset);
+        offset = buffer.writeInt16LE(payload.length, offset);
+    } else
+        throw Error("Wow so much data!");
+    return payload.copy(buffer, offset);
+}
+
 module.exports = Transaction;
 
 Transaction.isAddress = (address) => (address.length == 34) && ( address.charAt(0) == 'M' || address.charAt(0) == 'T' || address.charAt(0) == '3');
