@@ -15,6 +15,7 @@ function Transaction() {
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET_ISSUE = 1;
 Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER = 2;
+Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
 Transaction.DEFAULT_FEE = 10000;
 Transaction.ASSET_ISSUE_DEFAULT_FEE = 100000;
 
