@@ -82,6 +82,51 @@ Transaction.prototype.addOutput = function(address, asset, value) {
 };
 
 /**
+ * Add an asset issue output to the transaction.
+ * @param {String} symbol Up to 63 alphanumeric or . characters
+ * @param {Number} max_supply
+ * @param {Number} precision Number of decimals from range 0..19
+ * @param {String} issuer Name of issuer length < 64 characters
+ * @param {String} address Recepient address
+ * @param {String} description Description for asset < 64 characters
+ */
+Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precision, issuer, address, description) {
+    if(!/^([A-Z0-9\.]{3,63})$/.test(symbol))
+        throw Error('ERR_SYMBOL_NAME');
+    else if(!/^([A-Z0-9\.]{3,63})$/.test(issuer))
+        throw Error('ERR_ISSUER_NAME');
+    else if(max_supply<=0)
+        throw Error('ERR_MAX_SUPPLY_TOO_LOW');
+    else if(precision<0)
+        throw Error('ERR_PRECISION_NEGATIVE');
+    else if(precision>=20)
+        throw Error('ERR_PRECISION_TOO_HIGH');
+    else if(description.length>=64)
+        throw Error('ERR_DESCRIPTION_TOO_LONG');
+    else if(description.length>=64)
+        throw Error('ERR_DESCRIPTION_TOO_LONG');
+    else if(!Transaction.isAddress(address))
+        throw Error('ERR_ADDRESS_FORMAT');
+    else
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                "type": Transaction.ATTACHMENT_TYPE_ASSET_ISSUE,
+                "version": 1,
+                "status": 1,
+                "symbol": symbol,
+                "max_supply": max_supply,
+                "precision": precision,
+                "issuer": issuer,
+                "address": address,
+                "description": description
+            },
+            "script_type": "pubkeyhash",
+            "value": 0
+        });
+};
+
+/**
  * Add locked etp output to the transaction.
  * @param {String} address
  * @param {Number} value
@@ -184,6 +229,9 @@ function encodeOutputs(outputs) {
 
         switch (output.attachment.type) {
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
+                break;
+            case Transaction.ATTACHMENT_TYPE_ASSET_ISSUE:
+                offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
                 break;
             case Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER:
                 offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
