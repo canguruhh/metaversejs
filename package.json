@@ -16,7 +16,7 @@
         "test": "test"
     },
     "scripts": {
-        "test": "mocha -t 10000 test"
+        "test": "mocha -t 30000 test"
     },
     "files": [
         "src",
