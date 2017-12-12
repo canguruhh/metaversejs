@@ -13,19 +13,18 @@ function Transaction() {
 
 
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
-Transaction.ATTACHMENT_TYPE_ASSET_ISSUE = 1;
-Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER = 2;
+Transaction.ATTACHMENT_TYPE_ASSET = 2;
 Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
 Transaction.DEFAULT_FEE = 10000;
 Transaction.ASSET_ISSUE_DEFAULT_FEE = 100000;
 
-Transaction.prototype.clone = function(){
+Transaction.prototype.clone = function() {
     let tx = new Transaction();
-    tx.version=this.version;
-    this.inputs.forEach((input)=>{
-        tx.addInput(input.previous_output.address,input.previous_output.hash,input.previous_output.index,input.previous_output.script);
+    tx.version = this.version;
+    this.inputs.forEach((input) => {
+        tx.addInput(input.previous_output.address, input.previous_output.hash, input.previous_output.index, input.previous_output.script);
     });
-    tx.outputs=JSON.parse(JSON.stringify(this.outputs));
+    tx.outputs = JSON.parse(JSON.stringify(this.outputs));
     return tx;
 };
 
@@ -56,16 +55,17 @@ Transaction.prototype.addInput = function(previous_output_address, previous_outp
  * @param {Number} value
  */
 Transaction.prototype.addMessage = function(address, message) {
-        this.outputs.push({
-            "address": address,
-            "attachment": {
-                type: Transaction.ATTACHMENT_TYPE_MESSAGE,
-                version: 1,
-                message: message
-            },
-            "script_type": "pubkeyhash",
-            "value": 0
-        });};
+    this.outputs.push({
+        "address": address,
+        "attachment": {
+            type: Transaction.ATTACHMENT_TYPE_MESSAGE,
+            version: 1,
+            message: message
+        },
+        "script_type": "pubkeyhash",
+        "value": 0
+    });
+};
 
 /**
  * Add an output to the transaction.
@@ -88,7 +88,7 @@ Transaction.prototype.addOutput = function(address, asset, value) {
         this.outputs.push({
             "address": address,
             "attachment": {
-                "type": Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER,
+                "type": Transaction.ATTACHMENT_TYPE_ASSET,
                 "version": 1,
                 "asset": asset,
                 "quantity": value,
@@ -110,27 +110,27 @@ Transaction.prototype.addOutput = function(address, asset, value) {
  * @param {String} description Description for asset < 64 characters
  */
 Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precision, issuer, address, description) {
-    if(!/^([A-Z0-9\.]{3,63})$/.test(symbol))
+    if (!/^([A-Z0-9\.]{3,63})$/.test(symbol))
         throw Error('ERR_SYMBOL_NAME');
-    else if(!/^([A-Z0-9\.]{3,63})$/.test(issuer))
+    else if (!/^([A-Za-z0-9\.]{3,63})$/.test(issuer))
         throw Error('ERR_ISSUER_NAME');
-    else if(max_supply<=0)
+    else if (max_supply <= 0)
         throw Error('ERR_MAX_SUPPLY_TOO_LOW');
-    else if(precision<0)
+    else if (precision < 0)
         throw Error('ERR_PRECISION_NEGATIVE');
-    else if(precision>=20)
+    else if (precision >= 20)
         throw Error('ERR_PRECISION_TOO_HIGH');
-    else if(description.length>=64)
+    else if (description.length >= 64)
         throw Error('ERR_DESCRIPTION_TOO_LONG');
-    else if(description.length>=64)
+    else if (description.length >= 64)
         throw Error('ERR_DESCRIPTION_TOO_LONG');
-    else if(!Transaction.isAddress(address))
+    else if (!Transaction.isAddress(address))
         throw Error('ERR_ADDRESS_FORMAT');
     else
         this.outputs.push({
             "address": address,
             "attachment": {
-                "type": Transaction.ATTACHMENT_TYPE_ASSET_ISSUE,
+                "type": Transaction.ATTACHMENT_TYPE_ASSET,
                 "version": 1,
                 "status": 1,
                 "symbol": symbol,
@@ -152,25 +152,25 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {Number} locktime Number of blocks
  */
 Transaction.prototype.addLockOutput = function(address, value, locktime) {
-    switch(locktime){
-    case 25200:
-    case 108000:
-    case 331200:
-    case 655200:
-    case 1314000:
-        this.outputs.push({
-            "address": address,
-            "attachment": {
-                type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-                version: 1
-            },
-            "value": value,
-            "script_type": "lock",
-            "locktime": locktime
-        });
-        break;
-    default:
-        throw "Illegal locktime";
+    switch (locktime) {
+        case 25200:
+        case 108000:
+        case 331200:
+        case 655200:
+        case 1314000:
+            this.outputs.push({
+                "address": address,
+                "attachment": {
+                    type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
+                    version: 1
+                },
+                "value": value,
+                "script_type": "lock",
+                "locktime": locktime
+            });
+            break;
+        default:
+            throw "Illegal locktime";
     }
 };
 
@@ -233,13 +233,13 @@ function encodeOutputs(outputs) {
         //Write value as 8byte integer
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
         //Output script
-        if(output.script_type==="pubkeyhash"){
+        if (output.script_type === "pubkeyhash") {
             offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
-        } else if(output.script_type==="lock"){
+        } else if (output.script_type === "lock") {
             let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
             offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
-        } else{
-            throw 'Unknown script type: '+output.script_type;
+        } else {
+            throw 'Unknown script type: ' + output.script_type;
         }
 
         // attachment
@@ -249,11 +249,11 @@ function encodeOutputs(outputs) {
         switch (output.attachment.type) {
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
                 break;
-            case Transaction.ATTACHMENT_TYPE_ASSET_ISSUE:
-                offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
-                break;
-            case Transaction.ATTACHMENT_TYPE_ASSET_TRANSFER:
-                offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
+            case Transaction.ATTACHMENT_TYPE_ASSET:
+                if (output.attachment.status == 1)
+                    offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
+                else if (output.attachment.status == 2)
+                    offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
                 break;
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
                 offset = Transaction.encodeAttachmentMessage(buffer, offset, output.attachment.message);
@@ -295,10 +295,10 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
             if (index == add_address_to_previous_output_index) {
                 let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
                 //Check if previous output was locked before
-                if(input.previous_output.script && input.previous_output.script.match(lockregex)){
+                if (input.previous_output.script && input.previous_output.script.match(lockregex)) {
                     let locktime = lockregex.exec(input.previous_output.script.match(lockregex)[0])[1];
-                    offset = writeScriptLockedPayToPubKeyHash(input.previous_output.address, locktime , buffer, offset);
-                } else{
+                    offset = writeScriptLockedPayToPubKeyHash(input.previous_output.address, locktime, buffer, offset);
+                } else {
                     //Previous output was p2pkh
                     offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
                 }
@@ -373,14 +373,17 @@ Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_
  * @throws {Error}
  */
 Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_data) {
+    offset = buffer.writeUInt32LE(attachment_data.status, offset);
     //Encode symbol
     offset += encodeString(buffer, attachment_data.symbol, offset);
     //Encode maximum supply
     offset = bufferutils.writeUInt64LE(buffer, attachment_data.max_supply, offset);
     //Encode precision
     offset = buffer.writeUInt8(attachment_data.precision, offset);
+    offset += buffer.write("000000", offset, 3, 'hex')
+
     //Encode issuer
-    offset += encodeString(buffer, attachment_data.symbol, offset);
+    offset += encodeString(buffer, attachment_data.issuer, offset);
     //Encode recipient address
     offset += encodeString(buffer, attachment_data.address, offset);
     //Encode description
@@ -437,8 +440,8 @@ function writeScriptPayToPubKeyHash(address, buffer, offset) {
  * @returns {Number} new offset
  */
 function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
-    let locktime_buffer=new Buffer(locktime, 'hex');
-    offset = buffer.writeUInt8(27+locktime_buffer.length, offset); //Script length
+    let locktime_buffer = new Buffer(locktime, 'hex');
+    offset = buffer.writeUInt8(27 + locktime_buffer.length, offset); //Script length
     offset = buffer.writeUInt8(locktime_buffer.length, offset); //Length of locktime
     offset += locktime_buffer.copy(buffer, offset);
     offset = buffer.writeUInt8(OPS.OP_NUMEQUALVERIFY, offset);
@@ -452,7 +455,7 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     return offset;
 }
 
-function encodeString(buffer, str, offset){
+function encodeString(buffer, str, offset) {
     var payload = new Buffer.from(str, 'utf-8');
     if (payload.length < 0xfd) {
         offset = buffer.writeUInt8(payload.length, offset);
@@ -461,9 +464,9 @@ function encodeString(buffer, str, offset){
         offset = buffer.writeInt16LE(payload.length, offset);
     } else
         throw Error("Wow so much data!");
-    return payload.copy(buffer, offset)+1;
+    return payload.copy(buffer, offset) + 1;
 }
 
 module.exports = Transaction;
 
-Transaction.isAddress = (address) => (address.length == 34) && ( address.charAt(0) == 'M' || address.charAt(0) == 'T' || address.charAt(0) == '3');
+Transaction.isAddress = (address) => (address.length == 34) && (address.charAt(0) == 'M' || address.charAt(0) == 't' || address.charAt(0) == '3');
