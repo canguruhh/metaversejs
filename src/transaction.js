@@ -15,6 +15,10 @@ function Transaction() {
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET = 2;
 Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
+
+Transaction.ASSET_STATUS_ISSUE = 1;
+Transaction.ASSET_STATUS_TRANSFER = 2;
+
 Transaction.DEFAULT_FEE = 10000;
 Transaction.ASSET_ISSUE_DEFAULT_FEE = 100000;
 
@@ -92,7 +96,7 @@ Transaction.prototype.addOutput = function(address, asset, value) {
                 "version": 1,
                 "asset": asset,
                 "quantity": value,
-                "status": 2
+                "status": Transaction.ASSET_STATUS_TRANSFER
             },
             "script_type": "pubkeyhash",
             "value": 0
@@ -132,7 +136,7 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
             "attachment": {
                 "type": Transaction.ATTACHMENT_TYPE_ASSET,
                 "version": 1,
-                "status": 1,
+                "status": Transaction.ASSET_STATUS_ISSUE,
                 "symbol": symbol,
                 "max_supply": max_supply,
                 "precision": precision,
@@ -250,10 +254,16 @@ function encodeOutputs(outputs) {
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
                 break;
             case Transaction.ATTACHMENT_TYPE_ASSET:
-                if (output.attachment.status == 1)
-                    offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
-                else if (output.attachment.status == 2)
-                    offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
+                switch (output.attachment.status) {
+                    case Transaction.ASSET_STATUS_ISSUE:
+                        offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
+                        break;
+                    case Transaction.ASSET_STATUS_TRANSFER:
+                        offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
+                        break;
+                default:
+                    throw Error("Asset status unknown");
+                }
                 break;
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
                 offset = Transaction.encodeAttachmentMessage(buffer, offset, output.attachment.message);
