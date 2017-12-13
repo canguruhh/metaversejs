@@ -121,6 +121,13 @@ tx.addMessage("tK8UKnBKhk4NQYhSeSb2zeWgMSZaHsn1TY", "hi. this is so easy!");
 tx.addOutput("tK8UKnBKhk4NQYhSeSb2zeWgMSZaHsn1TY", "ETP", 299990000);
 ```
 
+### Decode transaction
+You can also easily decode a hex encoded transaction.
+``` javascript
+Metaverse.transaction.decode(rawtx)
+```
+Not all information about the previous outputs of the inputs are enoded in a raw transaction. If you want to encode the transaction again you have to add the missing values to the inputs.
+
 ## Testing
 To run the unit tests just execute:
 ``` bash
