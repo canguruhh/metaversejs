@@ -2,11 +2,13 @@
   <a href="https://mvs.org/">
     <img src="https://mvs.org/images/metaverselogo.png" alt="">
   </a>
+  <br>
+  <a href="https://travis-ci.org/canguruhh/metaversejs">
+     <img src="https://travis-ci.org/canguruhh/metaversejs.png?branch=master" alt="Build status">
+  </a>
+  <br>
+  A javascript library for the Metaverse blockchain
 </p>
-
-# MetaverseJS
-[![Build Status](https://travis-ci.org/canguruhh/metaversejs.png?branch=master)](https://travis-ci.org/canguruhh/metaversejs)
-A javascript library for the Metaverse blockchain.
 
 ## Installation
 Install using npm:
@@ -120,6 +122,13 @@ tx.addMessage("tK8UKnBKhk4NQYhSeSb2zeWgMSZaHsn1TY", "hi. this is so easy!");
 //Don't forget the change
 tx.addOutput("tK8UKnBKhk4NQYhSeSb2zeWgMSZaHsn1TY", "ETP", 299990000);
 ```
+
+### Decode transaction
+You can also easily decode a hex encoded transaction.
+``` javascript
+Metaverse.transaction.decode(rawtx)
+```
+Not all information about the previous outputs of the inputs are enoded in a raw transaction. If you want to encode the transaction again you have to add the missing values to the inputs.
 
 ## Testing
 To run the unit tests just execute:

@@ -2,6 +2,7 @@
 
 var bufferutils = require('./bufferutils.js'),
     base58check = require('base58check'),
+    Script = require('./script'),
     OPS = require('bitcoin-ops');
 
 function Transaction() {
@@ -126,8 +127,6 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
         throw Error('ERR_PRECISION_TOO_HIGH');
     else if (description.length >= 64)
         throw Error('ERR_DESCRIPTION_TOO_LONG');
-    else if (description.length >= 64)
-        throw Error('ERR_DESCRIPTION_TOO_LONG');
     else if (!Transaction.isAddress(address))
         throw Error('ERR_ADDRESS_FORMAT');
     else
@@ -215,6 +214,15 @@ Transaction.prototype.encode = function(add_address_to_previous_output_index) {
 };
 
 /**
+ * Decode hex encoded string to transaction
+ * @param {} string hex encoded string
+ * @returns Transaction
+ */
+Transaction.decode = function(string) {
+    return Transaction.fromBuffer(Buffer.from(string, 'hex'));
+};
+
+/**
  * Encode raw transaction ouputs.
  * @param {Array<Output>} outputs
  * @returns {Buffer} Encoded outputs
@@ -225,13 +233,8 @@ function encodeOutputs(outputs) {
     //Initialize buffer and offset
     let offset = 0;
     var buffer = Buffer.allocUnsafe(100000);
-    if (outputs.length < 0xfd) {
-        offset = buffer.writeUInt8(outputs.length, offset);
-    } else if (outputs.length <= 0xffff) {
-        offset = buffer.writeInt8(0xfd, offset);
-        offset = buffer.writeInt16(outputs.length, offset);
-    } else
-        throw Error("Wow so many outputs! Get a full node please");
+    //Write number of inputs
+    offset += bufferutils.writeVarInt(buffer, outputs.length, offset);
 
     outputs.forEach((output) => {
         //Write value as 8byte integer
@@ -261,8 +264,8 @@ function encodeOutputs(outputs) {
                     case Transaction.ASSET_STATUS_TRANSFER:
                         offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
                         break;
-                default:
-                    throw Error("Asset status unknown");
+                    default:
+                        throw Error("Asset status unknown");
                 }
                 break;
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
@@ -288,13 +291,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
     let offset = 0;
     var buffer = Buffer.allocUnsafe(100000);
     //Write number of inputs
-    if (inputs.length < 0xfd) {
-        offset = buffer.writeUInt8(inputs.length, offset);
-    } else if (inputs.length <= 0xffff) {
-        offset = buffer.writeUInt8(0xfd, offset);
-        offset = buffer.writeInt16LE(inputs.length, offset);
-    } else
-        throw Error("Wow so many inputs!");
+    offset += bufferutils.writeVarInt(buffer, inputs.length, offset);
 
     inputs.forEach((input, index) => {
         //Write reversed hash
@@ -390,7 +387,7 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
     offset = bufferutils.writeUInt64LE(buffer, attachment_data.max_supply, offset);
     //Encode precision
     offset = buffer.writeUInt8(attachment_data.precision, offset);
-    offset += buffer.write("000000", offset, 3, 'hex')
+    offset += buffer.write("000000", offset, 3, 'hex');
 
     //Encode issuer
     offset += encodeString(buffer, attachment_data.issuer, offset);
@@ -407,19 +404,7 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
  * @param {String} script_string
  * @returns {Buffer}
  */
-Transaction.encodeInputScript = function(parameters) {
-    var buffer = new Buffer(10000),
-        offset = 0;
-
-    if (parameters) {
-        parameters.forEach((parameter) => {
-            var res = new Buffer(parameter, 'hex');
-            offset = buffer.writeUInt8(res.length, offset);
-            offset += res.copy(buffer, offset);
-        });
-    }
-    return buffer.slice(0, offset);
-};
+Transaction.encodeInputScript = (parameters) => Script.fromChunks((parameters) ? parameters : []).buffer;
 
 /**
  * Write p2pkh to the given buffer.
@@ -467,16 +452,120 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
 
 function encodeString(buffer, str, offset) {
     var payload = new Buffer.from(str, 'utf-8');
-    if (payload.length < 0xfd) {
-        offset = buffer.writeUInt8(payload.length, offset);
-    } else if (payload.length <= 0xffff) {
-        offset = buffer.writeUInt8(0xfd, offset);
-        offset = buffer.writeInt16LE(payload.length, offset);
-    } else
-        throw Error("Wow so much data!");
+    offset += bufferutils.writeVarInt(buffer, payload.length, offset);
     return payload.copy(buffer, offset) + 1;
 }
 
-module.exports = Transaction;
 
 Transaction.isAddress = (address) => (address.length == 34) && (address.charAt(0) == 'M' || address.charAt(0) == 't' || address.charAt(0) == '3');
+
+Transaction.fromBuffer = function(buffer) {
+    var offset = 0;
+
+    function readSlice(n) {
+        offset += n;
+        return buffer.slice(offset - n, offset);
+    }
+
+    function readUInt8() {
+        offset += 1;
+        return buffer.readUInt8(offset - 1);
+    }
+
+    function readUInt32() {
+        offset += 4;
+        return buffer.readUInt32LE(offset - 4);
+    }
+
+    function readUInt64() {
+        offset += 8;
+        return bufferutils.readUInt64LE(buffer, offset - 8);
+    }
+
+    function readVarInt() {
+        var vi = bufferutils.readVarInt(buffer, offset);
+        offset += vi.size;
+        return vi.number;
+    }
+
+    function readString() {
+        var length = bufferutils.readVarInt(buffer, offset);
+        offset += length.size;
+        return readSlice(length.number).toString();
+    }
+
+    function readScript() {
+        return Script.fromBuffer(readSlice(readVarInt())).toASM();
+    }
+
+    function readAttachment() {
+        let attachment = {};
+        attachment.version = readUInt32();
+        attachment.type = readUInt32();
+
+        switch (attachment.type) {
+            case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
+                break;
+            case Transaction.ATTACHMENT_TYPE_ASSET:
+                attachment.status = readUInt32();
+                switch (attachment.status) {
+                    case Transaction.ASSET_STATUS_ISSUE:
+                        attachment.symbol = readString();
+                        attachment.max_supply = readUInt64();
+                        attachment.precision = readUInt8();
+                        offset += 3;
+                        attachment.issuer = readString();
+                        attachment.address = readString();
+                        attachment.description = readString();
+                        break;
+                    case Transaction.ASSET_STATUS_TRANSFER:
+                        attachment.asset = readString();
+                        attachment.quantity = readUInt64();
+                        break;
+                    default:
+                        throw 'Unknown attachment status: ' + attachment.status;
+                }
+                break;
+            case Transaction.ATTACHMENT_TYPE_MESSAGE:
+                attachment.message = readString();
+                break;
+            default:
+                throw 'Unknown attachment type: ' + attachment.type;
+        }
+        return attachment;
+    }
+
+    function readGenerationScript() {
+        return new Script(readSlice(readVarInt()), []);
+    }
+
+    var tx = new Transaction();
+    tx.version = readUInt32();
+
+    var input_length = readVarInt();
+    for (var i = 0; i < input_length; ++i) {
+        tx.inputs.push({
+            previous_output: {
+                hash: readSlice(32),
+                index: readUInt32()
+            },
+            script: readScript(),
+            sequence: readUInt32()
+        });
+    }
+
+    var output_length = readVarInt();
+    for (i = 0; i < output_length; ++i) {
+        tx.outputs.push({
+            value: readUInt64(),
+            script: readScript(),
+            attachment: readAttachment()
+        });
+    }
+
+    tx.lock_time = readUInt32();
+
+    return tx;
+};
+
+module.exports = Transaction;
