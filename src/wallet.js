@@ -172,12 +172,12 @@ Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
         var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
         var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
         let signature = hdnode.sign(sig_hash).toDER().toString('hex')+'01';
-        let parameters = [signature,hdnode.getPublicKeyBuffer().toString('hex') ];
+        let parameters = [Buffer.from(signature,'hex'),hdnode.getPublicKeyBuffer() ];
         //Check if the previous output was locked etp
         let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
         if(transaction.inputs[index].previous_output.script && transaction.inputs[index].previous_output.script.match(lockregex)){
             let number = lockregex.exec(transaction.inputs[index].previous_output.script.match(lockregex)[0])[1];
-            parameters.push(number.toString('hex'));
+            parameters.push(number);
         }
         resolve(parameters);
     });
