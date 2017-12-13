@@ -6,10 +6,9 @@
   <a href="https://travis-ci.org/canguruhh/metaversejs">
      <img src="https://travis-ci.org/canguruhh/metaversejs.png?branch=master" alt="Build status">
   </a>
+  <br>
+  A javascript library for the Metaverse blockchain
 </p>
-
-# MetaverseJS
-A javascript library for the Metaverse blockchain.
 
 ## Installation
 Install using npm:
