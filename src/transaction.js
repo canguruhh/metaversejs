@@ -404,7 +404,7 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
  * @param {String} script_string
  * @returns {Buffer}
  */
-Transaction.encodeInputScript = (parameters) => Script.fromChunks((parameters)?parameters:[]).buffer;
+Transaction.encodeInputScript = (parameters) => Script.fromChunks((parameters) ? parameters : []).buffer;
 
 /**
  * Write p2pkh to the given buffer.
@@ -467,6 +467,11 @@ Transaction.fromBuffer = function(buffer) {
         return buffer.slice(offset - n, offset);
     }
 
+    function readUInt8() {
+        offset += 1;
+        return buffer.readUInt8(offset - 1);
+    }
+
     function readUInt32() {
         offset += 4;
         return buffer.readUInt32LE(offset - 4);
@@ -497,18 +502,35 @@ Transaction.fromBuffer = function(buffer) {
         let attachment = {};
         attachment.version = readUInt32();
         attachment.type = readUInt32();
-        if (attachment.type == 2) {
-            attachment.status = readUInt32();
-            if (attachment.status == 2) {
-                attachment.asset = readString();
-                attachment.quantity = readUInt64();
-            } else {
-                throw 'Unknown attachment status: ' + attachment.status;
-            }
-        } else if (attachment.type == 0) {
 
-        } else {
-            throw 'Unknown attachment type: ' + attachment.type;
+        switch (attachment.type) {
+            case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
+                break;
+            case Transaction.ATTACHMENT_TYPE_ASSET:
+                attachment.status = readUInt32();
+                switch (attachment.status) {
+                    case Transaction.ASSET_STATUS_ISSUE:
+                        attachment.symbol = readString();
+                        attachment.max_supply = readUInt64();
+                        attachment.precision = readUInt8();
+                        offset += 3;
+                        attachment.issuer = readString();
+                        attachment.address = readString();
+                        attachment.description = readString();
+                        break;
+                    case Transaction.ASSET_STATUS_TRANSFER:
+                        attachment.asset = readString();
+                        attachment.quantity = readUInt64();
+                        break;
+                    default:
+                        throw 'Unknown attachment status: ' + attachment.status;
+                }
+                break;
+            case Transaction.ATTACHMENT_TYPE_MESSAGE:
+                attachment.message = readString();
+                break;
+            default:
+                throw 'Unknown attachment type: ' + attachment.type;
         }
         return attachment;
     }
@@ -520,9 +542,10 @@ Transaction.fromBuffer = function(buffer) {
     var tx = new Transaction();
     tx.version = readUInt32();
 
-    for (var i = 0; i < readVarInt(); ++i) {
+    var input_length = readVarInt();
+    for (var i = 0; i < input_length; ++i) {
         tx.inputs.push({
-            previous_output:{
+            previous_output: {
                 hash: readSlice(32),
                 index: readUInt32()
             },
@@ -531,7 +554,8 @@ Transaction.fromBuffer = function(buffer) {
         });
     }
 
-    for (i = 0; i < readVarInt(); ++i) {
+    var output_length = readVarInt();
+    for (i = 0; i < output_length; ++i) {
         tx.outputs.push({
             value: readUInt64(),
             script: readScript(),
