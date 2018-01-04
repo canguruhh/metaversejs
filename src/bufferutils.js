@@ -14,13 +14,13 @@ function readUInt64LE (buffer, offset) {
   var b = buffer.readUInt32LE(offset + 4)
   b *= 0x100000000
 
-  verifuint(b + a, 0x001fffffffffffff)
+  verifuint(b + a, 0x01ffffffffffffff)
 
   return b + a
 }
 
 function writeUInt64BE (buffer, value, offset) {
-    verifuint(value, 0x001fffffffffffff)
+    verifuint(value, 0x01ffffffffffffff)
 
     buffer.writeInt32BE(value & -1, offset)
     buffer.writeUInt32BE(Math.floor(value / 0x100000000), offset + 4)
@@ -28,7 +28,7 @@ function writeUInt64BE (buffer, value, offset) {
 }
 
 function writeUInt64LE (buffer, value, offset) {
-  verifuint(value, 0x001fffffffffffff)
+  verifuint(value, 0x01ffffffffffffff)
 
   buffer.writeInt32LE(value & -1, offset)
   buffer.writeUInt32LE(Math.floor(value / 0x100000000), offset + 4)
