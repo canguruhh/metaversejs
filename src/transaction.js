@@ -3,6 +3,7 @@
 var bufferutils = require('./bufferutils.js'),
     base58check = require('base58check'),
     Script = require('./script'),
+    networks = require('./networks'),
     OPS = require('bitcoin-ops');
 
 function Transaction() {
@@ -154,26 +155,24 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {Number} value
  * @param {Number} locktime Number of blocks
  */
-Transaction.prototype.addLockOutput = function(address, value, locktime) {
-    switch (locktime) {
-        case 25200:
-        case 108000:
-        case 331200:
-        case 655200:
-        case 1314000:
-            this.outputs.push({
-                "address": address,
-                "attachment": {
-                    type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-                    version: 1
-                },
-                "value": value,
-                "script_type": "lock",
-                "locktime": locktime
-            });
-            break;
-        default:
-            throw "Illegal locktime";
+Transaction.prototype.addLockOutput = function(address, value, locktime, network = undefined) {
+
+    if(network==undefined)
+        network=networks['mainnet'];
+
+    if(network.locktimes.indexOf(locktime)!==-1){
+        this.outputs.push({
+            "address": address,
+            "attachment": {
+                type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
+                version: 1
+            },
+            "value": value,
+            "script_type": "lock",
+            "locktime": locktime
+        });
+    } else{
+        throw Error('Illegal locktime');
     }
 };
 

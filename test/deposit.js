@@ -1,6 +1,7 @@
 var chai = require("chai"),
     chaiAsPromised = require("chai-as-promised"),
     should = chai.should(),
+    networks = require('../src/networks'),
     Metaverse = require('../');
 
 chai.use(chaiAsPromised);
