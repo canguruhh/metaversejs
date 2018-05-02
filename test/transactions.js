@@ -16,6 +16,12 @@ describe('Transactions', function() {
         })
     );
 
+    it('Txid calculation', () => {
+        var tx = new Metaverse.transaction.calculateTxid('01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0403ec9311000000000130512310000000001976a9140b457055d28135f0d8d0956dd3c0642067e0106f88ac000000000000000000000000');
+        Promise.resolve(tx.toString('hex'))
+            .should.become("101d901c798c23e488e836a1d6f1cd46fbff7a771dc1501aa8c4c0f3b1b5ab77");
+    });
+
     it('Signle input ETP transaction', () => {
         var tx = new Metaverse.transaction();
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "5554b27dbf657d008511df56e747ffb2173749fd933b03317cee3c1fde271aea", 1);
