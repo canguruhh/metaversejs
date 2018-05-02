@@ -1,9 +1,6 @@
-var assert = require('assert')
+var assert = require('assert');
 var Metaverse = require('../index.js');
 var request = require('request');
-var blockchain = require('../../mvs-blockchain-js')();
-
-const HOST = 'https://explorer.mvs.org/api/';
 
 describe('Transaction building', function() {
 
