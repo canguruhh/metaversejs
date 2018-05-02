@@ -33,37 +33,34 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
 /**
  * Generates an array of outputs that can be used to perform a transaction with the given requirements.
  * @param {Array<Output>} utxo
- * @param {String} asset
- * @param {Number} value
- * @param {Number} fee (optional) Default fee is 10000 ETP.
- * @returns {Object} Object containing the selected outputs and an object that contains the surplus change that should be transfered back.
+ * @param {Object} target definition
  */
-TransactionBuilder.findUtxo = function(utxo, asset, value, fee = Transaction.DEFAULT_FEE) {
+TransactionBuilder.findUtxo = function(utxo, target) {
     return new Promise((resolve, reject) => {
-        let outputs = [];
-        let target = {};
-        target[asset] = value;
-        if (asset === 'ETP') {
-            target[asset] += fee;
-        } else {
-            target['ETP'] = fee;
-        }
-        let i = 0;
-        while (!targetComplete(target) && i < utxo.length) {
-            if (target[utxo[i].asset] !== undefined && target[utxo[i].asset] > 0) {
-                outputs.push(utxo[i]);
-                target[utxo[i].asset] -= utxo[i].value;
+        var change = JSON.parse(JSON.stringify(target));
+        var list=[];
+        utxo.forEach((output)=>{
+            if(!targetComplete(change)&&change.ETP>0&&output.value>0){
+                change.ETP-=output.value;
+                if(output.attachment.type=='asset-transfer'||output.attachment.type=='asset-issue'){
+                    if(change[output.attachment.symbol]==undefined)
+                        change[output.attachment.symbol]=0;
+                    change[output.attachment.symbol]-=output.attachment.quantity;
+                }
+                list.push(output);
+            } else if(!targetComplete(change)){
+                if((output.attachment.type=='asset-transfer'||output.attachment.type=='asset-issue')&&change[output.attachment.symbol]>0){
+                    if(change[output.attachment.symbol]==undefined)
+                        change[output.attachment.symbol]=0;
+                    change[output.attachment.symbol]-=output.attachment.quantity;
+                    if(output.value>0)
+                        change.ETP-=output.value;
+                }
+                list.push(output);
             }
-            i++;
-        };
-        if (targetComplete(target)) {
-            resolve({
-                outputs: outputs,
-                change: target
-            });
-        } else {
-            reject(Error('ERR_INSUFFICIENT_BALANCE'));
-        }
+        });
+        if(!targetComplete(change)) throw Error('ERR_INSUFFICIENT_UTXO');
+        resolve({ utxo: list, change: change, target: target});
     });
 };
 
@@ -72,12 +69,11 @@ TransactionBuilder.findUtxo = function(utxo, asset, value, fee = Transaction.DEF
  * @param {Object} targets
  * @returns {Boolean}
  */
-function targetComplete(targets) {
-    let complete = 1;
-    Object.keys(targets).forEach((key) => {
-        if (targets[key] > 0) {
-            complete = 0;
-        }
+function targetComplete(target) {
+    let complete=true;
+    Object.values(target).forEach((value)=>{
+        if(value>0)
+            complete=false;
     });
     return complete;
 }
