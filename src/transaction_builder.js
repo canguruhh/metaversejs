@@ -65,6 +65,27 @@ TransactionBuilder.findUtxo = function(utxo, target) {
 };
 
 /**
+ * Generates a send (etp and or asset) transaction with the given utxos as inputs, assets and the change.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} recipient_address Recipient address
+ * @param {Object} target Definition of assets to send
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ */
+TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change) {
+    return new Promise((resolve, reject) => {
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => tx.addInput(output.address, output.hash, output.index));
+        //add the target outputs to the recipient
+        Object.keys(target).forEach((symbol)=>tx.addOutput(recipient_address,symbol,target[symbol]));
+        //add the change outputs
+        Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
+        resolve(tx);
+    });
+};
+/**
  * Helper function to check a target object if there are no more positive values.
  * @param {Object} targets
  * @returns {Boolean}
