@@ -33,51 +33,73 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
 /**
  * Generates an array of outputs that can be used to perform a transaction with the given requirements.
  * @param {Array<Output>} utxo
- * @param {String} asset
- * @param {Number} value
- * @param {Number} fee (optional) Default fee is 10000 ETP.
- * @returns {Object} Object containing the selected outputs and an object that contains the surplus change that should be transfered back.
+ * @param {Object} target definition
  */
-TransactionBuilder.findUtxo = function(utxo, asset, value, fee = Transaction.DEFAULT_FEE) {
+TransactionBuilder.findUtxo = function(utxo, target) {
     return new Promise((resolve, reject) => {
-        let outputs = [];
-        let target = {};
-        target[asset] = value;
-        if (asset === 'ETP') {
-            target[asset] += fee;
-        } else {
-            target['ETP'] = fee;
-        }
-        let i = 0;
-        while (!targetComplete(target) && i < utxo.length) {
-            if (target[utxo[i].asset] !== undefined && target[utxo[i].asset] > 0) {
-                outputs.push(utxo[i]);
-                target[utxo[i].asset] -= utxo[i].value;
+        var change = JSON.parse(JSON.stringify(target));
+        var list=[];
+        utxo.forEach((output)=>{
+            if(!targetComplete(change)&&change.ETP>0&&output.value>0){
+                change.ETP-=output.value;
+                if(output.attachment.type=='asset-transfer'||output.attachment.type=='asset-issue'){
+                    if(change[output.attachment.symbol]==undefined)
+                        change[output.attachment.symbol]=0;
+                    change[output.attachment.symbol]-=output.attachment.quantity;
+                }
+                list.push(output);
+            } else if(!targetComplete(change)){
+                if((output.attachment.type=='asset-transfer'||output.attachment.type=='asset-issue')&&change[output.attachment.symbol]>0){
+                    if(change[output.attachment.symbol]==undefined)
+                        change[output.attachment.symbol]=0;
+                    change[output.attachment.symbol]-=output.attachment.quantity;
+                    if(output.value>0)
+                        change.ETP-=output.value;
+                }
+                list.push(output);
             }
-            i++;
-        };
-        if (targetComplete(target)) {
-            resolve({
-                outputs: outputs,
-                change: target
-            });
-        } else {
-            reject(Error('ERR_INSUFFICIENT_BALANCE'));
-        }
+        });
+        if(!targetComplete(change)) throw Error('ERR_INSUFFICIENT_UTXO');
+        resolve({ utxo: list, change: change, target: target});
     });
 };
 
+/**
+ * Generates a send (etp and or asset) transaction with the given utxos as inputs, assets and the change.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} recipient_address Recipient address
+ * @param {Object} target Definition of assets to send
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ */
+TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, fee) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        if(fee==undefined)
+            fee=Transaction.DEFAULT_FEE;
+        target["ETP"]-=fee;
+        if(target["ETP"]<0) throw Error('ERR_INSUFFICIENT_FEE');
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => tx.addInput(output.address, output.hash, output.index));
+        //add the target outputs to the recipient
+        Object.keys(target).forEach((symbol)=>tx.addOutput(recipient_address,symbol,target[symbol]));
+        //add the change outputs
+        Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
+        resolve(tx);
+    });
+};
 /**
  * Helper function to check a target object if there are no more positive values.
  * @param {Object} targets
  * @returns {Boolean}
  */
-function targetComplete(targets) {
-    let complete = 1;
-    Object.keys(targets).forEach((key) => {
-        if (targets[key] > 0) {
-            complete = 0;
-        }
+function targetComplete(target) {
+    let complete=true;
+    Object.values(target).forEach((value)=>{
+        if(value>0)
+            complete=false;
     });
     return complete;
 }

@@ -1,6 +1,6 @@
 {
     "name": "metaversejs",
-    "version": "0.2.29",
+    "version": "0.2.35",
     "description": "MetaverseJS library",
     "main": "index.js",
     "keywords": [
@@ -10,7 +10,7 @@
         "bitcoin"
     ],
     "engines": {
-        "node": ">=6.0.0"
+        "node": ">=8.0.0"
     },
     "directories": {
         "test": "test"
@@ -30,7 +30,8 @@
         "base58check": "^2.0.0",
         "bip39": "^2.4.0",
         "bitcoin-ops": "^1.4.0",
-        "bitcoinjs-lib": "^3.2.1"
+        "bitcoinjs-lib": "^3.2.1",
+        "crypto": "^1.0.1"
     },
     "repository": {
         "type": "git",

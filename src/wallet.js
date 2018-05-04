@@ -4,6 +4,7 @@ var bip39 = require('bip39');
 var bitcoin = require('bitcoinjs-lib');
 var Networks = require('./networks.js');
 
+const DEFAULT_KEY_SEARCH_DEPTH = 250;
 
 function Wallet() {
     this.rootnode = null;
@@ -98,7 +99,7 @@ Wallet.findDeriveIndexByAddress = (node, address, maxDepth) => {
         let i = 0,
             done = 0;
         if (maxDepth == undefined)
-            maxDepth = 50;
+            maxDepth = DEFAULT_KEY_SEARCH_DEPTH;
         while (i < maxDepth && !done) {
             if (node.derive(i).getAddress() == address) {
                 done++;
@@ -130,6 +131,21 @@ Wallet.prototype.findDeriveNodeByAddess = function(address, maxDepth) {
 Wallet.prototype.getAddress = function(index) {
     if (index == undefined) index = 0;
     return this.rootnode.derive(index).getAddress();
+};
+
+/**
+ * Gets the addresses of the wallet.
+ * @param {Number} number number of addresses
+ * @param {Number} start_from index to start from
+ * @returns {Array<String>}
+ */
+Wallet.prototype.getAddresses = function(number, start_from) {
+    if (start_from == undefined) start_from = 0;
+    if (number == undefined) number = 10;
+    let addresses = [];
+    for(let i=0; i<number;i++)
+        addresses.push(this.getAddress(i));
+    return addresses;
 };
 
 /**

@@ -1,63 +1,43 @@
-var assert = require('assert')
+var assert = require('assert');
 var Metaverse = require('../index.js');
 var request = require('request');
 
-const HOST = 'https://explorer.mvs.org/api/';
-
 describe('Transaction building', function() {
 
-    var inputs = [],
-        outputs = [],
-        tx_info,
-        utxo = [];
+    var tx_info = null;
 
     before(function(done) {
         var builder = new Metaverse.transaction_builder();
 
-        getInOuts(["MEXMMsiaWnW8UyukA7SeTRYR1i6oonahxa"])
-            .then((response) => {
-                let ioputs = JSON.parse(response).result;
-                outputs = ioputs[1];
-                inputs = ioputs[0];
-                return Metaverse.transaction_builder.filterUtxo(outputs, inputs);
+        Promise.resolve([{
+                    value: 100000,
+                    "attachment": {
+                        type: 'asset-transfer',
+                        symbol: "MVS.ZDC",
+                        quantity: 2000
+                    },
+                },
+                {
+                    value: 100000,
+                    "attachment": {
+                        type: 'asset-transfer',
+                        symbol: "MVS.ZGC",
+                        quantity: 20
+                    },
+                }
+            ])
+            .then((utxo) => {
+                return Metaverse.transaction_builder.findUtxo(utxo, {
+                    ETP: 1 + Metaverse.transaction.DEFAULT_FEE
+                });
             })
-            .then((u)=>{
-                utxo=u;
-                return Metaverse.transaction_builder.findUtxo(utxo, "ETP", 1);
-            })
-            .then((result)=>{
-                tx_info=result;
+            .then((result) => {
+                tx_info = result;
                 done();
             });
     });
 
-    it('Outputs can be loaded', () => {
-        assert.notEqual(outputs.length, 0);
-    });
-
-    it('Inputs can be loaded', () => {
-        assert.notEqual(inputs.length, 0);
-    });
-
-    it('UTXO are filtered correctly', () => {
-        assert.notEqual(utxo.length, 0);
-    });
-    
     it('UTXO are chosen correctly', () => {
-        assert.equal(1+Metaverse.transaction.DEFAULT_FEE, tx_info.outputs[0].value+tx_info.change['ETP']);
+        assert.equal(1 + Metaverse.transaction.DEFAULT_FEE, tx_info.utxo[0].value + tx_info.change['ETP']);
     });
 });
-
-function getInOuts(addresses) {
-    return new Promise((resolve,reject)=>{
-        
-        var string = 'inouts?';
-        addresses.forEach((address) => {
-            string += 'addresses[]=' + address;
-        });
-        request.get(HOST+string, function(err,_,body){
-            if(err) throw err;
-            else resolve(body);
-        });
-    })
-}

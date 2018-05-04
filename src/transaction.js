@@ -1,6 +1,7 @@
 'use strict';
 
 var bufferutils = require('./bufferutils.js'),
+    crypto = require('crypto'),
     base58check = require('base58check'),
     Script = require('./script'),
     networks = require('./networks'),
@@ -32,6 +33,18 @@ Transaction.prototype.clone = function() {
     });
     tx.outputs = JSON.parse(JSON.stringify(this.outputs));
     return tx;
+};
+
+function sha256(buffer) {
+    return crypto.createHash('sha256').update(buffer).digest();
+}
+
+function hash256(buffer) {
+    return sha256(sha256(buffer));
+}
+
+Transaction.calculateTxid = function(rawtx, reverse=true) {
+    return (reverse)?hash256(Buffer.from(rawtx,'hex')).reverse():hash256(Buffer.from(rawtx,'hex'));
 };
 
 /**
@@ -157,10 +170,10 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  */
 Transaction.prototype.addLockOutput = function(address, value, locktime, network = undefined) {
 
-    if(network==undefined)
-        network=networks['mainnet'];
+    if (network == undefined)
+        network = networks['mainnet'];
 
-    if(network.locktimes.indexOf(locktime)!==-1){
+    if (network.locktimes.indexOf(locktime) !== -1) {
         this.outputs.push({
             "address": address,
             "attachment": {
@@ -171,7 +184,7 @@ Transaction.prototype.addLockOutput = function(address, value, locktime, network
             "script_type": "lock",
             "locktime": locktime
         });
-    } else{
+    } else {
         throw Error('Illegal locktime');
     }
 };
