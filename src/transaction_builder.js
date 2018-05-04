@@ -35,8 +35,16 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
  * @param {Array<Output>} utxo
  * @param {Object} target definition
  */
-TransactionBuilder.findUtxo = function(utxo, target) {
+TransactionBuilder.findUtxo = function(utxo, target, fee) {
     return new Promise((resolve, reject) => {
+        //Add fee
+        if(fee==undefined)
+            fee=Transaction.DEFAULT_FEE;
+        if(target["ETP"])
+            target.ETP+=fee;
+        else
+            target.ETP=fee;
+
         var change = JSON.parse(JSON.stringify(target));
         var list=[];
         utxo.forEach((output)=>{
