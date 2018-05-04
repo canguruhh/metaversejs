@@ -28,7 +28,7 @@ describe('Transaction building', function() {
             ])
             .then((utxo) => {
                 return Metaverse.transaction_builder.findUtxo(utxo, {
-                    ETP: 1 + Metaverse.transaction.DEFAULT_FEE
+                    ETP: 1
                 });
             })
             .then((result) => {
