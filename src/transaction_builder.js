@@ -72,8 +72,12 @@ TransactionBuilder.findUtxo = function(utxo, target) {
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
  */
-TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change) {
+TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, fee) {
     return new Promise((resolve, reject) => {
+        //Set fee
+        if(fee==undefined)
+            fee=10000;
+        target["ETP"]-=fee;
         //create new transaction
         let tx = new Transaction();
         //add inputs
