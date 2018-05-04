@@ -76,8 +76,9 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
     return new Promise((resolve, reject) => {
         //Set fee
         if(fee==undefined)
-            fee=10000;
+            fee=Transaction.DEFAULT_FEE;
         target["ETP"]-=fee;
+        if(target["ETP"]<0) throw Error('ERR_INSUFFICIENT_FEE');
         //create new transaction
         let tx = new Transaction();
         //add inputs
