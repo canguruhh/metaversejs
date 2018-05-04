@@ -134,6 +134,21 @@ Wallet.prototype.getAddress = function(index) {
 };
 
 /**
+ * Gets the addresses of the wallet.
+ * @param {Number} number number of addresses
+ * @param {Number} start_from index to start from
+ * @returns {Array<String>}
+ */
+Wallet.prototype.getAddresses = function(number, start_from) {
+    if (start_from == undefined) start_from = 0;
+    if (number == undefined) number = 10;
+    let addresses = [];
+    for(let i=0; i<number;i++)
+        addresses.push(this.getAddress(i));
+    return addresses;
+};
+
+/**
  * Sign the given transaction.
  * @param {Transaction} transaction
  * @return{Promise.Transaction} Signed transaction.
