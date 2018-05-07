@@ -86,14 +86,28 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
         //Set fee
         if(fee==undefined)
             fee=Transaction.DEFAULT_FEE;
-        target["ETP"]-=fee;
-        if(target["ETP"]<0) throw Error('ERR_INSUFFICIENT_FEE');
+        var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
         //add inputs
-        utxo.forEach((output) => tx.addInput(output.address, output.hash, output.index));
+        utxo.forEach((output) => {
+            if(output.value)
+                etpcheck+=output.value;
+            tx.addInput(output.address, output.hash, output.index);
+        });
         //add the target outputs to the recipient
         Object.keys(target).forEach((symbol)=>tx.addOutput(recipient_address,symbol,target[symbol]));
+        if(target.ETP)
+            etpcheck-=target.ETP;
+        //add the change outputs
+    Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
+        if(change.ETP)
+            etpcheck+=change.ETP;
+        if(etpcheck!==fee) throw Error('ERR_FEE_CHECK_FAILED');
+        resolve(tx);
+    });
+};
+
         //add the change outputs
         Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
         resolve(tx);
