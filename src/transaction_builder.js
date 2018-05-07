@@ -108,11 +108,42 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
     });
 };
 
+/**
+ * Generates an etp deposit transaction.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} recipient_address Recipient address
+ * @param {Number} quantity Quantity of ETP to deposit (in bits)
+ * @param {Number} duration Number of blocks to freeze
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ * @param {Number} fee Optional fee definition (default 10000 bits)
+ */
+TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duration, change_address, change, fee, network) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        if(fee==undefined)
+            fee=Transaction.DEFAULT_FEE;
+        var etpcheck = 0;
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => {
+            if(output.value)
+                etpcheck+=output.value;
+            tx.addInput(output.address, output.hash, output.index);
+        });
+        //add lock output to the recipient
+        tx.addLockOutput(recipient_address, quantity, duration, network);
+        etpcheck-=quantity;
         //add the change outputs
         Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
+        if(change.ETP)
+            etpcheck+=change.ETP;
+        if(etpcheck!==fee) throw Error('ERR_FEE_CHECK_FAILED');
         resolve(tx);
     });
 };
+
 /**
  * Helper function to check a target object if there are no more positive values.
  * @param {Object} targets
