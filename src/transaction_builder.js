@@ -145,6 +145,43 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
 };
 
 /**
+ * Generates an asset issue transaction.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} recipient_address Recipient address
+ * @param {String} symbol Symbol of the new asset
+ * @param {Number} max_supply The maximum supply of the asset
+ * @param {Number} precision The number of decimal places
+ * @param {String} issuer Public issuer name
+ * @param {String} description Public description
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ * @param {Number} fee Optional fee definition (default 10000 bits)
+ */
+TransactionBuilder.issue = function(utxo, recipient_address, symbol, max_supply, precision, issuer, description, change_address, change) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        const fee=1000000000;
+        var etpcheck = 0;
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => {
+            if(output.value)
+                etpcheck+=output.value;
+            tx.addInput(output.address, output.hash, output.index);
+        });
+        //add lock output to the recipient
+        tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description);
+        //add the change outputs
+        Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
+        if(change.ETP)
+            etpcheck+=change.ETP;
+        if(etpcheck!==fee) throw Error('ERR_FEE_CHECK_FAILED');
+        resolve(tx);
+    });
+};
+
+/**
  * Helper function to check a target object if there are no more positive values.
  * @param {Object} targets
  * @returns {Boolean}
