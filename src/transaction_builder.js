@@ -36,6 +36,7 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
  * @param {Object} target definition
  */
 TransactionBuilder.findUtxo = function(utxo, target, fee) {
+    target=JSON.parse(JSON.stringify(target));
     return new Promise((resolve, reject) => {
         //Add fee
         if(fee==undefined)
@@ -68,7 +69,7 @@ TransactionBuilder.findUtxo = function(utxo, target, fee) {
             }
         });
         if(!targetComplete(change)) throw Error('ERR_INSUFFICIENT_UTXO');
-        resolve({ utxo: list, change: change, target: target});
+        resolve({ utxo: list, change: change, selected: target});
     });
 };
 
