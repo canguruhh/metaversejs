@@ -51,7 +51,7 @@ TransactionBuilder.findUtxo = function(utxo, target, fee) {
         utxo.forEach((output) => {
             if (!targetComplete(change)) {
                 switch (output.attachment.type) {
-                    case 'etp-transer':
+                    case 'etp':
                         if (change.ETP > 0 && output.value > 0) {
                             change.ETP -= output.value;
                             list.push(output);
