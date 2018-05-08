@@ -36,40 +36,46 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
  * @param {Object} target definition
  */
 TransactionBuilder.findUtxo = function(utxo, target, fee) {
-    target=JSON.parse(JSON.stringify(target));
+    target = JSON.parse(JSON.stringify(target));
     return new Promise((resolve, reject) => {
         //Add fee
-        if(fee==undefined)
-            fee=Transaction.DEFAULT_FEE;
-        if(target["ETP"])
-            target.ETP+=fee;
+        if (fee == undefined)
+            fee = Transaction.DEFAULT_FEE;
+        if (target["ETP"])
+            target.ETP += fee;
         else
-            target.ETP=fee;
+            target.ETP = fee;
 
         var change = JSON.parse(JSON.stringify(target));
-        var list=[];
-        utxo.forEach((output)=>{
-            if(!targetComplete(change)&&change.ETP>0&&output.value>0){
-                change.ETP-=output.value;
-                if(output.attachment.type=='asset-transfer'||output.attachment.type=='asset-issue'){
-                    if(change[output.attachment.symbol]==undefined)
-                        change[output.attachment.symbol]=0;
-                    change[output.attachment.symbol]-=output.attachment.quantity;
+        var list = [];
+        utxo.forEach((output) => {
+            if (!targetComplete(change)) {
+                switch (output.attachment.type) {
+                    case 'etp-transer':
+                        if (change.ETP > 0 && output.value > 0) {
+                            change.ETP -= output.value;
+                            list.push(output);
+                        }
+                        break;
+                    case 'asset-transfer':
+                    case 'asset-issue':
+                        if ((change.ETP > 0 && output.value > 0) || (target[output.attachment.symbol] > 0 && output.attachment.quantity > 0)) {
+                            change.ETP -= output.value;
+                            if (change[output.attachment.symbol] == undefined)
+                                change[output.attachment.symbol] = 0;
+                            change[output.attachment.symbol] -= output.attachment.quantity;
+                            list.push(output);
+                        }
+                        break;
                 }
-                list.push(output);
-            } else if(!targetComplete(change)){
-                if((output.attachment.type=='asset-transfer'||output.attachment.type=='asset-issue')&&change[output.attachment.symbol]>0){
-                    if(change[output.attachment.symbol]==undefined)
-                        change[output.attachment.symbol]=0;
-                    change[output.attachment.symbol]-=output.attachment.quantity;
-                    if(output.value>0)
-                        change.ETP-=output.value;
-                }
-                list.push(output);
             }
         });
-        if(!targetComplete(change)) throw Error('ERR_INSUFFICIENT_UTXO');
-        resolve({ utxo: list, change: change, selected: target});
+        if (!targetComplete(change)) throw Error('ERR_INSUFFICIENT_UTXO');
+        resolve({
+            utxo: list,
+            change: change,
+            selected: target
+        });
     });
 };
 
@@ -84,26 +90,26 @@ TransactionBuilder.findUtxo = function(utxo, target, fee) {
 TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, fee) {
     return new Promise((resolve, reject) => {
         //Set fee
-        if(fee==undefined)
-            fee=Transaction.DEFAULT_FEE;
+        if (fee == undefined)
+            fee = Transaction.DEFAULT_FEE;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
         //add inputs
         utxo.forEach((output) => {
-            if(output.value)
-                etpcheck+=output.value;
+            if (output.value)
+                etpcheck += output.value;
             tx.addInput(output.address, output.hash, output.index);
         });
         //add the target outputs to the recipient
-        Object.keys(target).forEach((symbol)=>tx.addOutput(recipient_address,symbol,target[symbol]));
-        if(target.ETP)
-            etpcheck-=target.ETP;
+        Object.keys(target).forEach((symbol) => tx.addOutput(recipient_address, symbol, target[symbol]));
+        if (target.ETP)
+            etpcheck -= target.ETP;
         //add the change outputs
-    Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
-        if(change.ETP)
-            etpcheck+=change.ETP;
-        if(etpcheck!==fee) throw Error('ERR_FEE_CHECK_FAILED');
+        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
         resolve(tx);
     });
 };
@@ -121,25 +127,25 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
 TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duration, change_address, change, fee, network) {
     return new Promise((resolve, reject) => {
         //Set fee
-        if(fee==undefined)
-            fee=Transaction.DEFAULT_FEE;
+        if (fee == undefined)
+            fee = Transaction.DEFAULT_FEE;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
         //add inputs
         utxo.forEach((output) => {
-            if(output.value)
-                etpcheck+=output.value;
+            if (output.value)
+                etpcheck += output.value;
             tx.addInput(output.address, output.hash, output.index);
         });
         //add lock output to the recipient
         tx.addLockOutput(recipient_address, quantity, duration, network);
-        etpcheck-=quantity;
+        etpcheck -= quantity;
         //add the change outputs
-        Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
-        if(change.ETP)
-            etpcheck+=change.ETP;
-        if(etpcheck!==fee) throw Error('ERR_FEE_CHECK_FAILED');
+        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
         resolve(tx);
     });
 };
@@ -160,23 +166,23 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
 TransactionBuilder.issue = function(utxo, recipient_address, symbol, max_supply, precision, issuer, description, change_address, change) {
     return new Promise((resolve, reject) => {
         //Set fee
-        const fee=1000000000;
+        const fee = 1000000000;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
         //add inputs
         utxo.forEach((output) => {
-            if(output.value)
-                etpcheck+=output.value;
+            if (output.value)
+                etpcheck += output.value;
             tx.addInput(output.address, output.hash, output.index);
         });
         //add lock output to the recipient
         tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description);
         //add the change outputs
-        Object.keys(change).forEach((symbol)=>tx.addOutput(change_address,symbol,-change[symbol]));
-        if(change.ETP)
-            etpcheck+=change.ETP;
-        if(etpcheck!==fee) throw Error('ERR_FEE_CHECK_FAILED');
+        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
         resolve(tx);
     });
 };
@@ -187,10 +193,10 @@ TransactionBuilder.issue = function(utxo, recipient_address, symbol, max_supply,
  * @returns {Boolean}
  */
 function targetComplete(target) {
-    let complete=true;
-    Object.values(target).forEach((value)=>{
-        if(value>0)
-            complete=false;
+    let complete = true;
+    Object.values(target).forEach((value) => {
+        if (value > 0)
+            complete = false;
     });
     return complete;
 }

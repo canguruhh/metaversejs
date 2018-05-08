@@ -10,11 +10,11 @@ describe('Transaction building', function() {
         var builder = new Metaverse.transaction_builder();
 
         Promise.resolve([{
-                    value: 100000,
+                    value: 0,
                     "attachment": {
                         type: 'asset-transfer',
-                        symbol: "MVS.ZDC",
-                        quantity: 2000
+                        symbol: "MVS.HUG",
+                        quantity: 2
                     },
                 },
                 {
