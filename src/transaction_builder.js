@@ -31,6 +31,37 @@ TransactionBuilder.filterUtxo = function(outputs, inputs) {
 };
 
 /**
+ * Generates an array of unspent outputs calculated by the given transactions and addresses.
+ * @param {Array<Transaction>} transactions
+ * @param {Array<string>} addresses
+ */
+TransactionBuilder.calculateUtxo = function(txs, addresses) {
+    return new Promise((resolve) => {
+        let candidates = {};
+        for (let i = txs.transactions.length - 1; i >= 0; i--) {
+            //Search received outputs
+            txs.transactions[i].outputs.forEach((output) => {
+                if (addresses.indexOf(output.address) !== -1) {
+                    output.locked_until = (output.locked_height_range) ? txs.transactions[i].height + output.locked_height_range : 0;
+                    delete output['locked_height_range'];
+                    output.hash = txs.transactions[i].hash;
+                    candidates[txs.transactions[i].hash + '-' + output.index] = output;
+                }
+            });
+            //Remove spent outputs if matching input is found
+            txs.transactions[i].inputs.forEach((input) => {
+                if (addresses.indexOf(input.address) !== -1) {
+                    if (candidates[input.previous_output.hash + '-' + input.previous_output.index]) {
+                        delete candidates[input.previous_output.hash + '-' + input.previous_output.index];
+                    } else throw Error('Found input without matching output');
+                }
+            });
+        }
+        resolve(Object.values(candidates));
+    });
+}
+
+/**
  * Generates an array of outputs that can be used to perform a transaction with the given requirements.
  * @param {Array<Output>} utxo
  * @param {Object} target definition
