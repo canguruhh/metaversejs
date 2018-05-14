@@ -130,7 +130,7 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
         utxo.forEach((output) => {
             if (output.value)
                 etpcheck += output.value;
-            tx.addInput(output.address, output.hash, output.index);
+            tx.addInput(output.address, output.hash, output.index, output.script);
         });
         //add the target outputs to the recipient
         Object.keys(target).forEach((symbol) => tx.addOutput(recipient_address, symbol, target[symbol]));
@@ -167,7 +167,7 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
         utxo.forEach((output) => {
             if (output.value)
                 etpcheck += output.value;
-            tx.addInput(output.address, output.hash, output.index);
+            tx.addInput(output.address, output.hash, output.index, output.script);
         });
         //add lock output to the recipient
         tx.addLockOutput(recipient_address, quantity, duration, network);
@@ -205,7 +205,7 @@ TransactionBuilder.issue = function(utxo, recipient_address, symbol, max_supply,
         utxo.forEach((output) => {
             if (output.value)
                 etpcheck += output.value;
-            tx.addInput(output.address, output.hash, output.index);
+            tx.addInput(output.address, output.hash, output.index, output.script);
         });
         //add lock output to the recipient
         tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description);
