@@ -66,7 +66,7 @@ TransactionBuilder.calculateUtxo = function(txs, addresses) {
  * @param {Array<Output>} utxo
  * @param {Object} target definition
  */
-TransactionBuilder.findUtxo = function(utxo, target, fee) {
+TransactionBuilder.findUtxo = function(utxo, target, fee, current_height) {
     target = JSON.parse(JSON.stringify(target));
     return new Promise((resolve, reject) => {
         //Add fee
@@ -83,7 +83,7 @@ TransactionBuilder.findUtxo = function(utxo, target, fee) {
             if (!targetComplete(change)) {
                 switch (output.attachment.type) {
                     case 'etp':
-                        if (change.ETP > 0 && output.value > 0) {
+                        if (output.locked_until<=current_height && change.ETP > 0 && output.value > 0) {
                             change.ETP -= output.value;
                             list.push(output);
                         }
