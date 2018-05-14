@@ -8,6 +8,7 @@ before_deploy:
 deploy:
   provider: npm
   email: canguruhh@mutzl.org
+  skip_cleanup: true
   on:
     branch: master
     repo: canguruhh/metaversejs
