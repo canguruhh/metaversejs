@@ -118,7 +118,7 @@ TransactionBuilder.findUtxo = function(utxo, target, current_height, fee) {
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
  */
-TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, fee) {
+TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, fee, messages) {
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
@@ -132,8 +132,11 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
                 etpcheck += output.value;
             tx.addInput(output.address, output.hash, output.index, output.script);
         });
+        if(messages==undefined)
+            messages=[];
+        messages.forEach((message)=>tx.addMessage(recipient_address, message));
         //add the target outputs to the recipient
-        Object.keys(target).forEach((symbol) => tx.addOutput(recipient_address, symbol, target[symbol]));
+        Object.keys(target).forEach((symbol) => (target.symbol)?tx.addOutput(recipient_address, symbol, target[symbol]):null);
         if (target.ETP)
             etpcheck -= target.ETP;
         //add the change outputs
