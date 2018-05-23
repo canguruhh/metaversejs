@@ -2,13 +2,11 @@ var assert = require('assert');
 var Metaverse = require('../index.js');
 var request = require('request');
 
-describe('Transaction building', function() {
+describe('Outputs', function() {
 
     var tx_info = null;
 
     before(function(done) {
-        var builder = new Metaverse.transaction_builder();
-
         Promise.resolve([{
                     value: 0,
                     "attachment": {
@@ -27,7 +25,7 @@ describe('Transaction building', function() {
                 }
             ])
             .then((utxo) => {
-                return Metaverse.transaction_builder.findUtxo(utxo, {
+                return Metaverse.output.findUtxo(utxo, {
                     ETP: 1
                 });
             })

@@ -1,6 +1,9 @@
+let Transaction = require('./transaction');
+
 module.exports = {
     filterUtxo: filterUtxo,
     calculateUtxo: calculateUtxo,
+    filter: filter,
     findUtxo: findUtxo
 };
 
@@ -110,6 +113,22 @@ function findUtxo(utxo, target, current_height, fee) {
         });
     });
 };
+
+/**
+ * Filters the given outputs with the given filter.
+ * @param {Array<Output>} outputs
+ * @param {Object} filter
+ * @return {Array<Output>}
+ */
+function filter(outputs, filter){
+    return outputs.filter(output=>{
+        if(filter.type !== undefined){
+            if(filter.type!==output.attachment.type)
+                return false;
+        }
+        return true;
+    });
+}
 
 /**
  * Helper function to check a target object if there are no more positive values.
