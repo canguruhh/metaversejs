@@ -18,6 +18,7 @@ function Transaction() {
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET = 2;
 Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
+Transaction.ATTACHMENT_TYPE_DID_ISSUE = 4;
 
 Transaction.ASSET_STATUS_ISSUE = 1;
 Transaction.ASSET_STATUS_TRANSFER = 2;
@@ -43,8 +44,8 @@ function hash256(buffer) {
     return sha256(sha256(buffer));
 }
 
-Transaction.calculateTxid = function(rawtx, reverse=true) {
-    return (reverse)?hash256(Buffer.from(rawtx,'hex')).reverse():hash256(Buffer.from(rawtx,'hex'));
+Transaction.calculateTxid = function(rawtx, reverse = true) {
+    return (reverse) ? hash256(Buffer.from(rawtx, 'hex')).reverse() : hash256(Buffer.from(rawtx, 'hex'));
 };
 
 /**
@@ -160,6 +161,24 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
             "script_type": "pubkeyhash",
             "value": 0
         });
+};
+
+/**
+ * Add did issue output to the transaction.
+ * @param {String} address
+ * @param {String} symbol
+ */
+Transaction.prototype.addLockOutput = function(address, symbol) {
+    this.outputs.push({
+        "address": address,
+        "attachment": {
+            type: Transaction.ATTACHMENT_TYPE_DID_ISSUE,
+            version: 1,
+            symbol: symbol,
+            address: address
+        },
+        "script_type": "pubkeyhash"
+    });
 };
 
 /**
@@ -283,6 +302,9 @@ function encodeOutputs(outputs) {
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
                 offset = Transaction.encodeAttachmentMessage(buffer, offset, output.attachment.message);
                 break;
+            case Transaction.ATTACHMENT_TYPE_DID_ISSUE:
+                offset = Transaction.encodeAttachmentDidIssue(buffer, offset, output.attachment);
+                break;
             default:
                 throw Error("What kind of an output is that?!");
         }
@@ -383,6 +405,22 @@ Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_
     return offset;
 };
 
+/**
+ * Helper function to encode the attachment for a new did.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {Number} attachment_data
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentDidIssue = function(buffer, offset, attachment_data) {
+    offset += encodeString(buffer, "\u0000", offset);
+    offset += encodeString(buffer, "", offset);
+    offset += encodeString(buffer, "", offset);
+    offset += encodeString(buffer, attachment_data.address, offset);
+    offset += encodeString(buffer, attachment_data.symbol, offset);
+    return offset;
+}
 /**
  * Helper function to encode the attachment for a new asset.
  * @param {Buffer} buffer
@@ -540,6 +578,13 @@ Transaction.fromBuffer = function(buffer) {
                 break;
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
                 attachment.message = readString();
+                break;
+            case Transaction.ATTACHMENT_TYPE_DID_ISSUE:
+                readString();
+                readString();
+                readString();
+                attachment.symbol = readString();
+                attachment.address = readString();
                 break;
             default:
                 throw 'Unknown attachment type: ' + attachment.type;
