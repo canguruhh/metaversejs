@@ -24,6 +24,7 @@ Transaction.ASSET_STATUS_ISSUE = 1;
 Transaction.ASSET_STATUS_TRANSFER = 2;
 
 Transaction.DEFAULT_FEE = 10000;
+Transaction.AVATAR_CREATE_DEFAULT_FEE = 100000000;
 Transaction.ASSET_ISSUE_DEFAULT_FEE = 1000000000;
 
 Transaction.prototype.clone = function() {

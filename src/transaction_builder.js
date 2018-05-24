@@ -79,6 +79,38 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
 };
 
 /**
+ * Generates a create avatar transaction.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} avatar_address Recipient address
+ * @param {String} symbol Symbol of avatar
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ */
+TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_address, change) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        var fee = Transaction.AVATAR_CREATE_DEFAULT_FEE;
+        var etpcheck = 0;
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => {
+            if (output.value)
+                etpcheck += output.value;
+            tx.addInput(output.address, output.hash, output.index, output.script);
+        });
+        //add avatar output to the avatar address
+        tx.addDidIssueOutput(avatar_address, symbol, avatar_address);
+        //add the change outputs
+        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+        resolve(tx);
+    });
+};
+
+/**
  * Generates an asset issue transaction.
  * @param {Array<Output>} utxo Inputs for the transaction
  * @param {String} recipient_address Recipient address
