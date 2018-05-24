@@ -19,6 +19,7 @@ describe('ETP deposit', function() {
 
     it('One week deposit', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "6ddfdefd52644c392288d8adf6e34ed3fb3eb7c48ad43260e89a35875d82507c", 0);
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "6ddfdefd52644c392288d8adf6e34ed3fb3eb7c48ad43260e89a35875d82507c", 1);
         tx.addLockOutput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", 10000000, 25200);
@@ -31,6 +32,7 @@ describe('ETP deposit', function() {
 
     it('One year deposit', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "6ddfdefd52644c392288d8adf6e34ed3fb3eb7c48ad43260e89a35875d82507c", 0);
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "6ddfdefd52644c392288d8adf6e34ed3fb3eb7c48ad43260e89a35875d82507c", 1);
         tx.addLockOutput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", 10000000, 1314000);

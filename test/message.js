@@ -6,6 +6,7 @@ var chai = require("chai"),
 describe('Message', function() {
     it('Ascii values', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("tK8UKnBKhk4NQYhSeSb2zeWgMSZaHsn1TY", "15a3a80a867315ee1d3f1ff67e7d5cd0709b1a1d4a48a938f33b01ec8f47425f", 0);
         tx.addOutput("tLWixVH8zJGcJpJPjo549q75WcyqrudL9d", "ETP", 10000);
         tx.addOutput("tK8UKnBKhk4NQYhSeSb2zeWgMSZaHsn1TY", "ETP", 299980000);

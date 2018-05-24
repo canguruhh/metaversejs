@@ -25,6 +25,7 @@ describe('Issue Asset', function() {
 
     it('Issue SUN.SHINE', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("tFKkLFZ5B29CkMLkYcAd85JxZ8v2joXFDJ","01a37d6434dbc7b8bc61665ad5498096a57150a14118a786cccf1ac165a5c6ab", 0);
         tx.addInput("tGXb55CFL4auEVVTA27J16n2AXhRhfDBJh","4bbac9a0653bd42cd8540f1f663c0751e38917dc2beb3c7054ee5e5c50928e85", 0);
         tx.addAssetIssueOutput("SUN.SHINE", 1000000000,4,"coinmaster", "tBcdLMaqR1D3mhyBL7CEWwLPR8yRnPkHBd", "Let it shine");
@@ -37,6 +38,7 @@ describe('Issue Asset', function() {
 
     it('Issue THE.TIMES', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("tQCK1zZS886mgLpdDJj7Ak3BhRRdgti3KT","815c234ac4c0fc666db2f51db73be9942776a09b268a18b90828186c033696ec", 0);
         tx.addAssetIssueOutput("THE.TIMES", 1000000000,4,"satoshi", "tQCK1zZS886mgLpdDJj7Ak3BhRRdgti3KT", "ETP classic coin");
         tx.addOutput("tQCK1zZS886mgLpdDJj7Ak3BhRRdgti3KT", "ETP", 21999990000);

@@ -8,7 +8,7 @@ var bufferutils = require('./bufferutils.js'),
     OPS = require('bitcoin-ops');
 
 function Transaction() {
-    this.version = 2;
+    this.version = 4;
     this.inputs = [];
     this.outputs = [];
     this.lock_time = 0;
@@ -168,16 +168,17 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {String} address
  * @param {String} symbol
  */
-Transaction.prototype.addDidIssueOutput = function(address, symbol) {
+Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address) {
     this.outputs.push({
         "address": address,
         "attachment": {
             type: Transaction.ATTACHMENT_TYPE_DID_ISSUE,
             version: 1,
             symbol: symbol,
-            address: address
+            address: did_address
         },
-        "script_type": "pubkeyhash"
+        "script_type": "pubkeyhash",
+        "value": 0
     });
 };
 
@@ -417,8 +418,8 @@ Transaction.encodeAttachmentDidIssue = function(buffer, offset, attachment_data)
     offset += encodeString(buffer, "\u0000", offset);
     offset += encodeString(buffer, "", offset);
     offset += encodeString(buffer, "", offset);
-    offset += encodeString(buffer, attachment_data.address, offset);
     offset += encodeString(buffer, attachment_data.symbol, offset);
+    offset += encodeString(buffer, attachment_data.address, offset);
     return offset;
 }
 /**
@@ -580,9 +581,9 @@ Transaction.fromBuffer = function(buffer) {
                 attachment.message = readString();
                 break;
             case Transaction.ATTACHMENT_TYPE_DID_ISSUE:
-                readString();
-                readString();
-                readString();
+                attachment.a=readString();
+                attachment.b=readString();
+                attachment.c=readString();
                 attachment.symbol = readString();
                 attachment.address = readString();
                 break;

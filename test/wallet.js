@@ -9,6 +9,7 @@ describe('Wallet recreation', function() {
             .then((w) => {
                 wallet = w;
                 var tx = new Metaverse.transaction();
+                tx.version=2;
                 tx.inputs = [{
                         "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
                         "previous_output": {

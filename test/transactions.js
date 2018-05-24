@@ -24,6 +24,7 @@ describe('Transactions', function() {
 
     it('Signle input ETP transaction', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "5554b27dbf657d008511df56e747ffb2173749fd933b03317cee3c1fde271aea", 1);
         tx.addOutput("MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd", "ETP", 1);
         tx.addOutput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "ETP", 4939995);
@@ -35,6 +36,7 @@ describe('Transactions', function() {
 
     it('Multi input ETP transaction', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "c9c32b0723a57ce087f42df5bb5f98db404a886ef651842f844d59eca6412b27", 0);
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "707cd4f639e292bd7cbf15c40e9c86d3bbec4c505ca09f6a72eded8313a927be", 1);
         tx.addOutput("MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd", "ETP", 729995);
@@ -47,6 +49,7 @@ describe('Transactions', function() {
 
     it('Asset transaction', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "795481c6fca77b699830d3e6c3b38ed9e89a74b4a9ea01a9d0f2c43fab91f9df", 1);
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "068096506bfb962f8ea661514c0221602dcff20502eb91aa8e57e65db3e1dc3f", 0);
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "376fb20af80491dc29f8539a85522d9260060c82fb347584f78702918e2c6707", 0);
@@ -60,6 +63,7 @@ describe('Transactions', function() {
 
     it('Asset transaction with previously locked ETP fee input', () => {
         var tx = new Metaverse.transaction();
+        tx.version=2;
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "53e05539209c80bf36b9f729f4d8c0f240e55b320814fdb074029b6bd5d3e967", 0, "[ 7062 ] numequalverify dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "ca2b8afd277a7d846ccb0273849d4c764f80545008226c14bd98fe122054b3dc", 0, "[ 7062 ] numequalverify dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "e713a445c67cd4333dde1c21ab144eb7cf9afad23b7cb4b4ae8854f688a7e6d0", 0, "dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
