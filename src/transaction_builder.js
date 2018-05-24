@@ -30,7 +30,7 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
             messages=[];
         messages.forEach((message)=>tx.addMessage(recipient_address, message));
         //add the target outputs to the recipient
-        Object.keys(target).forEach((symbol) => (target.symbol)?tx.addOutput(recipient_address, symbol, target[symbol]):null);
+        Object.keys(target).forEach((symbol) => (target[symbol])?tx.addOutput(recipient_address, symbol, target[symbol]):null);
         if (target.ETP)
             etpcheck -= target.ETP;
         //add the change outputs
