@@ -168,7 +168,7 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {String} address
  * @param {String} symbol
  */
-Transaction.prototype.addLockOutput = function(address, symbol) {
+Transaction.prototype.addDidIssueOutput = function(address, symbol) {
     this.outputs.push({
         "address": address,
         "attachment": {
