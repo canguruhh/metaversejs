@@ -18,7 +18,8 @@ function Transaction() {
 Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
 Transaction.ATTACHMENT_TYPE_ASSET = 2;
 Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
-Transaction.ATTACHMENT_TYPE_DID_ISSUE = 4;
+Transaction.ATTACHMENT_TYPE_DID = 4;
+Transaction.ATTACHMENT_TYPE_CERT = 5;
 
 Transaction.ASSET_STATUS_ISSUE = 1;
 Transaction.ASSET_STATUS_TRANSFER = 2;
@@ -26,6 +27,9 @@ Transaction.ASSET_STATUS_TRANSFER = 2;
 Transaction.DEFAULT_FEE = 10000;
 Transaction.AVATAR_CREATE_DEFAULT_FEE = 100000000;
 Transaction.ASSET_ISSUE_DEFAULT_FEE = 1000000000;
+
+Transaction.AVATAR_STATUS_ISSUE = 1;
+Transaction.AVATAR_STATUS_TRANSFER = 2;
 
 Transaction.prototype.clone = function() {
     let tx = new Transaction();
@@ -173,10 +177,31 @@ Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address)
     this.outputs.push({
         "address": address,
         "attachment": {
-            type: Transaction.ATTACHMENT_TYPE_DID_ISSUE,
-            version: 1,
+            type: Transaction.ATTACHMENT_TYPE_DID,
+            version: Transaction.ATTACHMENT_VERSION_DEFAULT,
             symbol: symbol,
-            address: did_address
+            address: did_address,
+            status: Transaction.AVATAR_STATUS_ISSUE
+        },
+        "script_type": "pubkeyhash",
+        "value": 0
+    });
+};
+
+/**
+ * Add did transfer output to the transaction.
+ * @param {String} address
+ * @param {String} symbol
+ */
+Transaction.prototype.addDidTransferOutput = function(address, symbol) {
+    this.outputs.push({
+        "address": address,
+        "attachment": {
+            type: Transaction.ATTACHMENT_TYPE_DID,
+            version: Transaction.ATTACHMENT_VERSION_DEFAULT,
+            symbol: symbol,
+            address: address,
+            status: Transaction.AVATAR_STATUS_TRANSFER
         },
         "script_type": "pubkeyhash",
         "value": 0
@@ -286,6 +311,11 @@ function encodeOutputs(outputs) {
         offset = buffer.writeUInt32LE(output.attachment.version, offset);
         offset = buffer.writeUInt32LE(output.attachment.type, offset);
 
+        if (output.attachment.version === Transaction.ATTACHMENT_VERSION_DID) {
+            offset += encodeString(buffer, output.attachment.to_did, offset);
+            offset += encodeString(buffer, output.attachment.from_did, offset);
+        }
+
         switch (output.attachment.type) {
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
                 break;
@@ -304,8 +334,9 @@ function encodeOutputs(outputs) {
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
                 offset = Transaction.encodeAttachmentMessage(buffer, offset, output.attachment.message);
                 break;
-            case Transaction.ATTACHMENT_TYPE_DID_ISSUE:
-                offset = Transaction.encodeAttachmentDidIssue(buffer, offset, output.attachment);
+            case Transaction.ATTACHMENT_TYPE_DID:
+                offset = Transaction.encodeAttachmentDid(buffer, offset, output.attachment);
+                break;
                 break;
             default:
                 throw Error("What kind of an output is that?!");
@@ -415,14 +446,13 @@ Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_
  * @returns {Number} New offset
  * @throws {Error}
  */
-Transaction.encodeAttachmentDidIssue = function(buffer, offset, attachment_data) {
-    offset += encodeString(buffer, "\u0000", offset);
-    offset += encodeString(buffer, "", offset);
-    offset += encodeString(buffer, "", offset);
+Transaction.encodeAttachmentDid = function(buffer, offset, attachment_data) {
+    offset = buffer.writeUInt32LE(attachment_data.status, offset);
     offset += encodeString(buffer, attachment_data.symbol, offset);
     offset += encodeString(buffer, attachment_data.address, offset);
     return offset;
-}
+};
+
 /**
  * Helper function to encode the attachment for a new asset.
  * @param {Buffer} buffer
@@ -581,10 +611,11 @@ Transaction.fromBuffer = function(buffer) {
             case Transaction.ATTACHMENT_TYPE_MESSAGE:
                 attachment.message = readString();
                 break;
-            case Transaction.ATTACHMENT_TYPE_DID_ISSUE:
-                attachment.a=readString();
-                attachment.b=readString();
-                attachment.c=readString();
+            case Transaction.ATTACHMENT_TYPE_DID:
+                attachment.status = readUInt32();
+                attachment.symbol = readString();
+                attachment.address = readString();
+                break;
                 attachment.symbol = readString();
                 attachment.address = readString();
                 break;
