@@ -21,6 +21,9 @@ Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
 Transaction.ATTACHMENT_TYPE_DID = 4;
 Transaction.ATTACHMENT_TYPE_CERT = 5;
 
+Transaction.ATTACHMENT_VERSION_DEFAULT = 1;
+Transaction.ATTACHMENT_VERSION_DID = 207;
+
 Transaction.ASSET_STATUS_ISSUE = 1;
 Transaction.ASSET_STATUS_TRANSFER = 2;
 
@@ -112,7 +115,7 @@ Transaction.prototype.addOutput = function(address, asset, value) {
             "address": address,
             "attachment": {
                 type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-                version: 1
+                version: Transaction.ATTACHMENT_VERSION_DEFAULT
             },
             "script_type": "pubkeyhash",
             "value": value
@@ -122,7 +125,7 @@ Transaction.prototype.addOutput = function(address, asset, value) {
             "address": address,
             "attachment": {
                 "type": Transaction.ATTACHMENT_TYPE_ASSET,
-                "version": 1,
+                "version": Transaction.ATTACHMENT_VERSION_DEFAULT,
                 "asset": asset,
                 "quantity": value,
                 "status": Transaction.ASSET_STATUS_TRANSFER
@@ -637,6 +640,11 @@ Transaction.fromBuffer = function(buffer) {
         let attachment = {};
         attachment.version = readUInt32();
         attachment.type = readUInt32();
+
+        if (attachment.version === Transaction.ATTACHMENT_VERSION_DID) {
+            attachment.to_did = readString();
+            attachment.from_did = readString();
+        }
 
         switch (attachment.type) {
             case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
