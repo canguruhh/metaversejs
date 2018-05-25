@@ -31,6 +31,14 @@ Transaction.ASSET_ISSUE_DEFAULT_FEE = 1000000000;
 Transaction.AVATAR_STATUS_ISSUE = 1;
 Transaction.AVATAR_STATUS_TRANSFER = 2;
 
+Transaction.CERT_TYPE_ISSUE = 1;
+Transaction.CERT_TYPE_DOMAIN = 2;
+Transaction.CERT_TYPE_NAMING = 3;
+
+Transaction.CERT_STATUS_DEFAULT = 0;
+Transaction.CERT_STATUS_ISSUE = 1;
+Transaction.CERT_STATUS_TRANSFER = 2;
+
 Transaction.prototype.clone = function() {
     let tx = new Transaction();
     tx.version = this.version;
@@ -169,7 +177,33 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
 };
 
 /**
+ * Add certificate output to the transaction.
+ *
+ * @param {String} symbol
+ * @param {String} owner
+ * @param {String} address
+ * @param {String} cert_type domain / issue / naming
+ * @param {Number} status
+ */
+Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type, status) {
+    this.outputs.push({
+        "address": address,
+        "attachment": {
+            type: Transaction.ATTACHMENT_TYPE_CERT,
+            version: Transaction.ATTACHMENT_VERSION_DEFAULT,
+            symbol: symbol,
+            cert_type: cert_type,
+            address: address,
+            status: Transaction.AVATAR_STATUS_ISSUE
+        },
+        "script_type": "pubkeyhash",
+        "value": 0
+    });
+};
+
+/**
  * Add did issue output to the transaction.
+ *
  * @param {String} address
  * @param {String} symbol
  */
@@ -337,6 +371,8 @@ function encodeOutputs(outputs) {
             case Transaction.ATTACHMENT_TYPE_DID:
                 offset = Transaction.encodeAttachmentDid(buffer, offset, output.attachment);
                 break;
+            case Transaction.ATTACHMENT_TYPE_CERT:
+                offset = Transaction.encodeAttachmentCert(buffer, offset, output.attachment);
                 break;
             default:
                 throw Error("What kind of an output is that?!");
@@ -450,6 +486,23 @@ Transaction.encodeAttachmentDid = function(buffer, offset, attachment_data) {
     offset = buffer.writeUInt32LE(attachment_data.status, offset);
     offset += encodeString(buffer, attachment_data.symbol, offset);
     offset += encodeString(buffer, attachment_data.address, offset);
+    return offset;
+};
+
+/**
+ * Helper function to encode the attachment for a certificate.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {Number} attachment_data
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentCert = function(buffer, offset, attachment_data) {
+    offset += encodeString(buffer, attachment_data.symbol, offset);
+    offset += encodeString(buffer, attachment_data.owner, offset);
+    offset += encodeString(buffer, attachment_data.address, offset);
+    offset = buffer.writeUInt32LE(attachment_data.cert_type, offset);
+    offset = buffer.writeUInt8(attachment_data.status, offset);
     return offset;
 };
 
@@ -616,8 +669,12 @@ Transaction.fromBuffer = function(buffer) {
                 attachment.symbol = readString();
                 attachment.address = readString();
                 break;
+            case Transaction.ATTACHMENT_TYPE_CERT:
                 attachment.symbol = readString();
+                attachment.owner = readString();
                 attachment.address = readString();
+                attachment.cert_type = readUInt32();
+                attachment.status = readUInt8();
                 break;
             default:
                 throw 'Unknown attachment type: ' + attachment.type;
