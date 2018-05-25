@@ -144,8 +144,10 @@ Transaction.prototype.addOutput = function(address, asset, value) {
  * @param {String} issuer Name of issuer length < 64 characters
  * @param {String} address Recepient address
  * @param {String} description Description for asset < 64 characters
+ * @param {Number} secondaryissue_threshold -1: no limitation; 0: no secondaryissue; 1..100 threshold user has to hold to be able to do secondary issue
+ * @param {Boolean} is_secondaryissue indication if this output is a secondary issue of an existing asset
  */
-Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precision, issuer, address, description) {
+Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue) {
     if (!/^([A-Z0-9\.]{3,63})$/.test(symbol))
         throw Error('ERR_SYMBOL_NAME');
     else if (!/^([A-Za-z0-9\.]{3,63})$/.test(issuer))
@@ -160,14 +162,17 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
         throw Error('ERR_DESCRIPTION_TOO_LONG');
     else if (!Transaction.isAddress(address))
         throw Error('ERR_ADDRESS_FORMAT');
+    else if (!(secondaryissue_threshold >= -1 || secondaryissue_threshold <= 100))
+        throw Error('ERR_SECONDARYISSUE_THRESHOLD_OUT_OF_RANGE');
     else
         this.outputs.push({
             "address": address,
             "attachment": {
                 "type": Transaction.ATTACHMENT_TYPE_ASSET,
-                "version": 1,
+                "version": Transaction.ATTACHMENT_VERSION_DEFAULT,
                 "status": Transaction.ASSET_STATUS_ISSUE,
                 "symbol": symbol,
+                "threshold": secondaryissue_threshold + (is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0,
                 "max_supply": max_supply,
                 "precision": precision,
                 "issuer": issuer,
@@ -261,7 +266,7 @@ Transaction.prototype.addLockOutput = function(address, value, locktime, network
             "address": address,
             "attachment": {
                 type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-                version: 1
+                version: Transaction.ATTACHMENT_VERSION_DEFAULT
             },
             "value": value,
             "script_type": "lock",
@@ -525,7 +530,9 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
     offset = bufferutils.writeUInt64LE(buffer, attachment_data.max_supply, offset);
     //Encode precision
     offset = buffer.writeUInt8(attachment_data.precision, offset);
-    offset += buffer.write("000000", offset, 3, 'hex');
+    //Encode secondary issue threshold
+    offset = buffer.writeUInt8((attachment_data.threshold) ? attachment_data.threshold : 0, offset);
+    offset += buffer.write("0000", offset, 2, 'hex');
 
     //Encode issuer
     offset += encodeString(buffer, attachment_data.issuer, offset);
@@ -656,7 +663,16 @@ Transaction.fromBuffer = function(buffer) {
                         attachment.symbol = readString();
                         attachment.max_supply = readUInt64();
                         attachment.precision = readUInt8();
-                        offset += 3;
+                        attachment.secondaryissue_threshold = readUInt8();
+                        if (attachment.secondaryissue_threshold == 127)
+                            attachment.secondaryissue_threshold = -1;
+                        if (attachment.secondaryissue_threshold > 127) {
+                            attachment.secondaryissue_threshold -= 128;
+                            attachment.is_secondaryissue = 1;
+                        } else {
+                            attachment.is_secondaryissue = 0;
+                        }
+                        offset += 2;
                         attachment.issuer = readString();
                         attachment.address = readString();
                         attachment.description = readString();
