@@ -27,7 +27,7 @@ describe('Outputs', function() {
             .then((utxo) => {
                 return Metaverse.output.findUtxo(utxo, {
                     ETP: 1
-                });
+                },0);
             })
             .then((result) => {
                 tx_info = result;

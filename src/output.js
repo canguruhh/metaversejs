@@ -1,10 +1,22 @@
-let Transaction = require('./transaction');
+Output.ATTACHMENT_VERSION_DEFAULT = 1;
+Output.ATTACHMENT_VERSION_DID = 207;
 
-module.exports = {
-    filterUtxo: filterUtxo,
-    calculateUtxo: calculateUtxo,
-    filter: filter,
-    findUtxo: findUtxo
+const DEFAULT_FEE=10000;
+
+function Output(){
+    this.address=null;
+    this.attachment={
+        version: Output.ATTACHMENT_VERSION_DEFAULT
+    };
+    this.value=0;
+    this.script_type="pubkeyhash";
+}
+
+Output.prototype.specifyDid = function(to_did, from_did){
+    this.attachment.version=Output.ATTACHMENT_VERSION_DID;
+    this.attachment.to_did=to_did;
+    this.attachment.from_did=from_did;
+    return this;
 };
 
 /**
@@ -13,7 +25,7 @@ module.exports = {
  * @param {Array<Input>} inputs
  * @return {Promise.Array<Output>}
  */
-function filterUtxo(outputs, inputs) {
+Output.filterUtxo = function(outputs, inputs) {
     return new Promise((resolve, reject) => {
         let ins = JSON.parse(JSON.stringify(inputs));
         let utxo = [];
@@ -39,7 +51,7 @@ function filterUtxo(outputs, inputs) {
  * @param {Array<Transaction>} transactions
  * @param {Array<string>} addresses
  */
-function calculateUtxo(txs, addresses) {
+Output.calculateUtxo = function(txs, addresses) {
     return new Promise((resolve) => {
         let candidates = {};
         for (let i = txs.length - 1; i >= 0; i--) {
@@ -70,12 +82,12 @@ function calculateUtxo(txs, addresses) {
  * @param {Array<Output>} utxo
  * @param {Object} target definition
  */
-function findUtxo(utxo, target, current_height, fee) {
+Output.findUtxo = function(utxo, target, current_height, fee) {
     target = JSON.parse(JSON.stringify(target));
     return new Promise((resolve, reject) => {
         //Add fee
         if (fee == undefined)
-            fee = Transaction.DEFAULT_FEE;
+            fee = DEFAULT_FEE;
         if (target["ETP"])
             target.ETP += fee;
         else
@@ -120,7 +132,7 @@ function findUtxo(utxo, target, current_height, fee) {
  * @param {Object} filter
  * @return {Array<Output>}
  */
-function filter(outputs, filter){
+Output.filter=function(outputs, filter){
     return outputs.filter(output=>{
         if(filter.type !== undefined){
             if(filter.type!==output.attachment.type)
@@ -143,3 +155,5 @@ function targetComplete(target) {
     });
     return complete;
 }
+
+module.exports = Output;

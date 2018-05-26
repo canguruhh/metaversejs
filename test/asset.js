@@ -1,0 +1,36 @@
+var chai = require("chai"),
+    chaiAsPromised = require("chai-as-promised"),
+    should = chai.should(),
+    Metaverse = require('../');
+
+chai.use(chaiAsPromised);
+
+describe('Issue MST with secondary issue', function() {
+
+    //Generate the wallet
+    var wallet;
+    beforeEach(() => Metaverse.wallet.fromMnemonic("butter vacuum breeze glow virtual mutual veteran argue want pipe elite blast judge write sand toilet file joy exotic reflect truck topic receive wait", 'testnet')
+        .then((w) => {
+            wallet = w;
+        })
+    );
+
+    it('Issue asset', () => {
+        var tx = new Metaverse.transaction();
+        tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","64138f936171c8f90f3d11812cb711a9f59f65aee0cb03620fe5f6096adac3f0", 0);
+        tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","fe91009e7901bb5c642d0a893f349a5d3147731447efbda35b2e75cee20f4811", 0);
+        tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","1483b469cf7cb2f01360b5c5e1c2047a291ade84b31af083f1029f4e71732f44", 0);
+        tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","ec5eacdcc488515048875f19a685d2340fc5f572949ff7580364038bb08dbefc", 0);
+        tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","77c7ee190b842dbd169334c008d5b3467e92b5e5c12930dcdf5e1ec179b8d571", 0);
+        tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","d2d57bfebbe33397eebf322d69469aa4b322063d1cdd2cda35848ee3ffff5702", 0);
+        tx.addAssetIssueOutput("SUPER", 100,2,"nova", "tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t", "", 51, false).specifyDid('nova','nova');
+        tx.addCertOutput("SUPER","nova","tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t",Metaverse.transaction.CERT_TYPE_ISSUE,Metaverse.transaction.CERT_STATUS_DEFAULT).specifyDid('nova','nova');
+        tx.addCertOutput("SUPER","nova","tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t",Metaverse.transaction.CERT_TYPE_DOMAIN,Metaverse.transaction.CERT_STATUS_DEFAULT).specifyDid('nova','nova');
+        tx.addOutput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz", "ETP", 134458932);
+        return wallet.sign(tx)
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become("0400000006f0c3da6a09f6e50f6203cbe0ae659ff5a911b72c81113d0ff9c87161938f1364000000006a47304402201aa57ed800fd7387bf23cc5a09d00eccaf86d03be110c16b6875c09b95b13683022057cb0f2043b290b6c6f7d2ecf2489b2de8dfaa267be02879d7e27bf914d03483012103225fd175c58ceb6c9ad70679f18eb17c268d0a600edc733435aa40b8010016beffffffff11480fe2ce752e5ba3bdef47147347315d9a343f890a2d645cbb01799e0091fe000000006a47304402207fe6f83d3b904d40e315ba271d5856cc0ed165aef2bc0c1ac29de3fab411ee6c02200ff428483b280e64b2fedc31c78beae9346983870ebca49fc9ed6408075634f2012103225fd175c58ceb6c9ad70679f18eb17c268d0a600edc733435aa40b8010016beffffffff442f73714e9f02f183f01ab384de1a297a04c2e1c5b56013f0b27ccf69b48314000000006a473044022018157ed3515b1dc6a88e11aef4467a3ee060a28aeca77ee859b0a4ecf35c33cd02203da641acfe6f4bfa9ac59cb12fd3b8032627bcb225436aafd9bd457273e56ab2012103225fd175c58ceb6c9ad70679f18eb17c268d0a600edc733435aa40b8010016befffffffffcbe8db08b03640358f79f9472f5c50f34d285a6195f8748505188c4dcac5eec000000006b4830450221009a029eafe3614e077fe9fadb28d0468c6778f36187a9df50eec849c25d8ba14402204f79bf4babe5da3541e80677e102fc7fe4baf172e51cf5b6e4e055aac62fb6ec012103225fd175c58ceb6c9ad70679f18eb17c268d0a600edc733435aa40b8010016beffffffff71d5b879c11e5edfdc3029c1e5b5927e46b3d508c0349316bd2d840b19eec777000000006b4830450221008e4aa4bcb3829342a06c0ac103b592dd831d0478b57028000bd324d71bce6909022028f48a07f1149533b2b2f86a6381ca7258fa9a19e365b567ae72d32485940e3e012103225fd175c58ceb6c9ad70679f18eb17c268d0a600edc733435aa40b8010016beffffffff0257ffffe38e8435da2cdd1c3d0622b3a49a46692d32bfee9733e3bbfe7bd5d2000000006a4730440220670292a20d06b847050899cbc61040ff3d056919adb68b1910eecd785908be1c022025d7904649a69c9aabd13234e9e72bdb472041b2e86b44b3cb1533df3ce051fa012103225fd175c58ceb6c9ad70679f18eb17c268d0a600edc733435aa40b8010016beffffffff0400000000000000001976a914658351902a6bf8f6a60fc274e237af4edbcad49488accf00000002000000046e6f7661046e6f766101000000055355504552640000000000000002330000046e6f7661227447424d634c7236647766614d616f59694a67745a336359556262477362706238740000000000000000001976a914658351902a6bf8f6a60fc274e237af4edbcad49488accf00000005000000046e6f7661046e6f7661055355504552046e6f7661227447424d634c7236647766614d616f59694a67745a33635955626247736270623874010000000000000000000000001976a914658351902a6bf8f6a60fc274e237af4edbcad49488accf00000005000000046e6f7661046e6f7661055355504552046e6f7661227447424d634c7236647766614d616f59694a67745a33635955626247736270623874020000000034ae0308000000001976a9145ba47d86fc48e1bca6720b082f4a4c0f8590ccb288ac010000000000000000000000");
+    });
+});
+

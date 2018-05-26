@@ -4,6 +4,7 @@ var bufferutils = require('./bufferutils.js'),
     crypto = require('crypto'),
     base58check = require('base58check'),
     Script = require('./script'),
+    Output = require('./output'),
     networks = require('./networks'),
     OPS = require('bitcoin-ops');
 
@@ -164,24 +165,24 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
         throw Error('ERR_ADDRESS_FORMAT');
     else if (!(secondaryissue_threshold >= -1 || secondaryissue_threshold <= 100))
         throw Error('ERR_SECONDARYISSUE_THRESHOLD_OUT_OF_RANGE');
-    else
-        this.outputs.push({
+    else{
+        let output = new Output();
+        output.address=address;
+        output.attachment = {
+            "type": Transaction.ATTACHMENT_TYPE_ASSET,
+            "version": Transaction.ATTACHMENT_VERSION_DEFAULT,
+            "status": Transaction.ASSET_STATUS_ISSUE,
+            "symbol": symbol,
+            "threshold": secondaryissue_threshold + ((is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0),
+            "max_supply": max_supply,
+            "precision": precision,
+            "issuer": issuer,
             "address": address,
-            "attachment": {
-                "type": Transaction.ATTACHMENT_TYPE_ASSET,
-                "version": Transaction.ATTACHMENT_VERSION_DEFAULT,
-                "status": Transaction.ASSET_STATUS_ISSUE,
-                "symbol": symbol,
-                "threshold": secondaryissue_threshold + (is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0,
-                "max_supply": max_supply,
-                "precision": precision,
-                "issuer": issuer,
-                "address": address,
-                "description": description
-            },
-            "script_type": "pubkeyhash",
-            "value": 0
-        });
+            "description": description
+        };
+        this.outputs.push(output);
+        return output;
+    }
 };
 
 /**
@@ -193,20 +194,20 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {String} cert_type domain / issue / naming
  * @param {Number} status
  */
-Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type, status) {
-    this.outputs.push({
-        "address": address,
-        "attachment": {
-            type: Transaction.ATTACHMENT_TYPE_CERT,
-            version: Transaction.ATTACHMENT_VERSION_DEFAULT,
-            symbol: symbol,
-            cert_type: cert_type,
-            address: address,
-            status: Transaction.AVATAR_STATUS_ISSUE
-        },
-        "script_type": "pubkeyhash",
-        "value": 0
-    });
+Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type, status, did) {
+    let output = new Output();
+    output.attachment = {
+        type: Transaction.ATTACHMENT_TYPE_CERT,
+        version: Transaction.ATTACHMENT_VERSION_DEFAULT,
+        owner: owner,
+        symbol: symbol,
+        cert_type: cert_type,
+        address: address,
+        status: status
+    };
+    output.address=address;
+    this.outputs.push(output);
+    return output;
 };
 
 /**
@@ -717,7 +718,7 @@ Transaction.fromBuffer = function(buffer) {
     for (var i = 0; i < input_length; ++i) {
         tx.inputs.push({
             previous_output: {
-                hash: readSlice(32),
+                hash: readSlice(32).reverse().toString('hex'),
                 index: readUInt32()
             },
             script: readScript(),
