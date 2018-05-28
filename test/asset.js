@@ -24,8 +24,8 @@ describe('Issue MST with secondary issue', function() {
         tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","77c7ee190b842dbd169334c008d5b3467e92b5e5c12930dcdf5e1ec179b8d571", 0);
         tx.addInput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz","d2d57bfebbe33397eebf322d69469aa4b322063d1cdd2cda35848ee3ffff5702", 0);
         tx.addAssetIssueOutput("SUPER", 100,2,"nova", "tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t", "", 51, false).specifyDid('nova','nova');
-        tx.addCertOutput("SUPER","nova","tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t",Metaverse.transaction.CERT_TYPE_ISSUE,Metaverse.transaction.CERT_STATUS_DEFAULT).specifyDid('nova','nova');
-        tx.addCertOutput("SUPER","nova","tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t",Metaverse.transaction.CERT_TYPE_DOMAIN,Metaverse.transaction.CERT_STATUS_DEFAULT).specifyDid('nova','nova');
+        tx.addCertOutput("SUPER","nova","tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t",'issue').specifyDid('nova','nova');
+        tx.addCertOutput("SUPER","nova","tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t",'domain').specifyDid('nova','nova');
         tx.addOutput("tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz", "ETP", 134458932);
         return wallet.sign(tx)
             .then((stx) => stx.encode())

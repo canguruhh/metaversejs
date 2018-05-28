@@ -32,17 +32,6 @@ Transaction.DEFAULT_FEE = 10000;
 Transaction.AVATAR_CREATE_DEFAULT_FEE = 100000000;
 Transaction.ASSET_ISSUE_DEFAULT_FEE = 1000000000;
 
-Transaction.AVATAR_STATUS_ISSUE = 1;
-Transaction.AVATAR_STATUS_TRANSFER = 2;
-
-Transaction.CERT_TYPE_ISSUE = 1;
-Transaction.CERT_TYPE_DOMAIN = 2;
-Transaction.CERT_TYPE_NAMING = 3;
-
-Transaction.CERT_STATUS_DEFAULT = 0;
-Transaction.CERT_STATUS_ISSUE = 1;
-Transaction.CERT_STATUS_TRANSFER = 2;
-
 Transaction.prototype.clone = function() {
     let tx = new Transaction();
     tx.version = this.version;
@@ -92,16 +81,9 @@ Transaction.prototype.addInput = function(previous_output_address, previous_outp
  * @param {Number} value
  */
 Transaction.prototype.addMessage = function(address, message) {
-    this.outputs.push({
-        "address": address,
-        "attachment": {
-            type: Transaction.ATTACHMENT_TYPE_MESSAGE,
-            version: 1,
-            message: message
-        },
-        "script_type": "pubkeyhash",
-        "value": 0
-    });
+    var output = new Output().setMessage(address, message);
+    this.outputs.push(output);
+    return output;
 };
 
 /**
@@ -111,30 +93,9 @@ Transaction.prototype.addMessage = function(address, message) {
  * @param {Number} value
  */
 Transaction.prototype.addOutput = function(address, asset, value) {
-    if (asset == "ETP") {
-        this.outputs.push({
-            "address": address,
-            "attachment": {
-                type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-                version: Transaction.ATTACHMENT_VERSION_DEFAULT
-            },
-            "script_type": "pubkeyhash",
-            "value": value
-        });
-    } else {
-        this.outputs.push({
-            "address": address,
-            "attachment": {
-                "type": Transaction.ATTACHMENT_TYPE_ASSET,
-                "version": Transaction.ATTACHMENT_VERSION_DEFAULT,
-                "asset": asset,
-                "quantity": value,
-                "status": Transaction.ASSET_STATUS_TRANSFER
-            },
-            "script_type": "pubkeyhash",
-            "value": 0
-        });
-    }
+    var output = new Output();
+    this.outputs.push((asset == "ETP") ? output.setTransfer(address, value) : output.setAssetTransfer(address, asset, value));
+    return output;
 };
 
 /**
@@ -165,21 +126,8 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
         throw Error('ERR_ADDRESS_FORMAT');
     else if (!(secondaryissue_threshold >= -1 || secondaryissue_threshold <= 100))
         throw Error('ERR_SECONDARYISSUE_THRESHOLD_OUT_OF_RANGE');
-    else{
-        let output = new Output();
-        output.address=address;
-        output.attachment = {
-            "type": Transaction.ATTACHMENT_TYPE_ASSET,
-            "version": Transaction.ATTACHMENT_VERSION_DEFAULT,
-            "status": Transaction.ASSET_STATUS_ISSUE,
-            "symbol": symbol,
-            "threshold": secondaryissue_threshold + ((is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0),
-            "max_supply": max_supply,
-            "precision": precision,
-            "issuer": issuer,
-            "address": address,
-            "description": description
-        };
+    else {
+        let output = new Output().setAssetIssue(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue);
         this.outputs.push(output);
         return output;
     }
@@ -194,19 +142,9 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {String} cert_type domain / issue / naming
  * @param {Number} status
  */
-Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type, status, did) {
+Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type, status) {
     let output = new Output();
-    output.attachment = {
-        type: Transaction.ATTACHMENT_TYPE_CERT,
-        version: Transaction.ATTACHMENT_VERSION_DEFAULT,
-        owner: owner,
-        symbol: symbol,
-        cert_type: cert_type,
-        address: address,
-        status: status
-    };
-    output.address=address;
-    this.outputs.push(output);
+    this.outputs.push(output.setCert(symbol, owner, address, cert_type, status));
     return output;
 };
 
@@ -217,18 +155,9 @@ Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type
  * @param {String} symbol
  */
 Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address) {
-    this.outputs.push({
-        "address": address,
-        "attachment": {
-            type: Transaction.ATTACHMENT_TYPE_DID,
-            version: Transaction.ATTACHMENT_VERSION_DEFAULT,
-            symbol: symbol,
-            address: did_address,
-            status: Transaction.AVATAR_STATUS_ISSUE
-        },
-        "script_type": "pubkeyhash",
-        "value": 0
-    });
+    var output=new Output();
+    this.outputs.push(output.setIdentityIssue(address,symbol,did_address));
+    return output;
 };
 
 /**
@@ -237,18 +166,9 @@ Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address)
  * @param {String} symbol
  */
 Transaction.prototype.addDidTransferOutput = function(address, symbol) {
-    this.outputs.push({
-        "address": address,
-        "attachment": {
-            type: Transaction.ATTACHMENT_TYPE_DID,
-            version: Transaction.ATTACHMENT_VERSION_DEFAULT,
-            symbol: symbol,
-            address: address,
-            status: Transaction.AVATAR_STATUS_TRANSFER
-        },
-        "script_type": "pubkeyhash",
-        "value": 0
-    });
+    var output=new Output();
+    this.outputs.push(output.setIdentityTransfer(address,symbol));
+    return output;
 };
 
 /**
@@ -263,16 +183,9 @@ Transaction.prototype.addLockOutput = function(address, value, locktime, network
         network = networks['mainnet'];
 
     if (network.locktimes.indexOf(locktime) !== -1) {
-        this.outputs.push({
-            "address": address,
-            "attachment": {
-                type: Transaction.ATTACHMENT_TYPE_ETP_TRANSFER,
-                version: Transaction.ATTACHMENT_VERSION_DEFAULT
-            },
-            "value": value,
-            "script_type": "lock",
-            "locktime": locktime
-        });
+        var output = new Output();
+        this.outputs.push(output.setDeposit(address, value, locktime));
+        return output;
     } else {
         throw Error('Illegal locktime');
     }
