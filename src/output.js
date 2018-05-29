@@ -273,7 +273,9 @@ Output.findUtxo = function(utxo, target, current_height, fee) {
 Output.filter = function(outputs, filter) {
     return outputs.filter(output => {
         if (filter.type !== undefined) {
-            if (filter.type !== output.attachment.type)
+            if (!Array.isArray(filter.type) && filter.type !== output.attachment.type)
+                return false;
+            else if (Array.isArray(filter.type) && filter.type.indexOf(output.attachment.type)==-1)
                 return false;
         }
         return true;
