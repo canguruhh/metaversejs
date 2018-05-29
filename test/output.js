@@ -12,12 +12,14 @@ describe('Outputs', function() {
                 symbol: "MVS.HUG",
                 quantity: 2
             },
+            address: "MJssPCKjLqzrvGGXoyrnw3UN7csSszTmZq"
         },
         {
             value: 3000,
             "attachment": {
                 type: 'etp',
             },
+            address: "MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3"
         },
         {
             value: 100000,
@@ -26,18 +28,21 @@ describe('Outputs', function() {
                 symbol: "MVS.ZGC",
                 quantity: 20
             },
+            address: "MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3"
         },
         {
             value: 2000,
             "attachment": {
                 type: 'etp',
             },
+            address: "MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve"
         },
         {
             value: 1000,
             "attachment": {
                 type: 'etp',
             },
+            address: "MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve"
         }
     ];
 
@@ -67,6 +72,18 @@ describe('Outputs', function() {
     it('UTXO filter for multiple attachment types', () => {
         assert.equal(3, Metaverse.output.filter(utxo, {
             type: ['etp']
+        }).length);
+    });
+    
+    it('UTXO filter for address', () => {
+        assert.equal(2, Metaverse.output.filter(utxo, {
+            address: "MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3"
+        }).length);
+    });
+
+    it('UTXO filter for multiple addresses', () => {
+        assert.equal(4, Metaverse.output.filter(utxo, {
+            address: ["MGqHvbaH9wzdr6oUDFz4S1HptjoKQcjRve","MSCHL3unfVqzsZbRVCJ3yVp7RgAmXiuGN3"]
         }).length);
     });
 });
