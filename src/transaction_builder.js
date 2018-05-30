@@ -142,7 +142,7 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
                 etpcheck += input.value;
             tx.addInput(input.address, input.hash, input.index, input.script);
             if (input.attachment && input.attachment.type == 'asset-cert') {
-                switch (input.attachment.cert_type) {
+                switch (input.attachment.cert) {
                     case 'domain':
                     case 'issue':
                         certs.push(input);
@@ -150,8 +150,8 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
                     case 'naming':
                         break;
                     default:
-                        console.error('Unknown cert type: ' + input.attachment.cert_type);
-                        throw ('ERR_UNKNOWN_CERT_TYPE');
+                        console.error('Unknown cert type: ' + input.attachment.cert);
+                        throw ('ERR_UNKNOWN_CERT');
                 }
             }
         });
@@ -162,7 +162,7 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
             tx.addCertOutput(symbol, issuer, recipient_address, 'issue').specifyDid(recipient_address, recipient_address);
         //reissue used certs
         certs.forEach(cert=>{
-            tx.addCertOutput(cert.attachment.symbol, cert.attachment.owner, cert.address, cert.attachment.cert_type).specifyDid(cert.attachment.to_did, cert.attachment.from_did);
+            tx.addCertOutput(cert.attachment.symbol, cert.attachment.owner, cert.address, cert.attachment.cert).specifyDid(cert.attachment.to_did, cert.attachment.from_did);
         });
         //add toplevel domain certificate if wanted
         if (issue_domain)

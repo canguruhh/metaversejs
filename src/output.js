@@ -10,9 +10,9 @@ Output.ATTACHMENT_TYPE_CERT = 5;
 Output.ASSET_STATUS_ISSUE = 1;
 Output.ASSET_STATUS_TRANSFER = 2;
 
-Output.CERT_TYPE_ISSUE = 1;
-Output.CERT_TYPE_DOMAIN = 2;
-Output.CERT_TYPE_NAMING = 3;
+Output.CERT_ISSUE = 1;
+Output.CERT_DOMAIN = 2;
+Output.CERT_NAMING = 3;
 
 Output.CERT_STATUS_DEFAULT = 0;
 Output.CERT_STATUS_ISSUE = 1;
@@ -114,23 +114,23 @@ Output.prototype.setIdentityTransfer = function(address, value) {
     return this;
 };
 
-Output.prototype.setCert = function(symbol, owner, address, cert_type, status) {
+Output.prototype.setCert = function(symbol, owner, address, cert, status) {
     this.address = address;
     this.attachment.type = Output.ATTACHMENT_TYPE_CERT;
     this.attachment.owner = owner;
     this.attachment.symbol = symbol;
-    switch ((typeof cert_type == 'string') ? cert_type.toLowerCase() : cert_type) {
+    switch ((typeof cert == 'string') ? cert.toLowerCase() : cert) {
         case 'domain':
-            this.attachment.cert_type = Output.CERT_TYPE_DOMAIN;
+            this.attachment.cert = Output.CERT_DOMAIN;
             break;
         case 'issue':
-            this.attachment.cert_type = Output.CERT_TYPE_ISSUE;
+            this.attachment.cert = Output.CERT_ISSUE;
             break;
         case 'naming':
-            this.attachment.cert_type = Output.CERT_TYPE_NAMING;
+            this.attachment.cert = Output.CERT_NAMING;
             break;
         default:
-            throw ('ERR_UNKNOWN_CERT_TYPE');
+            throw ('ERR_UNKNOWN_CERT');
     }
     switch ((typeof status == 'string') ? status.toLowerCase() : status) {
         case 'issue':

@@ -58,7 +58,7 @@ describe('Transaction builder', function() {
                 hash: "2e953ff25a4c8f6026a1dfeb681d8e0106efc4c35b03602ba847532070314df1",
                 attachment:{
                     type: 'asset-cert',
-                    cert_type: 'domain',
+                    cert: 'domain',
                     symbol: "SUPER",
                     to_did: 'nova',
                     from_did: 'nova',

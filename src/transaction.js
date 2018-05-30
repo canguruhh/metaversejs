@@ -139,12 +139,12 @@ Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precisi
  * @param {String} symbol
  * @param {String} owner
  * @param {String} address
- * @param {String} cert_type domain / issue / naming
+ * @param {String} cert domain / issue / naming
  * @param {Number} status
  */
-Transaction.prototype.addCertOutput = function(symbol, owner, address, cert_type, status) {
+Transaction.prototype.addCertOutput = function(symbol, owner, address, cert, status) {
     let output = new Output();
-    this.outputs.push(output.setCert(symbol, owner, address, cert_type, status));
+    this.outputs.push(output.setCert(symbol, owner, address, cert, status));
     return output;
 };
 
@@ -423,7 +423,7 @@ Transaction.encodeAttachmentCert = function(buffer, offset, attachment_data) {
     offset += encodeString(buffer, attachment_data.symbol, offset);
     offset += encodeString(buffer, attachment_data.owner, offset);
     offset += encodeString(buffer, attachment_data.address, offset);
-    offset = buffer.writeUInt32LE(attachment_data.cert_type, offset);
+    offset = buffer.writeUInt32LE(attachment_data.cert, offset);
     offset = buffer.writeUInt8(attachment_data.status, offset);
     return offset;
 };
@@ -611,7 +611,7 @@ Transaction.fromBuffer = function(buffer) {
                 attachment.symbol = readString();
                 attachment.owner = readString();
                 attachment.address = readString();
-                attachment.cert_type = readUInt32();
+                attachment.cert = readUInt32();
                 attachment.status = readUInt8();
                 break;
             default:
