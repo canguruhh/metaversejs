@@ -278,6 +278,12 @@ Output.filter = function(outputs, filter) {
             else if (Array.isArray(filter.type) && filter.type.indexOf(output.attachment.type)==-1)
                 return false;
         }
+        if (filter.symbol !== undefined) {
+            if (!Array.isArray(filter.symbol) && filter.symbol !== output.symbol)
+                return false;
+            else if (Array.isArray(filter.symbol) && filter.type.indexOf(output.symbol)==-1)
+                return false;
+        }
         if (filter.address !== undefined) {
             if (!Array.isArray(filter.address) && filter.address !== output.address)
                 return false;

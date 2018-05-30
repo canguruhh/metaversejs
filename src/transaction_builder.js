@@ -123,7 +123,6 @@ TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_addr
  * @param {Boolean} is_secondaryissue indication if this output is a secondary issue of an existing asset
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
- * @param {Object} change Definition of change assets
  * @param {Boolean} issue_domain indication if the toplevel domain certificate should be included as an output
  * @param {Number} fee Optional fee definition (default 10000 bits)
  */
