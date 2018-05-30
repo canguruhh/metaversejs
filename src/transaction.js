@@ -445,7 +445,7 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
     //Encode precision
     offset = buffer.writeUInt8(attachment_data.precision, offset);
     //Encode secondary issue threshold
-    offset = buffer.writeUInt8((attachment_data.threshold) ? attachment_data.threshold : 0, offset);
+    offset = buffer.writeUInt8((attachment_data.secondaryissue_threshold) ? attachment_data.secondaryissue_threshold : 0, offset);
     offset += buffer.write("0000", offset, 2, 'hex');
 
     //Encode issuer
