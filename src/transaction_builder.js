@@ -159,7 +159,7 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
         tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description, secondaryissue_threshold, is_secondaryissue).specifyDid(issuer, issuer);
         //add certificate to secondaryissue if necessary
         if (secondaryissue_threshold !== 0)
-            tx.addCertOutput(symbol, issuer, recipient_address, 'issue').specifyDid(recipient_address, recipient_address);
+            tx.addCertOutput(symbol, issuer, recipient_address, 'issue').specifyDid(issuer, issuer);
         //reissue used certs
         certs.forEach(cert=>{
             tx.addCertOutput(cert.attachment.symbol, cert.attachment.owner, cert.address, cert.attachment.cert).specifyDid(cert.attachment.to_did, cert.attachment.from_did);
