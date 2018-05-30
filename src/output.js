@@ -53,7 +53,7 @@ Output.prototype.setAssetIssue = function(symbol, max_supply, precision, issuer,
     this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
     this.attachment.status = Output.ASSET_STATUS_ISSUE;
     this.attachment.symbol = symbol;
-    this.attachment.threshold = secondaryissue_threshold + ((is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0);
+    this.attachment.secondaryissue_threshold = secondaryissue_threshold + ((is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0);
     this.attachment.max_supply = max_supply;
     this.attachment.precision = precision;
     this.attachment.issuer = issuer;
