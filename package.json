@@ -1,6 +1,6 @@
 {
     "name": "metaversejs",
-    "version": "0.3.12",
+    "version": "0.3.13",
     "description": "MetaverseJS library",
     "main": "index.js",
     "keywords": [

@@ -322,7 +322,7 @@ Output.assetSpendable = function(output, tx_height, current_height) {
         let model = Script.deserializeAttenuationModel(Script.getAttenuationModel(output.script));
         switch (model.TYPE) {
             case 1:
-                return output.attachment.quantity - model.LQ + Math.min(Math.floor((current_height - tx_height) / (model.LP / model.UN)), model.UN) * (model.LQ / model.UN);
+            return Math.max(0,output.attachment.quantity - model.LQ + Math.min(Math.floor((current_height - tx_height) / (model.LP / model.UN)), model.UN) * (model.LQ / model.UN));
             case 2:
             case 3:
                 return 0;
