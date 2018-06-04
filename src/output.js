@@ -1,3 +1,5 @@
+const Script = require('./script');
+
 Output.ATTACHMENT_VERSION_DEFAULT = 1;
 Output.ATTACHMENT_VERSION_DID = 207;
 
@@ -86,24 +88,24 @@ Output.prototype.setDeposit = function(address, value, locktime) {
 };
 
 Output.prototype.setIdentityIssue = function(address, symbol, did_address) {
-    if(did_address==undefined)
-        did_address=address;
+    if (did_address == undefined)
+        did_address = address;
     this.address = address;
     this.attachment.type = Output.ATTACHMENT_TYPE_DID;
-    this.attachment.symbol=symbol;
-    this.attachment.address=did_address;
-    this.attachment.status=Output.AVATAR_STATUS_ISSUE;
+    this.attachment.symbol = symbol;
+    this.attachment.address = did_address;
+    this.attachment.status = Output.AVATAR_STATUS_ISSUE;
     return this;
 };
 
 Output.prototype.setIdentityTransfer = function(address, symbol, did_address) {
-    if(did_address==undefined)
-        did_address=address;
+    if (did_address == undefined)
+        did_address = address;
     this.address = address;
     this.attachment.type = Output.ATTACHMENT_TYPE_DID;
-    this.attachment.symbol=symbol;
-    this.attachment.address=did_address;
-    this.attachment.status=Output.AVATAR_STATUS_TRANSFER;
+    this.attachment.symbol = symbol;
+    this.attachment.address = did_address;
+    this.attachment.status = Output.AVATAR_STATUS_TRANSFER;
     return this;
 };
 
@@ -275,19 +277,19 @@ Output.filter = function(outputs, filter) {
         if (filter.type !== undefined) {
             if (!Array.isArray(filter.type) && filter.type !== output.attachment.type)
                 return false;
-            else if (Array.isArray(filter.type) && filter.type.indexOf(output.attachment.type)==-1)
+            else if (Array.isArray(filter.type) && filter.type.indexOf(output.attachment.type) == -1)
                 return false;
         }
         if (filter.symbol !== undefined) {
             if (!Array.isArray(filter.symbol) && filter.symbol !== output.symbol)
                 return false;
-            else if (Array.isArray(filter.symbol) && filter.type.indexOf(output.symbol)==-1)
+            else if (Array.isArray(filter.symbol) && filter.type.indexOf(output.symbol) == -1)
                 return false;
         }
         if (filter.address !== undefined) {
             if (!Array.isArray(filter.address) && filter.address !== output.address)
                 return false;
-            else if (Array.isArray(filter.address) && filter.address.indexOf(output.address)==-1)
+            else if (Array.isArray(filter.address) && filter.address.indexOf(output.address) == -1)
                 return false;
         }
         return true;
@@ -307,5 +309,23 @@ function targetComplete(target) {
     });
     return complete;
 }
+
+Output.assetSpendable = function(output, tx_height, current_height) {
+    switch (output.attachment.type) {
+        case 'asset-transfer':
+        case 'asset-issue':
+            break;
+        default:
+            throw Error('ERR_TYPE_NOT_APPLICABLE');
+    }
+    let model = Script.deserializeAttenuationModel(Script.getAttenuationModel(output.script));
+    switch (model.TYPE) {
+        case 1:
+            return output.attachment.quantity - model.LQ + Math.min(Math.floor((current_height - tx_height) / (model.LP / model.UN)), model.UN) * (model.LQ / model.UN);
+        case 2:
+        case 3:
+            return 0;
+    }
+};
 
 module.exports = Output;

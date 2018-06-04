@@ -1,5 +1,5 @@
-var assert = require('assert')
-var bufferutils = require('./bufferutils')
+var assert = require('assert');
+var bufferutils = require('./bufferutils');
 var OPS = require('bitcoin-ops');
 
 
@@ -37,7 +37,7 @@ Script.fromBuffer = function(buffer) {
         }
     }
 
-    return new Script(buffer, chunks)
+    return new Script(buffer, chunks);
 };
 
 Script.fromChunks = function(chunks) {
@@ -97,12 +97,37 @@ Script.prototype.toASM = function() {
     return this.chunks.map(function(chunk) {
         // data chunk
         if (Buffer.isBuffer(chunk)) {
-            return '[ '+chunk.toString('hex')+' ]';
+            return '[ ' + chunk.toString('hex') + ' ]';
             // opcode
         } else {
             return reverseOps[chunk];
         }
     }).join(' ');
 };
+
+Script.getAttenuationModel = function(script) {
+    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
+    if (regex.test(script)) {
+        let b = regex.exec(script.match(regex)[0])[1];
+        return Buffer.from(b, 'hex').toString();
+    }
+    return null;
+};
+
+Script.deserializeAttenuationModel = function(string) {
+    let tmp = {};
+    string.split(';').forEach(part => {
+        let t = part.split('=');
+        if (t.length == 2)
+            tmp[t[0]] = parseInt(t[1]);
+    });
+    switch (tmp.TYPE) {
+        case 1:
+            return tmp;
+            break;
+        default:
+            throw Error('ERR_DESERIALIZE_ATTENUATION_MODEL');
+    }
+}
 
 module.exports = Script;
