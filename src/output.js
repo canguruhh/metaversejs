@@ -320,12 +320,25 @@ Output.assetSpendable = function(output, tx_height, current_height) {
     }
     if (Script.hasAttenuationModel(output.script)) {
         let model = Script.deserializeAttenuationModel(Script.getAttenuationModel(output.script));
+        let locked=0;
+        let step_target = model.LH;
         switch (model.TYPE) {
             case 1:
-            return Math.max(0,output.attachment.quantity - model.LQ + Math.min(Math.floor((current_height - tx_height) / (model.LP / model.UN)), model.UN) * (model.LQ / model.UN));
+            for(let period = model.PN; period<model.UN; period++){
+                if(period!=model.PN)
+                    step_target+=model.LP/model.UN;
+                if(tx_height+step_target>current_height)
+                    locked+=model.LQ/model.UN;
+            }
+            return output.attachment.quantity-locked;
             case 2:
-            case 3:
-                return 0;
+            for(let period = model.PN; period<model.UC.length; period++){
+                if(period!=model.PN)
+                    step_target+=model.UC[period];
+                if(tx_height+step_target>current_height)
+                    locked+=model.UQ[period];
+            }
+            return output.attachment.quantity-locked;
         }
     } else {
         return output.attachment.quantity;

@@ -122,11 +122,16 @@ Script.deserializeAttenuationModel = function(string) {
     let tmp = {};
     string.split(';').forEach(part => {
         let t = part.split('=');
-        if (t.length == 2)
-            tmp[t[0]] = parseInt(t[1]);
+        if (t.length == 2) {
+            if (t[1].toString().indexOf(',') !== -1)
+                tmp[t[0]] = t[1].toString().split(',').map(e => parseInt(e));
+            else
+                tmp[t[0]] = parseInt(t[1]);
+        }
     });
     switch (tmp.TYPE) {
         case 1:
+        case 2:
             return tmp;
             break;
         default:
