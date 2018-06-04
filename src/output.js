@@ -327,8 +327,9 @@ Output.assetSpendable = function(output, tx_height, current_height) {
             case 3:
                 return 0;
         }
+    } else {
+        return output.attachment.quantity;
     }
-    return output.attachment.quantity;
 };
 
 module.exports = Output;
