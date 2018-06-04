@@ -2,6 +2,7 @@ var assert = require('assert');
 var bufferutils = require('./bufferutils');
 var OPS = require('bitcoin-ops');
 
+const SCRIPT_ATTENUATION_MODEL = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
 
 let Script = function(buffer, chunks) {
     this.buffer = buffer;
@@ -105,10 +106,13 @@ Script.prototype.toASM = function() {
     }).join(' ');
 };
 
+Script.hasAttenuationModel = function(script) {
+    return SCRIPT_ATTENUATION_MODEL.test(script);
+};
+
 Script.getAttenuationModel = function(script) {
-    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
-    if (regex.test(script)) {
-        let b = regex.exec(script.match(regex)[0])[1];
+    if (Script.hasAttenuationModel(script)) {
+        let b = SCRIPT_ATTENUATION_MODEL.exec(script.match(SCRIPT_ATTENUATION_MODEL)[0])[1];
         return Buffer.from(b, 'hex').toString();
     }
     return null;
