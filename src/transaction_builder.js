@@ -47,6 +47,35 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
     });
 };
 
+/**
+ * Generates a send asset transaction with attenuation using the given utxos as inputs, assets and the change.
+ */
+TransactionBuilder.sendLockedAsset = function(utxo, recipient_address, symbol, quantity, attenuation_model, change_address, change, locked_asset_change, fee, messages) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        if (fee == undefined)
+            fee = Transaction.DEFAULT_FEE;
+        var etpcheck = 0;
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => {
+            if (output.value)
+                etpcheck += output.value;
+            tx.addInput(output.address, output.hash, output.index, output.script);
+        });
+        if (messages == undefined)
+            messages = [];
+        messages.forEach((message) => tx.addMessage(recipient_address, message));
+        //add the target outputs to the recipient
+        tx.addLockedAssetOutput(recipient_address, symbol, quantity, attenuation_model,0);
+        //add the change outputs
+        Object.keys(change).forEach((symbol) => {
+            if (change[symbol] !== 0)
+                tx.addOutput(change_address, symbol, -change[symbol]);
+        });
+        if (locked_asset_change != undefined)
+            locked_asset_change.forEach((change) => tx.addLockedAssetOutput(change_address, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
         if (change.ETP)
             etpcheck += change.ETP;
         if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
