@@ -209,27 +209,26 @@ Output.filterUtxo = function(outputs, inputs) {
  */
 Output.calculateUtxo = function(txs, addresses) {
     return new Promise((resolve) => {
-        let candidates = {};
-        for (let i = txs.length - 1; i >= 0; i--) {
-            //Search received outputs
-            txs[i].outputs.forEach((output) => {
-                if (addresses.indexOf(output.address) !== -1) {
-                    output.locked_until = (output.locked_height_range) ? txs[i].height + output.locked_height_range : 0;
+        let list = {};
+        txs.forEach((tx, index) => {
+            tx.inputs.forEach((input) => {
+                list[input.previous_output.hash + '-' + input.previous_output.index] = null;
+            });
+            tx.outputs.forEach((output, index) => {
+                if (list[tx.hash + '-' + index] !== null) {
+                    output.locked_until = (output.locked_height_range) ? tx.height + output.locked_height_range : 0;
                     delete output['locked_height_range'];
-                    output.hash = txs[i].hash;
-                    candidates[txs[i].hash + '-' + output.index] = output;
+                    output.hash = tx.hash;
+                    list[tx.hash + '-' + index] = output;
                 }
             });
-            //Remove spent outputs if matching input is found
-            txs[i].inputs.forEach((input) => {
-                if (addresses.indexOf(input.address) !== -1) {
-                    if (candidates[input.previous_output.hash + '-' + input.previous_output.index]) {
-                        delete candidates[input.previous_output.hash + '-' + input.previous_output.index];
-                    } else throw Error('Found input without matching output');
-                }
-            });
-        }
-        resolve(Object.values(candidates));
+        });
+        let utxo = [];
+        Object.values(list).forEach(item => {
+            if (item !== null)
+                utxo.push(item);
+        });
+        resolve(utxo);
     });
 }
 
