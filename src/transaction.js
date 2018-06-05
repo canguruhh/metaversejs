@@ -515,8 +515,8 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     return offset;
 }
 
-function encodeString(buffer, str, offset) {
-    var payload = new Buffer.from(str, 'utf-8');
+function encodeString(buffer, str, offset, encoding = 'utf-8') {
+    var payload = new Buffer.from(str, encoding);
     offset += bufferutils.writeVarInt(buffer, payload.length, offset);
     return payload.copy(buffer, offset) + 1;
 }
