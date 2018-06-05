@@ -260,13 +260,22 @@ function encodeOutputs(outputs) {
         //Write value as 8byte integer
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
         //Output script
-        if (output.script_type === "pubkeyhash") {
-            offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
-        } else if (output.script_type === "lock") {
-            let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
-            offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
-        } else {
-            throw 'Unknown script type: ' + output.script_type;
+        switch (output.script_type) {
+            case 'pubkeyhash':
+                offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
+                break;
+            case 'lock':
+                let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
+                offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
+                break;
+            case 'attenuation':
+                let model = Script.deserializeAttenuationModel(output.attenuation.model);
+                if (output.attenuation.height_delta > 0)
+                    model = Script.adjustAttenuationModel(model, output.attenuation.height_delta);
+                offset = writeAttenuationScript(Script.serializeAttenuationModel(model), output.attenuation.from_tx, output.attenuation.from_index, output.address, buffer, offset);
+                break;
+            default:
+                throw 'Unknown script type: ' + output.script_type;
         }
 
         // attachment
@@ -332,13 +341,15 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
         if (add_address_to_previous_output_index !== undefined) {
             if (index == add_address_to_previous_output_index) {
                 let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
-                //Check if previous output was locked before
                 if (input.previous_output.script && input.previous_output.script.match(lockregex)) {
                     let locktime = lockregex.exec(input.previous_output.script.match(lockregex)[0])[1];
                     offset = writeScriptLockedPayToPubKeyHash(input.previous_output.address, locktime, buffer, offset);
                 } else {
-                    //Previous output was p2pkh
-                    offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
+                    if (Script.hasAttenuationModel(input.previous_output.script)) {
+                        let params = Script.getAttenuationParams(input.previous_output.script);
+                        offset = writeAttenuationScript(params.model, (params.hash !== '0000000000000000000000000000000000000000000000000000000000000000') ? params.hash : undefined, (params.index >= 0) ? params.index : undefined, input.previous_output.address, buffer, offset);
+                    } else
+                        offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
                 }
             } else {
                 offset = buffer.writeUInt8(0, offset);
@@ -480,6 +491,40 @@ Transaction.encodeInputScript = (parameters) => Script.fromChunks((parameters) ?
  */
 function writeScriptPayToPubKeyHash(address, buffer, offset) {
     offset = buffer.writeUInt8(25, offset); //Script length
+    offset = buffer.writeUInt8(OPS.OP_DUP, offset);
+    offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
+    //Write previous output address
+    offset = buffer.writeUInt8(20, offset); //Address length
+    offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
+    //Static transfer stuff
+    offset = buffer.writeUInt8(OPS.OP_EQUALVERIFY, offset);
+    offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
+    return offset;
+}
+
+/**
+ * Write p2pkh attenuation script to the given buffer.
+ * @param {String} attenuation_string
+ * @param {String} from_tx
+ * @param {number} index
+ * @param {String} address
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @returns {Number} new offset
+ */
+function writeAttenuationScript(attenuation_string, from_tx, from_index, address, buffer, offset) {
+    let attenuation_buffer = Buffer.from(attenuation_string.toString('hex'));
+    offset += bufferutils.writeVarInt(buffer, 26 + attenuation_string.length + 40, offset);
+    offset = buffer.writeUInt8(77, offset);
+    offset = buffer.writeInt16LE(attenuation_string.length, offset);
+    offset += attenuation_buffer.copy(buffer, offset);
+    offset = buffer.writeUInt8(36, offset);
+    let hash = Buffer.from((from_tx != undefined) ? from_tx : '0000000000000000000000000000000000000000000000000000000000000000', 'hex').reverse();
+    let index = Buffer.from('ffffffff', 'hex');
+    if (from_index != undefined)
+        index.writeInt32LE(from_index, 0);
+    offset += Buffer.concat([hash, index]).copy(buffer, offset);
+    offset = buffer.writeUInt8(178, offset);
     offset = buffer.writeUInt8(OPS.OP_DUP, offset);
     offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address

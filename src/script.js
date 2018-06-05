@@ -13,7 +13,6 @@ Script.fromBuffer = function(buffer) {
 
     while (i < buffer.length) {
         var opcode = buffer.readUInt8(i);
-
         // data chunk
         if ((opcode > OPS.OP_0) && (opcode <= OPS.OP_PUSHDATA4)) {
             var d = bufferutils.readPushDataInt(buffer, i);
@@ -118,6 +117,26 @@ Script.getAttenuationModel = function(script) {
     return null;
 };
 
+Script.getAttenuationParams = function(script) {
+    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
+    if (Script.hasAttenuationModel(script)) {
+        let p = regex.exec(script.match(regex)[0]);
+        return {
+            model: Buffer.from(p[1], 'hex').toString(),
+
+            hash: Buffer.from(p[2].substr(0, 64), 'hex').reverse().toString('hex'),
+            index: Buffer.from(p[2].substr(64, 8), 'hex').readInt32LE(0),
+        };
+    }
+    return null;
+};
+
+Script.makeAttenuationScript = function(attenuation_string, from_tx, from_index, to_address) {
+    let hash = Buffer.from(from_tx || '0000000000000000000000000000000000000000000000000000000000000000', 'hex').reverse();
+    let index = Buffer.from('ffffffff', 'hex').writeInt32LE(from_index || 4294967295);;
+    return `[ ${attenuation_string} ] [ ${Buffer.concat([hash, index]).toString('hex')} ]  checkattenuationverify dup hash160 [ ${to_address} ] equalverify checksig`;
+};
+
 Script.deserializeAttenuationModel = function(string) {
     let tmp = {};
     string.split(';').forEach(part => {
@@ -137,6 +156,50 @@ Script.deserializeAttenuationModel = function(string) {
         default:
             throw Error('ERR_DESERIALIZE_ATTENUATION_MODEL');
     }
+};
+
+Script.serializeAttenuationModel = function(model) {
+    let result = '';
+    Object.keys(model).forEach(key => {
+        result += key + '=' + ((Array.isArray(model[key])) ? model[key].join(',') : model[key]) + ';';
+    });
+    return result.substr(0, result.length - 1);
+}
+
+Script.adjustAttenuationModel = function(model, height_delta) {
+    if (!height_delta > 0) {
+        return model;
+    }
+    let past_blocks = null;
+    switch (model.TYPE) {
+        case 1:
+            let period_size = model.LP / model.UN;
+            past_blocks = period_size - model.LH;
+            for (let period = model.PN; period < model.UN; period++) {
+                if (past_blocks >= height_delta) {
+                    // console.log(height_delta, past_blocks)
+                    model.LH = past_blocks - height_delta;
+                    model.PN = period;
+                    return model;
+                }
+                past_blocks += period_size;
+            }
+        case 2:
+            past_blocks = model.UC[model.PN] - model.LH;
+            for (let period = model.PN; period < model.UC.length; period++) {
+                past_blocks += model.UC[period];
+                if (past_blocks >= height_delta) {
+                    model.LH = past_blocks - height_delta;
+                    model.PN = period;
+                    return model;
+                }
+            }
+            throw Error('ERR_ADJUST_ATTENUATION_MODEL');
+            break;
+        default:
+            throw Error('ERR_ADJUST_ATTENUATION_MODEL_UNKNOWN_TYPE');
+    }
+
 }
 
 module.exports = Script;

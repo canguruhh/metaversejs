@@ -250,6 +250,7 @@ Output.findUtxo = function(utxo, target, current_height, fee) {
             target.ETP = fee;
 
         var change = JSON.parse(JSON.stringify(target));
+        var lockedAssetChange = [];
         var list = [];
         utxo.forEach((output) => {
             if (!targetComplete(change)) {
@@ -262,11 +263,22 @@ Output.findUtxo = function(utxo, target, current_height, fee) {
                         break;
                     case 'asset-transfer':
                     case 'asset-issue':
-                        if ((change.ETP > 0 && output.value > 0) || (target[output.attachment.symbol] > 0 && output.attachment.quantity > 0)) {
+                        if ((change.ETP > 0 && output.value > 0) || (change[output.attachment.symbol] > 0 && Output.assetSpendable(output, output.height, current_height) > 0)) {
                             change.ETP -= output.value;
                             if (change[output.attachment.symbol] == undefined)
                                 change[output.attachment.symbol] = 0;
-                            change[output.attachment.symbol] -= output.attachment.quantity;
+                            change[output.attachment.symbol] -= Output.assetSpendable(output, output.height, current_height);
+                            if (output.attachment.quantity > Output.assetSpendable(output, output.height, current_height)) {
+                                let lockChange = {
+                                    symbol: output.attachment.symbol,
+                                    quantity: output.attachment.quantity - Output.assetSpendable(output, output.height, current_height),
+                                    attenuation_model: Script.getAttenuationModel(output.script),
+                                    hash: output.hash,
+                                    delta: current_height - output.height,
+                                    index: output.index
+                                };
+                                lockedAssetChange.push(lockChange);
+                            }
                             list.push(output);
                         }
                         break;
@@ -341,21 +353,21 @@ Output.assetSpendable = function(output, tx_height, current_height) {
         let step_target = model.LH;
         switch (model.TYPE) {
             case 1:
-            for(let period = model.PN; period<model.UN; period++){
-                if(period!=model.PN)
-                    step_target+=model.LP/model.UN;
-                if(tx_height+step_target>current_height)
-                    locked+=model.LQ/model.UN;
-            }
-            return output.attachment.quantity-locked;
+                for (let period = model.PN; period < model.UN; period++) {
+                    if (period != model.PN)
+                        step_target += model.LP / model.UN;
+                    if (tx_height + step_target > current_height)
+                        locked += model.LQ / model.UN;
+                }
+                return output.attachment.quantity - locked;
             case 2:
-            for(let period = model.PN; period<model.UC.length; period++){
-                if(period!=model.PN)
-                    step_target+=model.UC[period];
-                if(tx_height+step_target>current_height)
-                    locked+=model.UQ[period];
-            }
-            return output.attachment.quantity-locked;
+                for (let period = model.PN; period < model.UC.length; period++) {
+                    if (period != model.PN)
+                        step_target += model.UC[period];
+                    if (tx_height + step_target > current_height)
+                        locked += model.UQ[period];
+                }
+                return output.attachment.quantity - locked;
         }
     } else {
         return output.attachment.quantity;
