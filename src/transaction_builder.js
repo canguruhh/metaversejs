@@ -12,7 +12,7 @@ function TransactionBuilder() {}
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
  */
-TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, fee, messages) {
+TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, locked_asset_change, fee, messages) {
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
@@ -34,7 +34,19 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
         if (target.ETP)
             etpcheck -= target.ETP;
         //add the change outputs
-        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        Object.keys(change).forEach((symbol) => {
+            if (change[symbol] !== 0)
+                tx.addOutput(change_address, symbol, -change[symbol]);
+        });
+        if (locked_asset_change != undefined)
+            locked_asset_change.forEach((change) => tx.addLockedAssetOutput(change_address, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+        resolve(tx);
+    });
+};
+
         if (change.ETP)
             etpcheck += change.ETP;
         if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
@@ -161,7 +173,7 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
         if (secondaryissue_threshold !== 0)
             tx.addCertOutput(symbol, issuer, recipient_address, 'issue').specifyDid(issuer, issuer);
         //reissue used certs
-        certs.forEach(cert=>{
+        certs.forEach(cert => {
             tx.addCertOutput(cert.attachment.symbol, cert.attachment.owner, cert.address, cert.attachment.cert).specifyDid(cert.attachment.to_did, cert.attachment.from_did);
         });
         //add toplevel domain certificate if wanted

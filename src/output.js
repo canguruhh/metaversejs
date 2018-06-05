@@ -50,6 +50,22 @@ Output.prototype.setAssetTransfer = function(address, symbol, quantity) {
     return this;
 };
 
+Output.prototype.setLockAssetTransfer = function(address, symbol, quantity, attenuation_model, height_delta, from_tx, from_index) {
+    this.address = address;
+    this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
+    this.attachment.asset = symbol;
+    this.attachment.quantity = quantity;
+    this.attachment.status = Output.ASSET_STATUS_TRANSFER;
+    this.attenuation = {
+        model: attenuation_model,
+        height_delta: height_delta,
+        from_tx: from_tx,
+        from_index: from_index
+    };
+    this.script_type = 'attenuation';
+    return this;
+};
+
 Output.prototype.setAssetIssue = function(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue) {
     this.address = address;
     this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
@@ -261,6 +277,7 @@ Output.findUtxo = function(utxo, target, current_height, fee) {
         resolve({
             utxo: list,
             change: change,
+            lockedAssetChange: lockedAssetChange,
             selected: target
         });
     });
@@ -320,7 +337,7 @@ Output.assetSpendable = function(output, tx_height, current_height) {
     }
     if (Script.hasAttenuationModel(output.script)) {
         let model = Script.deserializeAttenuationModel(Script.getAttenuationModel(output.script));
-        let locked=0;
+        let locked = 0;
         let step_target = model.LH;
         switch (model.TYPE) {
             case 1:

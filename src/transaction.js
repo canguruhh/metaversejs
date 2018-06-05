@@ -98,6 +98,12 @@ Transaction.prototype.addOutput = function(address, asset, value) {
     return output;
 };
 
+Transaction.prototype.addLockedAssetOutput = function(address, asset, value, attenuation_model, height_delta, from_tx, from_index) {
+    var output = new Output();
+    this.outputs.push(output.setLockAssetTransfer(address, asset, value, attenuation_model, height_delta, from_tx, from_index));
+    return output;
+};
+
 /**
  * Add an asset issue output to the transaction.
  * @param {String} symbol Up to 63 alphanumeric or . characters
@@ -155,8 +161,8 @@ Transaction.prototype.addCertOutput = function(symbol, owner, address, cert, sta
  * @param {String} symbol
  */
 Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address) {
-    var output=new Output();
-    this.outputs.push(output.setIdentityIssue(address,symbol,did_address));
+    var output = new Output();
+    this.outputs.push(output.setIdentityIssue(address, symbol, did_address));
     return output;
 };
 
@@ -166,8 +172,8 @@ Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address)
  * @param {String} symbol
  */
 Transaction.prototype.addDidTransferOutput = function(address, symbol) {
-    var output=new Output();
-    this.outputs.push(output.setIdentityTransfer(address,symbol));
+    var output = new Output();
+    this.outputs.push(output.setIdentityTransfer(address, symbol));
     return output;
 };
 
