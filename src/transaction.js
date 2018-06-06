@@ -5,6 +5,7 @@ var bufferutils = require('./bufferutils.js'),
     base58check = require('base58check'),
     Script = require('./script'),
     Output = require('./output'),
+    Constants = require('./constants'),
     networks = require('./networks'),
     OPS = require('bitcoin-ops');
 
@@ -146,6 +147,30 @@ Transaction.prototype.addCertOutput = function(symbol, owner, address, cert, sta
 Transaction.prototype.addDidIssueOutput = function(address, symbol, did_address) {
     var output = new Output();
     this.outputs.push(output.setIdentityIssue(address, symbol, did_address));
+    return output;
+};
+
+/**
+ * Add MIT transfer output to the transaction.
+ * @param {String} address
+ * @param {String} symbol
+ */
+Transaction.prototype.addMITTransferOutput = function(address, symbol) {
+    var output = new Output();
+    this.outputs.push(output.setMITTransfer(address, symbol));
+    return output;
+};
+
+/**
+ * Add MIT issue output to the transaction.
+ *
+ * @param {String} address
+ * @param {String} symbol
+ * @param {String} content
+ */
+Transaction.prototype.addMITRegisterOutput = function(address, symbol, content) {
+    var output = new Output();
+    this.outputs.push(output.setMITRegister(address, symbol, content));
     return output;
 };
 
@@ -294,6 +319,18 @@ function encodeOutputs(outputs) {
             case Constants.ATTACHMENT.TYPE.CERT:
                 offset = Transaction.encodeAttachmentCert(buffer, offset, output.attachment);
                 break;
+        case Constants.ATTACHMENT.TYPE.MIT:
+            switch (output.attachment.status) {
+            case Constants.MIT.STATUS.REGISTER:
+                offset = Transaction.encodeAttachmentMITRegister(buffer, offset, output.attachment.symbol, output.attachment.content, output.attachment.address);
+                break;
+            case Constants.MIT.STATUS.TRANSFER:
+                offset = Transaction.encodeAttachmentMITTransfer(buffer, offset, output.attachment.symbol, output.attachment.address);
+                break;
+            default:
+                throw Error("Asset status unknown");
+            }
+            break;
             default:
                 throw Error("What kind of an output is that?!");
         }
@@ -447,7 +484,6 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
     //Encode secondary issue threshold
     offset = buffer.writeUInt8((attachment_data.secondaryissue_threshold) ? attachment_data.secondaryissue_threshold : 0, offset);
     offset += buffer.write("0000", offset, 2, 'hex');
-
     //Encode issuer
     offset += encodeString(buffer, attachment_data.issuer, offset);
     //Encode recipient address
@@ -456,6 +492,41 @@ Transaction.encodeAttachmentAssetIssue = function(buffer, offset, attachment_dat
     offset += encodeString(buffer, attachment_data.description, offset);
     return offset;
 };
+
+/**
+ * Helper function to encode the attachment for a new MIT.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {String} symbol
+ * @param {String} content
+ * @param {String} address
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentMITRegister = function(buffer, offset, symbol, content, address) {
+    offset = buffer.writeUInt8(Constants.MIT.STATUS.REGISTER, offset);
+    offset += encodeString(buffer, symbol, offset);
+    offset += encodeString(buffer, address, offset);
+    offset += encodeString(buffer, content, offset);
+    return offset;
+};
+
+/**
+ * Helper function to encode the attachment for a new MIT.
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @param {String} symbol
+ * @param {String} address
+ * @returns {Number} New offset
+ * @throws {Error}
+ */
+Transaction.encodeAttachmentMITTransfer = function(buffer, offset, symbol, address) {
+    offset = buffer.writeUInt8(Constants.MIT.STATUS.TRANSFER, offset);
+    offset += encodeString(buffer, symbol, offset);
+    offset += encodeString(buffer, address, offset);
+    return offset;
+};
+
 
 
 /**

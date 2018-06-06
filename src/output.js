@@ -17,19 +17,24 @@ Output.prototype.setTransfer = function(address, value) {
     return this;
 };
 
-Output.prototype.setAssetTransfer = function(address, symbol, quantity) {
+Output.prototype.setMITRegister = function(address, symbol, content) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
-    this.attachment.asset = symbol;
-    this.attachment.quantity = quantity;
-    this.attachment.status = Output.ASSET_STATUS_TRANSFER;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.MIT;
+    this.attachment.symbol = symbol;
+    this.attachment.address = address;
+    this.attachment.content = content;
+    this.attachment.status = Constants.MST.STATUS.REGISTER;
     return this;
 };
 
-Output.prototype.setLockAssetTransfer = function(address, symbol, quantity, attenuation_model, height_delta, from_tx, from_index) {
+Output.prototype.setMITTransfer = function(address, symbol) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
-    this.attachment.asset = symbol;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.MIT;
+    this.attachment.symbol = symbol;
+    this.attachment.address = address;
+    this.attachment.status = Constants.MST.STATUS.TRANSFER;
+    return this;
+};
 
 Output.prototype.setAssetTransfer = function(address, symbol, quantity) {
     this.address = address;
@@ -53,8 +58,8 @@ Output.prototype.setAttenuation = function(attenuation_model, height_delta, from
 
 Output.prototype.setAssetIssue = function(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
-    this.attachment.status = Output.ASSET_STATUS_ISSUE;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.MST;
+    this.attachment.status = Constants.MST.STATUS.REGISTER;
     this.attachment.symbol = symbol;
     this.attachment.secondaryissue_threshold = secondaryissue_threshold + ((is_secondaryissue || secondaryissue_threshold == -1) ? 128 : 0);
     this.attachment.max_supply = max_supply;

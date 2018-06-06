@@ -69,7 +69,7 @@ TransactionBuilder.sendLockedAsset = function(utxo, recipient_address, symbol, q
             messages = [];
         messages.forEach((message) => tx.addMessage(recipient_address, message));
         //add the target outputs to the recipient
-        tx.addLockedAssetOutput(recipient_address, symbol, quantity, attenuation_model,0);
+        tx.addLockedAssetOutput(recipient_address, symbol, quantity, attenuation_model, 0);
         //add the change outputs
         Object.keys(change).forEach((symbol) => {
             if (change[symbol] !== 0)
@@ -143,6 +143,69 @@ TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_addr
         });
         //add avatar output to the avatar address
         tx.addDidIssueOutput(avatar_address, symbol, avatar_address);
+        //add the change outputs
+        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+        resolve(tx);
+    });
+};
+
+/**
+ * Generates a create MIT transaction.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} recipient_address Recipient address
+ * @param {String} symbol Symbol of MIT
+ * @param {String} content Content of MIT
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ */
+TransactionBuilder.registerMIT = function(utxo, recipient_address, issuer_avatar, symbol, content, change_address, change) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        var fee = Constants.FEE.DEFAULT;
+        var etpcheck = 0;
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => {
+            if (output.value)
+                etpcheck += output.value;
+            tx.addInput(output.address, output.hash, output.index, output.script);
+        });
+        tx.addMITRegisterOutput(recipient_address, symbol, content).specifyDid(issuer_avatar, issuer_avatar);
+        //add the change outputs
+        Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+        if (change.ETP)
+            etpcheck += change.ETP;
+        if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+        resolve(tx);
+    });
+};
+
+/**
+ * Generates a transfer MIT transaction.
+ * @param {Array<Output>} utxo Inputs for the transaction
+ * @param {String} recipient_address Recipient address
+ * @param {String} symbol Symbol of MIT
+ * @param {String} change_address Change address
+ * @param {Object} change Definition of change assets
+ */
+TransactionBuilder.transferMIT = function(utxo, sender_avatar, recipient_address, recipient_avatar, symbol, change_address, change) {
+    return new Promise((resolve, reject) => {
+        //Set fee
+        var fee = Constants.FEE.DEFAULT;
+        var etpcheck = 0;
+        //create new transaction
+        let tx = new Transaction();
+        //add inputs
+        utxo.forEach((output) => {
+            if (output.value)
+                etpcheck += output.value;
+            tx.addInput(output.address, output.hash, output.index, output.script);
+        });
+        tx.addMITTransferOutput(recipient_address, symbol).specifyDid(recipient_avatar, sender_avatar);
         //add the change outputs
         Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
         if (change.ETP)

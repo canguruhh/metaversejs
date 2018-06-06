@@ -26,7 +26,7 @@ describe('Transaction testing', () => {
             expect(tx.outputs[0].attachment.version).to.equal(1);
         });
         it('Output asset', () => {
-            expect(tx.outputs[0].attachment.type).to.equal(Metaverse.transaction.ATTACHMENT_TYPE_ETP_TRANSFER);
+            expect(tx.outputs[0].attachment.type).to.equal(Metaverse.constants.ATTACHMENT.TYPE.ETP_TRANSFER);
         });
         it('Output value', () => {
             expect(tx.outputs[0].value).to.equal(10000);
@@ -45,7 +45,7 @@ describe('Transaction testing', () => {
             expect(tx.outputs[0].attachment.status).to.equal(2);
         });
         it('Output asset', () => {
-            expect(tx.outputs[0].attachment.asset).to.equal('MVS.ZGC');
+            expect(tx.outputs[0].attachment.symbol).to.equal('MVS.ZGC');
         });
         it('Output status', () => {
             expect(tx.outputs[0].attachment.status).to.equal(2);
