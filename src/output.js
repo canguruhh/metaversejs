@@ -1,34 +1,10 @@
-const Script = require('./script');
-
-Output.ATTACHMENT_VERSION_DEFAULT = 1;
-Output.ATTACHMENT_VERSION_DID = 207;
-
-Output.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
-Output.ATTACHMENT_TYPE_ASSET = 2;
-Output.ATTACHMENT_TYPE_MESSAGE = 3;
-Output.ATTACHMENT_TYPE_DID = 4;
-Output.ATTACHMENT_TYPE_CERT = 5;
-
-Output.ASSET_STATUS_ISSUE = 1;
-Output.ASSET_STATUS_TRANSFER = 2;
-
-Output.CERT_ISSUE = 1;
-Output.CERT_DOMAIN = 2;
-Output.CERT_NAMING = 3;
-
-Output.CERT_STATUS_DEFAULT = 0;
-Output.CERT_STATUS_ISSUE = 1;
-Output.CERT_STATUS_TRANSFER = 2;
-
-Output.AVATAR_STATUS_ISSUE = 1;
-Output.AVATAR_STATUS_TRANSFER = 2;
-
-const DEFAULT_FEE = 10000;
+const Script = require('./script'),
+    Constants = require('./constants');
 
 function Output() {
     this.address = null;
     this.attachment = {
-        version: Output.ATTACHMENT_VERSION_DEFAULT
+        version: Constants.ATTACHMENT.VERSION.DEFAULT
     };
     this.value = 0;
     this.script_type = "pubkeyhash";
@@ -36,7 +12,7 @@ function Output() {
 
 Output.prototype.setTransfer = function(address, value) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_MESSAGE;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.MESSAGE;
     this.script_type = "pubkeyhash";
     return this;
 };
@@ -54,8 +30,17 @@ Output.prototype.setLockAssetTransfer = function(address, symbol, quantity, atte
     this.address = address;
     this.attachment.type = Output.ATTACHMENT_TYPE_ASSET;
     this.attachment.asset = symbol;
+
+Output.prototype.setAssetTransfer = function(address, symbol, quantity) {
+    this.address = address;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.MST;
+    this.attachment.symbol = symbol;
     this.attachment.quantity = quantity;
-    this.attachment.status = Output.ASSET_STATUS_TRANSFER;
+    this.attachment.status = Constants.MST.STATUS.TRANSFER;
+    return this;
+};
+
+Output.prototype.setAttenuation = function(attenuation_model, height_delta, from_tx, from_index) {
     this.attenuation = {
         model: attenuation_model,
         height_delta: height_delta,
@@ -82,21 +67,21 @@ Output.prototype.setAssetIssue = function(symbol, max_supply, precision, issuer,
 
 Output.prototype.setTransfer = function(address, value) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_ETP_TRANSFER;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.ETP_TRANSFER;
     this.value = value;
     return this;
 };
 
 Output.prototype.setMessage = function(address, message) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_MESSAGE;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.MESSAGE;
     this.attachment.message = message;
     return this;
 };
 
 Output.prototype.setDeposit = function(address, value, locktime) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_ETP_TRANSFER;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.ETP_TRANSFER;
     this.value = value;
     this.locktime = locktime;
     this.script_type = "lock";
@@ -107,10 +92,10 @@ Output.prototype.setIdentityIssue = function(address, symbol, did_address) {
     if (did_address == undefined)
         did_address = address;
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_DID;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.AVATAR;
     this.attachment.symbol = symbol;
     this.attachment.address = did_address;
-    this.attachment.status = Output.AVATAR_STATUS_ISSUE;
+    this.attachment.status = Constants.AVATAR.STATUS.REGISTER;
     return this;
 };
 
@@ -118,50 +103,50 @@ Output.prototype.setIdentityTransfer = function(address, symbol, did_address) {
     if (did_address == undefined)
         did_address = address;
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_DID;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.AVATAR;
     this.attachment.symbol = symbol;
     this.attachment.address = did_address;
-    this.attachment.status = Output.AVATAR_STATUS_TRANSFER;
+    this.attachment.status = Constants.AVATAR.STATUS.TRANSFER;
     return this;
 };
 
 Output.prototype.setIdentityTransfer = function(address, value) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_ETP_TRANSFER;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.ETP_TRANSFER;
     this.value = value;
     return this;
 };
 
 Output.prototype.setCert = function(symbol, owner, address, cert, status) {
     this.address = address;
-    this.attachment.type = Output.ATTACHMENT_TYPE_CERT;
+    this.attachment.type = Constants.ATTACHMENT.TYPE.CERT;
     this.attachment.owner = owner;
     this.attachment.symbol = symbol;
     switch ((typeof cert == 'string') ? cert.toLowerCase() : cert) {
         case 'domain':
-            this.attachment.cert = Output.CERT_DOMAIN;
+            this.attachment.cert = Constants.CERT.TYPE.DOMAIN;
             break;
         case 'issue':
-            this.attachment.cert = Output.CERT_ISSUE;
+            this.attachment.cert = Constants.CERT.TYPE.ISSUE;
             break;
         case 'naming':
-            this.attachment.cert = Output.CERT_NAMING;
+            this.attachment.cert = Constants.CERT.TYPE.NAMING;
             break;
         default:
             throw ('ERR_UNKNOWN_CERT');
     }
     switch ((typeof status == 'string') ? status.toLowerCase() : status) {
         case 'issue':
-            this.attachment.status = Output.CERT_STATUS_ISSUE;
+            this.attachment.status = Constants.CERT.STATUS.ISSUE;
             break;
         case 'naming':
-            this.attachment.status = Output.CERT_STATUS_TRANSFER;
+            this.attachment.status = Constants.CERT.STATUS.TRANSFER;
             break;
         default:
             if (typeof status == 'number')
                 this.attachment.status = status;
             else
-                this.attachment.status = Output.CERT_STATUS_DEFAULT;
+                this.attachment.status = Constants.CERT.STATUS.DEFAULT;
     }
     this.attachment.address = address;
     this.attachment.status = status;
@@ -169,7 +154,7 @@ Output.prototype.setCert = function(symbol, owner, address, cert, status) {
 };
 
 Output.prototype.specifyDid = function(to_did, from_did) {
-    this.attachment.version = Output.ATTACHMENT_VERSION_DID;
+    this.attachment.version = Constants.ATTACHMENT.VERSION.DID;
     this.attachment.to_did = to_did;
     this.attachment.from_did = from_did;
     return this;
@@ -242,7 +227,7 @@ Output.findUtxo = function(utxo, target, current_height, fee) {
     return new Promise((resolve, reject) => {
         //Add fee
         if (fee == undefined)
-            fee = DEFAULT_FEE;
+            fee = Constants.FEE.DEFAULT;
         if (target["ETP"])
             target.ETP += fee;
         else

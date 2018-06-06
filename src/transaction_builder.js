@@ -1,6 +1,7 @@
 'use strict';
-var Transaction = require('./transaction.js');
-var Output = require('./output.js');
+var Transaction = require('./transaction'),
+    Constants = require('./constants'),
+    Output = require('./output.js');
 
 function TransactionBuilder() {}
 
@@ -16,7 +17,7 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
-            fee = Transaction.DEFAULT_FEE;
+            fee = Constants.FEE.DEFAULT;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
@@ -54,7 +55,7 @@ TransactionBuilder.sendLockedAsset = function(utxo, recipient_address, symbol, q
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
-            fee = Transaction.DEFAULT_FEE;
+            fee = Constants.FEE.DEFAULT;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
@@ -97,7 +98,7 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
-            fee = Transaction.DEFAULT_FEE;
+            fee = Constants.FEE.DEFAULT;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
@@ -130,7 +131,7 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
 TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_address, change) {
     return new Promise((resolve, reject) => {
         //Set fee
-        var fee = Transaction.AVATAR_CREATE_DEFAULT_FEE;
+        var fee = Constants.FEE.AVATAR_REGISTER;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();

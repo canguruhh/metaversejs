@@ -12,6 +12,7 @@ var transaction = require('./src/transaction');
 var transaction_builder = require('./src/transaction_builder');
 var output = require('./src/output');
 var networks = require('./src/networks');
+var constants = require('./src/constants');
 var script = require('./src/script');
 
 module.exports = {
@@ -20,5 +21,6 @@ module.exports = {
     script: script,
     output: output,
     transaction_builder: transaction_builder,
-    networks: networks
+    networks: networks,
+    constants: constants
 };

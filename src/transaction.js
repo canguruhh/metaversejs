@@ -15,23 +15,6 @@ function Transaction() {
     this.lock_time = 0;
 }
 
-
-Transaction.ATTACHMENT_TYPE_ETP_TRANSFER = 0;
-Transaction.ATTACHMENT_TYPE_ASSET = 2;
-Transaction.ATTACHMENT_TYPE_MESSAGE = 3;
-Transaction.ATTACHMENT_TYPE_DID = 4;
-Transaction.ATTACHMENT_TYPE_CERT = 5;
-
-Transaction.ATTACHMENT_VERSION_DEFAULT = 1;
-Transaction.ATTACHMENT_VERSION_DID = 207;
-
-Transaction.ASSET_STATUS_ISSUE = 1;
-Transaction.ASSET_STATUS_TRANSFER = 2;
-
-Transaction.DEFAULT_FEE = 10000;
-Transaction.AVATAR_CREATE_DEFAULT_FEE = 100000000;
-Transaction.ASSET_ISSUE_DEFAULT_FEE = 1000000000;
-
 Transaction.prototype.clone = function() {
     let tx = new Transaction();
     tx.version = this.version;
@@ -92,15 +75,15 @@ Transaction.prototype.addMessage = function(address, message) {
  * @param {String} asset
  * @param {Number} value
  */
-Transaction.prototype.addOutput = function(address, asset, value) {
+Transaction.prototype.addOutput = function(address, symbol, value) {
     var output = new Output();
-    this.outputs.push((asset == "ETP") ? output.setTransfer(address, value) : output.setAssetTransfer(address, asset, value));
+    this.outputs.push((symbol == "ETP") ? output.setTransfer(address, value) : output.setAssetTransfer(address, symbol, value));
     return output;
 };
 
 Transaction.prototype.addLockedAssetOutput = function(address, asset, value, attenuation_model, height_delta, from_tx, from_index) {
     var output = new Output();
-    this.outputs.push(output.setLockAssetTransfer(address, asset, value, attenuation_model, height_delta, from_tx, from_index));
+    this.outputs.push(output.setLockAssetTransfer(address, asset, value).setAttenuation(attenuation_model, height_delta, from_tx, from_index));
     return output;
 };
 
@@ -282,33 +265,33 @@ function encodeOutputs(outputs) {
         offset = buffer.writeUInt32LE(output.attachment.version, offset);
         offset = buffer.writeUInt32LE(output.attachment.type, offset);
 
-        if (output.attachment.version === Transaction.ATTACHMENT_VERSION_DID) {
+        if (output.attachment.version === Constants.ATTACHMENT.VERSION.DID) {
             offset += encodeString(buffer, output.attachment.to_did, offset);
             offset += encodeString(buffer, output.attachment.from_did, offset);
         }
 
         switch (output.attachment.type) {
-            case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
+            case Constants.ATTACHMENT.TYPE.ETP_TRANSFER:
                 break;
-            case Transaction.ATTACHMENT_TYPE_ASSET:
+            case Constants.ATTACHMENT.TYPE.MST:
                 switch (output.attachment.status) {
-                    case Transaction.ASSET_STATUS_ISSUE:
+                    case Constants.MST.STATUS.REGISTER:
                         offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
                         break;
-                    case Transaction.ASSET_STATUS_TRANSFER:
-                        offset = Transaction.encodeAttachmentAssetTransfer(buffer, offset, output.attachment);
+                    case Constants.MST.STATUS.TRANSFER:
+                    offset = Transaction.encodeAttachmentMSTTransfer(buffer, offset, output.attachment.symbol, output.attachment.quantity);
                         break;
                     default:
                         throw Error("Asset status unknown");
                 }
                 break;
-            case Transaction.ATTACHMENT_TYPE_MESSAGE:
+            case Constants.ATTACHMENT.TYPE.MESSAGE:
                 offset = Transaction.encodeAttachmentMessage(buffer, offset, output.attachment.message);
                 break;
-            case Transaction.ATTACHMENT_TYPE_DID:
+            case Constants.ATTACHMENT.TYPE.AVATAR:
                 offset = Transaction.encodeAttachmentDid(buffer, offset, output.attachment);
                 break;
-            case Transaction.ATTACHMENT_TYPE_CERT:
+            case Constants.ATTACHMENT.TYPE.CERT:
                 offset = Transaction.encodeAttachmentCert(buffer, offset, output.attachment);
                 break;
             default:
@@ -397,19 +380,19 @@ Transaction.encodeAttachmentMessage = function(buffer, offset, message) {
  * Helper function to encode the attachment for an asset transfer.
  * @param {Buffer} buffer
  * @param {Number} offset
- * @param {Number} attachment_data_type
+ * @param {String} symbol
+ * @param {Number} quantity
  * @returns {Number} New offset
  * @throws {Error}
  */
-Transaction.encodeAttachmentAssetTransfer = function(buffer, offset, attachment_data) {
-    if (attachment_data.asset == undefined)
+Transaction.encodeAttachmentMSTTransfer = function(buffer, offset, symbol, quantity) {
+    if (symbol == undefined)
         throw Error('Specify output asset');
-    if (attachment_data.quantity == undefined)
+    if (quantity == undefined)
         throw Error('Specify output quanity');
-    offset = buffer.writeUInt32LE(attachment_data.status, offset);
-    offset = buffer.writeUInt8(attachment_data.asset.length, offset);
-    offset += new Buffer(attachment_data.asset).copy(buffer, offset);
-    offset = bufferutils.writeUInt64LE(buffer, attachment_data.quantity, offset);
+    offset = buffer.writeUInt32LE(Constants.MST.STATUS.TRANSFER, offset);
+    offset += encodeString(buffer, symbol, offset);
+    offset = bufferutils.writeUInt64LE(buffer, quantity, offset);
     return offset;
 };
 
@@ -613,18 +596,18 @@ Transaction.fromBuffer = function(buffer) {
         attachment.version = readUInt32();
         attachment.type = readUInt32();
 
-        if (attachment.version === Transaction.ATTACHMENT_VERSION_DID) {
+        if (attachment.version === Constants.ATTACHMENT.VERSION.DID) {
             attachment.to_did = readString();
             attachment.from_did = readString();
         }
 
         switch (attachment.type) {
-            case Transaction.ATTACHMENT_TYPE_ETP_TRANSFER:
+            case Constants.ATTACHMENT.TYPE.ETP_TRANSFER:
                 break;
-            case Transaction.ATTACHMENT_TYPE_ASSET:
+            case Constants.ATTACHMENT.TYPE.MST:
                 attachment.status = readUInt32();
                 switch (attachment.status) {
-                    case Transaction.ASSET_STATUS_ISSUE:
+                    case Constants.MST.STATUS.REGISTER:
                         attachment.symbol = readString();
                         attachment.max_supply = readUInt64();
                         attachment.precision = readUInt8();
@@ -642,7 +625,7 @@ Transaction.fromBuffer = function(buffer) {
                         attachment.address = readString();
                         attachment.description = readString();
                         break;
-                    case Transaction.ASSET_STATUS_TRANSFER:
+                case Constants.MST.STATUS.TRANSFER:
                         attachment.asset = readString();
                         attachment.quantity = readUInt64();
                         break;
@@ -650,15 +633,23 @@ Transaction.fromBuffer = function(buffer) {
                         throw 'Unknown attachment status: ' + attachment.status;
                 }
                 break;
-            case Transaction.ATTACHMENT_TYPE_MESSAGE:
+            case Constants.ATTACHMENT.TYPE.MESSAGE:
                 attachment.message = readString();
                 break;
-            case Transaction.ATTACHMENT_TYPE_DID:
+            case Constants.ATTACHMENT.TYPE.AVATAR:
                 attachment.status = readUInt32();
                 attachment.symbol = readString();
                 attachment.address = readString();
                 break;
-            case Transaction.ATTACHMENT_TYPE_CERT:
+            case Constants.ATTACHMENT.TYPE.MIT:
+                attachment.status = readUInt8();
+                attachment.symbol = readString();
+                if (attachment.status == Constants.MIT.STATUS.REGISTER) {
+                    attachment.content = readString();
+                }
+                attachment.address = readString();
+                break;
+            case Constants.ATTACHMENT.TYPE.CERT:
                 attachment.symbol = readString();
                 attachment.owner = readString();
                 attachment.address = readString();
