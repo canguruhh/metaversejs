@@ -84,7 +84,7 @@ Transaction.prototype.addOutput = function(address, symbol, value) {
 
 Transaction.prototype.addLockedAssetOutput = function(address, asset, value, attenuation_model, height_delta, from_tx, from_index) {
     var output = new Output();
-    this.outputs.push(output.setLockAssetTransfer(address, asset, value).setAttenuation(attenuation_model, height_delta, from_tx, from_index));
+    this.outputs.push(output.setAssetTransfer(address, asset, value).setAttenuation(attenuation_model, height_delta, from_tx, from_index));
     return output;
 };
 
