@@ -209,7 +209,7 @@ Output.calculateUtxo = function(txs, addresses) {
                     output.locked_until = (output.locked_height_range) ? tx.height + output.locked_height_range : 0;
                     delete output['locked_height_range'];
                     output.hash = tx.hash;
-                    list[tx.hash + '-' + index] = output;
+                    list[tx.hash + '-' + output.index] = output;
                 }
             });
         });
