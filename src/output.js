@@ -202,10 +202,10 @@ Output.calculateUtxo = function(txs, addresses) {
         let list = {};
         txs.forEach((tx, index) => {
             tx.inputs.forEach((input) => {
-                list[input.previous_output.hash + '-' + input.previous_output.index] = null;
+                list[input.previous_output.hash + '-' + input.previous_output.index] = 'spent';
             });
-            tx.outputs.forEach((output, index) => {
-                if (list[tx.hash + '-' + index] !== null) {
+            tx.outputs.forEach((output) => {
+                if(addresses.indexOf(output.address)!==-1 && list[tx.hash + '-' + output.index] !== 'spent') {
                     output.locked_until = (output.locked_height_range) ? tx.height + output.locked_height_range : 0;
                     delete output['locked_height_range'];
                     output.hash = tx.hash;
@@ -215,7 +215,7 @@ Output.calculateUtxo = function(txs, addresses) {
         });
         let utxo = [];
         Object.values(list).forEach(item => {
-            if (item !== null)
+            if (item !== 'spent')
                 utxo.push(item);
         });
         resolve(utxo);
