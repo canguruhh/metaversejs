@@ -13,7 +13,7 @@ function TransactionBuilder() {}
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
  */
-TransactionBuilder.send = function(utxo, recipient_address, target, change_address, change, locked_asset_change, fee, messages) {
+TransactionBuilder.send = function(utxo, recipient_address, recipient_avatar, target, change_address, change, locked_asset_change, fee, messages) {
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
@@ -31,7 +31,7 @@ TransactionBuilder.send = function(utxo, recipient_address, target, change_addre
             messages = [];
         messages.forEach((message) => tx.addMessage(recipient_address, message));
         //add the target outputs to the recipient
-        Object.keys(target).forEach((symbol) => (target[symbol]) ? tx.addOutput(recipient_address, symbol, target[symbol]) : null);
+        Object.keys(target).forEach((symbol) => (target[symbol]) ? tx.addOutput(recipient_address, symbol, target[symbol], recipient_avatar) : null);
         if (target.ETP)
             etpcheck -= target.ETP;
         //add the change outputs

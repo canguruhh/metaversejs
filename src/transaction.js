@@ -76,9 +76,15 @@ Transaction.prototype.addMessage = function(address, message) {
  * @param {String} asset
  * @param {Number} value
  */
-Transaction.prototype.addOutput = function(address, symbol, value) {
+Transaction.prototype.addOutput = function(address, symbol, value, to_did) {
     var output = new Output();
-    this.outputs.push((symbol == "ETP") ? output.setTransfer(address, value) : output.setAssetTransfer(address, symbol, value));
+    if(symbol==='ETP')
+        output.setTransfer(address, value);
+    else
+        output.setAssetTransfer(address, symbol, value);
+    if(to_did)
+        output.specifyDid(to_did,"");
+    this.outputs.push(output);
     return output;
 };
 
