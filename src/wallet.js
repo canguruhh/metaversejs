@@ -17,12 +17,14 @@ Wallet.MNEMONIC_SIZE = 256;
  * Generate a new mnemonic.
  * @return {Promise.String}
  */
-Wallet.generateMnemonic = () => {
+Wallet.generateMnemonic = (wordlist) => {
     return new Promise((resolve) => {
-        let mnemonic = bip39.generateMnemonic(Wallet.MNEMONIC_SIZE);
+        let mnemonic = bip39.generateMnemonic(Wallet.MNEMONIC_SIZE, wordlist);
         resolve(mnemonic);
     });
 };
+
+Wallet.wordlists = bip39.wordlists;
 
 /**
  * Generates a seed from the given mnemonic.
