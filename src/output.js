@@ -299,9 +299,9 @@ Output.filter = function(outputs, filter) {
                 return false;
         }
         if (filter.symbol !== undefined) {
-            if (!Array.isArray(filter.symbol) && filter.symbol !== output.symbol)
+            if (!Array.isArray(filter.symbol) && filter.symbol !== output.attachment.symbol)
                 return false;
-            else if (Array.isArray(filter.symbol) && filter.type.indexOf(output.symbol) == -1)
+            else if (Array.isArray(filter.symbol) && filter.type.indexOf(output.attachment.symbol) == -1)
                 return false;
         }
         if (filter.address !== undefined) {
