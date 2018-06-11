@@ -151,6 +151,7 @@ Script.deserializeAttenuationModel = function(string) {
     switch (tmp.TYPE) {
         case 1:
         case 2:
+        case 3:
             return tmp;
             break;
         default:
@@ -184,7 +185,9 @@ Script.adjustAttenuationModel = function(model, height_delta) {
                 }
                 past_blocks += period_size;
             }
+            break;
         case 2:
+        case 3:
             past_blocks = model.UC[model.PN] - model.LH;
             for (let period = model.PN; period < model.UC.length; period++) {
                 past_blocks += model.UC[period];
