@@ -24,6 +24,8 @@ Wallet.generateMnemonic = (wordlist) => {
     });
 };
 
+Wallet.validateMnemonic = (mnemonic, wordlist) => bip39.validateMnemonic(mnemonic, wordlist);
+
 Wallet.wordlists = bip39.wordlists;
 
 /**
