@@ -201,8 +201,10 @@ Transaction.prototype.addLockOutput = function(address, value, locktime, network
 
     if (network == undefined)
         network = networks['mainnet'];
-    else if (typeof network === 'string')
+    else if (typeof network === 'string' && networks[network])
         network = networks[network];
+
+    locktime = parseInt(locktime);
 
     if (network.locktimes.indexOf(locktime) !== -1) {
         var output = new Output();
