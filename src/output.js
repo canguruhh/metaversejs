@@ -144,7 +144,7 @@ Output.prototype.setCert = function(symbol, owner, address, cert, status) {
         case 'issue':
             this.attachment.status = Constants.CERT.STATUS.ISSUE;
             break;
-        case 'naming':
+        case 'transfer':
             this.attachment.status = Constants.CERT.STATUS.TRANSFER;
             break;
         default:
@@ -154,7 +154,6 @@ Output.prototype.setCert = function(symbol, owner, address, cert, status) {
                 this.attachment.status = Constants.CERT.STATUS.DEFAULT;
     }
     this.attachment.address = address;
-    this.attachment.status = status;
     return this;
 };
 
