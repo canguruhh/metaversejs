@@ -197,7 +197,7 @@ Transaction.prototype.addDidTransferOutput = function(address, symbol) {
  * @param {Number} value
  * @param {Number} locktime Number of blocks
  */
-Transaction.prototype.addLockOutput = function(address, value, locktime, network = undefined) {
+Transaction.prototype.addLockOutput = function(address, value, locktime, network) {
 
     if (network == undefined)
         network = networks['mainnet'];
