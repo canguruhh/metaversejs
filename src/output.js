@@ -147,6 +147,9 @@ Output.prototype.setCert = function(symbol, owner, address, cert, status) {
         case 'transfer':
             this.attachment.status = Constants.CERT.STATUS.TRANSFER;
             break;
+        case 'autoissue':
+            this.attachment.status = Constants.CERT.STATUS.AUTOISSUE;
+            break;
         default:
             if (typeof status == 'number')
                 this.attachment.status = status;

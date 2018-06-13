@@ -37,7 +37,8 @@ module.exports = Object.freeze({
         STATUS:{
             DEFAULT: 0,
             ISSUE: 1,
-            TRANSFER: 2
+            TRANSFER: 2,
+            AUTOISSUE: 3
         }
     },
 
