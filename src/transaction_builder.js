@@ -250,9 +250,8 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
                 switch (input.attachment.cert) {
                     case 'domain':
                     case 'issue':
-                        certs.push(input);
-                        break;
                     case 'naming':
+                        certs.push(input);
                         break;
                     default:
                         console.error('Unknown cert type: ' + input.attachment.cert);
@@ -271,7 +270,7 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
         });
         //add toplevel domain certificate if wanted
         if (issue_domain)
-            tx.addCertOutput(symbol.split(".")[0], issuer, recipient_address, 'domain','autoissue').specifyDid(issuer, issuer);
+            tx.addCertOutput(symbol.split(".")[0], issuer, recipient_address, 'domain', 'autoissue').specifyDid(issuer, issuer);
         //add the change outputs
         Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
         if (change.ETP)
