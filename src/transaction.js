@@ -77,13 +77,38 @@ Transaction.prototype.addMessage = function(address, message) {
  * @param {Number} value
  */
 Transaction.prototype.addOutput = function(address, symbol, value, to_did) {
+    return (symbol === 'ETP') ?
+        this.addETPOutput(address, value, to_did) :
+        this.addMSTOutput(address, symbol, value, to_did);
+};
+
+/**
+ * Add an etp output to the transaction.
+ * @param {String} address
+ * @param {Number} value
+ * @param {String} to_did
+ */
+Transaction.prototype.addETPOutput = function(address, value, to_did) {
     var output = new Output();
-    if(symbol==='ETP')
-        output.setTransfer(address, value);
-    else
-        output.setAssetTransfer(address, symbol, value);
-    if(to_did)
-        output.specifyDid(to_did,"");
+    output.setTransfer(address, value);
+    if (to_did)
+        output.specifyDid(to_did, "");
+    this.outputs.push(output);
+    return output;
+};
+
+/**
+ * Add an MST output to the transaction.
+ * @param {String} address
+ * @param {String} symbol
+ * @param {Number} value
+ * @param {String} to_did
+ */
+Transaction.prototype.addMSTOutput = function(address, symbol, value, to_did) {
+    var output = new Output();
+    output.setAssetTransfer(address, symbol, value);
+    if (to_did)
+        output.specifyDid(to_did, "");
     this.outputs.push(output);
     return output;
 };
@@ -314,7 +339,7 @@ function encodeOutputs(outputs) {
                         offset = Transaction.encodeAttachmentAssetIssue(buffer, offset, output.attachment);
                         break;
                     case Constants.MST.STATUS.TRANSFER:
-                    offset = Transaction.encodeAttachmentMSTTransfer(buffer, offset, output.attachment.symbol, output.attachment.quantity);
+                        offset = Transaction.encodeAttachmentMSTTransfer(buffer, offset, output.attachment.symbol, output.attachment.quantity);
                         break;
                     default:
                         throw Error("Asset status unknown");
@@ -329,18 +354,18 @@ function encodeOutputs(outputs) {
             case Constants.ATTACHMENT.TYPE.CERT:
                 offset = Transaction.encodeAttachmentCert(buffer, offset, output.attachment);
                 break;
-        case Constants.ATTACHMENT.TYPE.MIT:
-            switch (output.attachment.status) {
-            case Constants.MIT.STATUS.REGISTER:
-                offset = Transaction.encodeAttachmentMITRegister(buffer, offset, output.attachment.symbol, output.attachment.content, output.attachment.address);
+            case Constants.ATTACHMENT.TYPE.MIT:
+                switch (output.attachment.status) {
+                    case Constants.MIT.STATUS.REGISTER:
+                        offset = Transaction.encodeAttachmentMITRegister(buffer, offset, output.attachment.symbol, output.attachment.content, output.attachment.address);
+                        break;
+                    case Constants.MIT.STATUS.TRANSFER:
+                        offset = Transaction.encodeAttachmentMITTransfer(buffer, offset, output.attachment.symbol, output.attachment.address);
+                        break;
+                    default:
+                        throw Error("Asset status unknown");
+                }
                 break;
-            case Constants.MIT.STATUS.TRANSFER:
-                offset = Transaction.encodeAttachmentMITTransfer(buffer, offset, output.attachment.symbol, output.attachment.address);
-                break;
-            default:
-                throw Error("Asset status unknown");
-            }
-            break;
             default:
                 throw Error("What kind of an output is that?!");
         }
@@ -706,7 +731,7 @@ Transaction.fromBuffer = function(buffer) {
                         attachment.address = readString();
                         attachment.description = readString();
                         break;
-                case Constants.MST.STATUS.TRANSFER:
+                    case Constants.MST.STATUS.TRANSFER:
                         attachment.asset = readString();
                         attachment.quantity = readUInt64();
                         break;
