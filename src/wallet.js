@@ -3,6 +3,7 @@
 var bip39 = require('bip39');
 var bitcoin = require('bitcoinjs-lib');
 var Networks = require('./networks.js');
+var Message = require('./message.js');
 
 const DEFAULT_KEY_SEARCH_DEPTH = 250;
 
@@ -163,6 +164,14 @@ Wallet.prototype.sign = function(transaction) {
             transaction.inputs[index].script = script;
         })))
         .then(()=>transaction);
+};
+
+Wallet.prototype.signMessage = function(address, message, as_buffer){
+    if(typeof as_buffer === 'undefined')
+        as_buffer=false;
+    return this.findDeriveNodeByAddess(address)
+        .then(node=>Message.sign(message, node.keyPair.d.toBuffer(32), node.keyPair.compressed))
+        .then(buffer=>(as_buffer)?buffer:buffer.toString('hex'));
 };
 
 /**
