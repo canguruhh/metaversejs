@@ -50,7 +50,7 @@ function sign (message, privateKey, compressed, messagePrefix) {
 }
 
 function verify (message, address, signature, messagePrefix) {
-    if (!Buffer.isBuffer(signature)) signature = Buffer.from(signature, 'base64');
+    if (!Buffer.isBuffer(signature)) signature = Buffer.from(signature, 'hex');
 
     var parsed = decodeSignature(signature);
     var hash = magicHash(message, messagePrefix);
