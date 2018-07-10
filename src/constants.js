@@ -53,5 +53,12 @@ module.exports = Object.freeze({
         DEFAULT: 10000,
         MST_REGISTER: 1000000000,
         AVATAR_REGISTER: 100000000
+    },
+
+    CELEBRITIES: {
+        BOUNTY: {
+            address: "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
+            symbol: "developer-community"
+        }
     }
 });
