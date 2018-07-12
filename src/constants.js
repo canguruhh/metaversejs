@@ -28,13 +28,13 @@ module.exports = Object.freeze({
         }
     },
 
-    CERT:{
-        TYPE:{
+    CERT: {
+        TYPE: {
             ISSUE: 1,
             DOMAIN: 2,
             NAMING: 3
         },
-        STATUS:{
+        STATUS: {
             DEFAULT: 0,
             ISSUE: 1,
             TRANSFER: 2,
@@ -42,8 +42,8 @@ module.exports = Object.freeze({
         }
     },
 
-    AVATAR:{
-        STATUS:{
+    AVATAR: {
+        STATUS: {
             REGISTER: 1,
             TRANSFER: 2
         }
@@ -57,8 +57,14 @@ module.exports = Object.freeze({
 
     CELEBRITIES: {
         BOUNTY: {
-            address: "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
-            symbol: "developer-community"
+            mainnet: {
+                address: "MAwLwVGwJyFsTBfNj2j5nCUrQXGVRvHzPh",
+                symbol: "developer-community"
+            },
+            testnet: {
+                address: "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms",
+                symbol: "developer-community"
+            }
         }
     }
 });

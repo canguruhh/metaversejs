@@ -183,8 +183,10 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
  */
-TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_address, change, bounty_fee) {
+TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_address, change, bounty_fee, network) {
     return new Promise((resolve, reject) => {
+        if(network==undefined)
+            network='mainnet';
         //Set fee
         var fee = Constants.FEE.AVATAR_REGISTER;
         var etpcheck = 0;
@@ -203,7 +205,7 @@ TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_addr
         if (change.ETP)
             etpcheck += change.ETP;
         if(bounty_fee && bounty_fee>0){
-            tx.addETPOutput(Constants.CELEBRITIES.BOUNTY.address, bounty_fee, Constants.CELEBRITIES.BOUNTY.symbol);
+            tx.addETPOutput(Constants.CELEBRITIES.BOUNTY[network].address, bounty_fee, Constants.CELEBRITIES.BOUNTY[network].symbol);
             etpcheck += bounty_fee;
         }
         if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
@@ -290,8 +292,10 @@ TransactionBuilder.transferMIT = function(utxo, sender_avatar, recipient_address
  * @param {Boolean} issue_domain indication if the toplevel domain certificate should be included as an output
  * @param {Number} fee Optional fee definition (default 10000 bits)
  */
-TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee) {
+TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network) {
     return new Promise((resolve, reject) => {
+        if(network == undefined)
+            network='mainnet';
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
@@ -333,7 +337,7 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
         if (change.ETP)
             etpcheck += change.ETP;
         if(bounty_fee && bounty_fee>0){
-            tx.addETPOutput(Constants.CELEBRITIES.BOUNTY.address, bounty_fee, Constants.CELEBRITIES.BOUNTY.symbol);
+            tx.addETPOutput(Constants.CELEBRITIES.BOUNTY[network].address, bounty_fee, Constants.CELEBRITIES.BOUNTY[network].symbol);
             etpcheck += bounty_fee;
         }
         if ( is_secondaryissue && etpcheck !== Constants.FEE.DEFAULT) throw Error('ERR_FEE_CHECK_FAILED');
