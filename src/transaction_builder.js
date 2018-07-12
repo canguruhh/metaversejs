@@ -206,7 +206,6 @@ TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_addr
             etpcheck += change.ETP;
         if(bounty_fee && bounty_fee>0){
             tx.addETPOutput(Constants.CELEBRITIES.BOUNTY[network].address, bounty_fee, Constants.CELEBRITIES.BOUNTY[network].symbol);
-            etpcheck += bounty_fee;
         }
         if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
         resolve(tx);
@@ -338,7 +337,6 @@ TransactionBuilder.issueAsset = function(inputs, recipient_address, symbol, max_
             etpcheck += change.ETP;
         if(bounty_fee && bounty_fee>0){
             tx.addETPOutput(Constants.CELEBRITIES.BOUNTY[network].address, bounty_fee, Constants.CELEBRITIES.BOUNTY[network].symbol);
-            etpcheck += bounty_fee;
         }
         if ( is_secondaryissue && etpcheck !== Constants.FEE.DEFAULT) throw Error('ERR_FEE_CHECK_FAILED');
         else if ( !is_secondaryissue && etpcheck !== Constants.FEE.MST_REGISTER) throw Error('ERR_FEE_CHECK_FAILED');
