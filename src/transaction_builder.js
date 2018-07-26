@@ -224,11 +224,13 @@ TransactionBuilder.issueDid = function(utxo, avatar_address, symbol, change_addr
  * @param {String} content Content of MIT
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
+ * @param {Number} fee Optional fee definition (default 10000 bits)
  */
-TransactionBuilder.registerMIT = function(utxo, recipient_address, issuer_avatar, symbol, content, change_address, change) {
+TransactionBuilder.registerMIT = function(utxo, recipient_address, issuer_avatar, symbol, content, change_address, change, fee) {
     return new Promise((resolve, reject) => {
         //Set fee
-        var fee = Constants.FEE.DEFAULT;
+        if (fee == undefined)
+            fee = Constants.FEE.DEFAULT;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
@@ -255,11 +257,13 @@ TransactionBuilder.registerMIT = function(utxo, recipient_address, issuer_avatar
  * @param {String} symbol Symbol of MIT
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
+ * @param {Number} fee Optional fee definition (default 10000 bits)
  */
-TransactionBuilder.transferMIT = function(utxo, sender_avatar, recipient_address, recipient_avatar, symbol, change_address, change) {
+TransactionBuilder.transferMIT = function(utxo, sender_avatar, recipient_address, recipient_avatar, symbol, change_address, change, fee) {
     return new Promise((resolve, reject) => {
         //Set fee
-        var fee = Constants.FEE.DEFAULT;
+        if (fee == undefined)
+            fee = Constants.FEE.DEFAULT;
         var etpcheck = 0;
         //create new transaction
         let tx = new Transaction();
