@@ -3,35 +3,41 @@ var createHash = require('create-hash');
 var secp256k1 = require('secp256k1');
 var varuint = require('varuint-bitcoin');
 
-function sha256 (b) {
+function sha256(b) {
     return createHash('sha256').update(b).digest();
 }
-function hash256 (buffer) {
+
+function hash256(buffer) {
     return sha256(sha256(buffer));
 }
-function hash160 (buffer) {
+
+function hash160(buffer) {
     return createHash('ripemd160').update(sha256(buffer)).digest();
 }
 
-function encodeSignature (signature, recovery, compressed) {
+function encodeSignature(signature, recovery, compressed) {
     if (compressed) recovery += 4;
     return Buffer.concat([Buffer.alloc(1, recovery + 27), signature]);
 }
 
-function decodeSignature (buffer) {
+function decodeSignature(buffer) {
     if (buffer.length !== 65) throw new Error('Invalid signature length');
 
     var flagByte = buffer.readUInt8(0) - 27;
-  if (flagByte > 7) throw new Error('Invalid signature parameter')
+    if (flagByte > 7) throw new Error('Invalid signature parameter')
 
-  return {
-    compressed: !!(flagByte & 4),
-    recovery: flagByte & 3,
-    signature: buffer.slice(1)
-  };
+    return {
+        compressed: !!(flagByte & 4),
+        recovery: flagByte & 3,
+        signature: buffer.slice(1)
+    };
 }
 
-function magicHash (message, messagePrefix) {
+function size(text) {
+    return Buffer.from(text).length;
+}
+
+function magicHash(message, messagePrefix) {
     messagePrefix = messagePrefix || '\u0018Metaverse Signed Message:\n';
     if (!Buffer.isBuffer(messagePrefix)) messagePrefix = Buffer.from(messagePrefix, 'utf8');
 
@@ -43,13 +49,13 @@ function magicHash (message, messagePrefix) {
     return hash256(buffer);
 }
 
-function sign (message, privateKey, compressed, messagePrefix) {
+function sign(message, privateKey, compressed, messagePrefix) {
     var hash = magicHash(message, messagePrefix);
     var sigObj = secp256k1.sign(hash, privateKey);
     return encodeSignature(sigObj.signature, sigObj.recovery, compressed);
 }
 
-function verify (message, address, signature, messagePrefix) {
+function verify(message, address, signature, messagePrefix) {
     if (!Buffer.isBuffer(signature)) signature = Buffer.from(signature, 'hex');
 
     var parsed = decodeSignature(signature);
@@ -59,11 +65,12 @@ function verify (message, address, signature, messagePrefix) {
     var actual = hash160(publicKey);
     var expected = bs58check.decode(address).slice(1);
 
-    return Buffer.compare(actual, expected)==0;
+    return Buffer.compare(actual, expected) == 0;
 }
 
 module.exports = {
-  magicHash: magicHash,
-  sign: sign,
-  verify: verify
+    magicHash: magicHash,
+    sign: sign,
+    size: size,
+    verify: verify
 };
