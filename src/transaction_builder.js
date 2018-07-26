@@ -148,8 +148,9 @@ TransactionBuilder.sendLockedAsset = function(utxo, recipient_address, symbol, q
  * @param {String} change_address Change address
  * @param {Object} change Definition of change assets
  * @param {Number} fee Optional fee definition (default 10000 bits)
+ * @param {Array<String>} messages Optional array of string messages
  */
-TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duration, change_address, change, fee, network) {
+TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duration, change_address, change, fee, network, messages) {
     return new Promise((resolve, reject) => {
         //Set fee
         if (fee == undefined)
@@ -165,6 +166,9 @@ TransactionBuilder.deposit = function(utxo, recipient_address, quantity, duratio
         });
         //add lock output to the recipient
         tx.addLockOutput(recipient_address, quantity, duration, network);
+        if (messages == undefined)
+            messages = [];
+        messages.forEach((message) => tx.addMessage(utxo[0].address, message));
         etpcheck -= quantity;
         //add the change outputs
         Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
