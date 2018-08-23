@@ -133,7 +133,7 @@ Transaction.prototype.addLockedAssetOutput = function(address, asset, value, att
 Transaction.prototype.addAssetIssueOutput = function(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue) {
     if (!/^([A-Z0-9\.]{3,63})$/.test(symbol))
         throw Error('ERR_SYMBOL_NAME');
-    else if (!/^([A-Za-z0-9\.]{3,63})$/.test(issuer))
+    else if (!/^([A-Za-z0-9\.@_-]{3,63})$/.test(issuer))
         throw Error('ERR_ISSUER_NAME');
     else if (max_supply <= 0)
         throw Error('ERR_MAX_SUPPLY_TOO_LOW');
