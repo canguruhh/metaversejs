@@ -52,7 +52,8 @@ module.exports = Object.freeze({
     FEE: {
         DEFAULT: 10000,
         MST_REGISTER: 1000000000,
-        AVATAR_REGISTER: 100000000
+        AVATAR_REGISTER: 100000000,
+        SWAP_FEE: 100000000
     },
 
     CELEBRITIES: {
