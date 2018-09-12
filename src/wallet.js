@@ -93,6 +93,32 @@ Wallet.prototype.findDeriveIndexByAddress = function(address, maxDepth) {
 };
 
 /**
+ * For the given HD node it finds the derivative index thats corresponds to the given public key.
+ * @param {HDNode} node Start node to
+ * @param {String} pukey Target public key.
+ * @param {Number} maxDepth Max index before algorithm stops.
+ * @return {Promise.HDNode}
+ */
+Wallet.findDeriveIndexByPublicKey = (node, pubkey, maxDepth) => {
+    return new Promise((resolve, reject) => {
+        let i = 0,
+            done = 0;
+        if (maxDepth == undefined)
+            maxDepth = DEFAULT_KEY_SEARCH_DEPTH;
+        while (i < maxDepth && !done) {
+            if (node.derive(i).getPublicKeyBuffer().toString('hex') == pubkey) {
+                done++;
+                resolve(i);
+            }
+            i++;
+        }
+        if (!done) {
+            reject(Error('ERR_NO_HDNODE_FOR_PUBLICKEY'));
+        }
+    });
+};
+
+/**
  * For the given HD node it finds the derivative index thats public key corresponds to the given address.
  * @param {HDNode} node Start node to
  * @param {String} address Target address.
@@ -116,6 +142,27 @@ Wallet.findDeriveIndexByAddress = (node, address, maxDepth) => {
             reject(Error('ERR_NO_HDNODE_FOR_ADDRESS'));
         }
     });
+};
+
+/**
+ * Finds the wallets HD node that corresponds to the given public key.
+ * @param {String} pubkey
+ * @param {Number} maxDepth
+ * @return {Promise.HDNode}
+ */
+Wallet.prototype.findDeriveNodeByPublic = function(pubkey, maxDepth) {
+    return Wallet.findDeriveNodeByPublicKey(this.rootnode, pubkey, maxDepth);
+};
+
+/**
+ * Finds the wallets HD node thats public key corresponds to the given address.
+ * @param {String} address
+ * @param {Number} maxDepth
+ * @return {Promise.HDNode}
+ */
+Wallet.prototype.findPublicKeyByAddess = function(address, maxDepth) {
+    return Wallet.findDeriveNodeByAddress(this.rootnode, address, maxDepth)
+        .then(node=>node.getPublicKeyBuffer().toString('hex'));
 };
 
 /**
@@ -159,7 +206,7 @@ Wallet.prototype.getAddresses = function(number, start_from) {
  * @return{Promise.Transaction} Signed transaction.
  */
 Wallet.prototype.sign = function(transaction) {
-    return Promise.all(transaction.inputs.map((input, index) => this.generateInputScript(transaction, input.address, index)))
+    return Promise.all(transaction.inputs.map((input, index) => this.generateInputScript(transaction, input, index)))
         .then((input_scripts) => Promise.all(input_scripts.map((script, index) => {
             transaction.inputs[index].script = script;
         })))
@@ -181,8 +228,8 @@ Wallet.prototype.signMessage = function(address, message, as_buffer){
  * @param {Number} index
  * @return {Promise.String}
  */
-Wallet.prototype.generateInputScript = function(transaction, input_address, index) {
-    return this.findDeriveNodeByAddess(input_address)
+Wallet.prototype.generateInputScript = function(transaction, input, index) {
+    return ((input.address[0]!='3')?this.findDeriveNodeByAddess(input.address):this.findDeriveNodeByAddess(input.address))
         .then((node) => Wallet.generateInputScriptParameters(node, transaction, index));
 };
 

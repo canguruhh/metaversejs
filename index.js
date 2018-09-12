@@ -13,6 +13,7 @@ var transaction_builder = require('./src/transaction_builder');
 var output = require('./src/output');
 var networks = require('./src/networks');
 var message = require('./src/message');
+var multisig = require('./src/multisig');
 var constants = require('./src/constants');
 var script = require('./src/script');
 
@@ -20,6 +21,7 @@ module.exports = {
     wallet: wallet,
     transaction: transaction,
     script: script,
+    multisig: multisig,
     output: output,
     transaction_builder: transaction_builder,
     networks: networks,
