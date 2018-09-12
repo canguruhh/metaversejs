@@ -7,7 +7,7 @@ function generate(n, pubKeys){
     let script = redeem(n, pubKeys);
     return{
         script: script,
-        address: address(redeem)
+        address: address(script)
     };
 }
 
