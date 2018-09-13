@@ -20,7 +20,12 @@ function address(redeem){
     return base58check.encode(hash, '05');
 };
 
+function isMultisigAddress(address){
+    return /^3[1-9A-HJ-NP-Za-km-z]{33}$/.test(address);
+}
+
 module.exports = {
     generate: generate,
+    isMultisigAddress: isMultisigAddress,
     address: address
 };
