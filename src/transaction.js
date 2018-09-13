@@ -4,6 +4,7 @@ var bufferutils = require('./bufferutils.js'),
     crypto = require('crypto'),
     base58check = require('base58check'),
     Script = require('./script'),
+    Multisig = require('./multisig'),
     Output = require('./output'),
     Constants = require('./constants'),
     networks = require('./networks'),
@@ -77,9 +78,14 @@ Transaction.prototype.addMessage = function(address, message) {
  * @param {Number} value
  */
 Transaction.prototype.addOutput = function(address, symbol, value, to_did) {
-    return (symbol === 'ETP') ?
+    let output = (symbol === 'ETP') ?
         this.addETPOutput(address, value, to_did) :
         this.addMSTOutput(address, symbol, value, to_did);
+    if(Multisig.isMultisigAddress(address)){
+        if(to_did) throw Error('Digital identity incompatible with P2SH');
+        output.setP2SH();
+    }
+    return output;
 };
 
 /**
@@ -304,6 +310,9 @@ function encodeOutputs(outputs) {
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
         //Output script
         switch (output.script_type) {
+            case 'p2sh':
+                offset = writeScriptPayToScriptHash(output.address, buffer, offset);
+                break;
             case 'pubkeyhash':
                 offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
                 break;
@@ -570,6 +579,24 @@ Transaction.encodeAttachmentMITTransfer = function(buffer, offset, symbol, addre
  * @returns {Buffer}
  */
 Transaction.encodeInputScript = (parameters) => Script.fromChunks((parameters) ? parameters : []).buffer;
+
+/**
+ * Write p2sh to the given buffer.
+ * @param {String} scripthash For example multisig address
+ * @param {Buffer} buffer
+ * @param {Number} offset
+ * @returns {Number} new offset
+ */
+function writeScriptPayToScriptHash(scripthash, buffer, offset) {
+    offset = buffer.writeUInt8(23, offset); //Script length
+    offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
+    //Write previous output address
+    offset = buffer.writeUInt8(20, offset); //Address length
+    offset += new Buffer(base58check.decode(scripthash, 'hex').data, 'hex').copy(buffer, offset);
+    //Static transfer stuff
+    offset = buffer.writeUInt8(OPS.OP_EQUAL, offset);
+    return offset;
+}
 
 /**
  * Write p2pkh to the given buffer.

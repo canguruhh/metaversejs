@@ -84,6 +84,11 @@ Output.prototype.setMessage = function(address, message) {
     return this;
 };
 
+Output.prototype.setP2SH = function(){
+    this.script_type = "p2sh";
+    return this;
+};
+
 Output.prototype.setDeposit = function(address, value, locktime) {
     this.address = address;
     this.attachment.type = Constants.ATTACHMENT.TYPE.ETP_TRANSFER;
