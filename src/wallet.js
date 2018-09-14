@@ -3,6 +3,7 @@
 var bip39 = require('bip39');
 var bitcoin = require('bitcoinjs-lib');
 var Networks = require('./networks.js');
+var Script = require('./script.js');
 var Message = require('./message.js');
 
 const DEFAULT_KEY_SEARCH_DEPTH = 250;
@@ -162,7 +163,7 @@ Wallet.prototype.findDeriveNodeByPublic = function(pubkey, maxDepth) {
  */
 Wallet.prototype.findPublicKeyByAddess = function(address, maxDepth) {
     return Wallet.findDeriveNodeByAddress(this.rootnode, address, maxDepth)
-        .then(node=>node.getPublicKeyBuffer().toString('hex'));
+        .then(node => node.getPublicKeyBuffer().toString('hex'));
 };
 
 /**
@@ -195,7 +196,7 @@ Wallet.prototype.getAddresses = function(number, start_from) {
     if (start_from == undefined) start_from = 0;
     if (number == undefined) number = 10;
     let addresses = [];
-    for(let i=0; i<number;i++)
+    for (let i = 0; i < number; i++)
         addresses.push(this.getAddress(i));
     return addresses;
 };
@@ -210,15 +211,15 @@ Wallet.prototype.sign = function(transaction) {
         .then((input_scripts) => Promise.all(input_scripts.map((script, index) => {
             transaction.inputs[index].script = script;
         })))
-        .then(()=>transaction);
+        .then(() => transaction);
 };
 
-Wallet.prototype.signMessage = function(address, message, as_buffer){
-    if(typeof as_buffer === 'undefined')
-        as_buffer=false;
+Wallet.prototype.signMessage = function(address, message, as_buffer) {
+    if (typeof as_buffer === 'undefined')
+        as_buffer = false;
     return this.findDeriveNodeByAddess(address)
-        .then(node=>Message.sign(message, node.keyPair.d.toBuffer(32), node.keyPair.compressed))
-        .then(buffer=>(as_buffer)?buffer:buffer.toString('hex'));
+        .then(node => Message.sign(message, node.keyPair.d.toBuffer(32), node.keyPair.compressed))
+        .then(buffer => (as_buffer) ? buffer : buffer.toString('hex'));
 };
 
 /**
@@ -229,7 +230,7 @@ Wallet.prototype.signMessage = function(address, message, as_buffer){
  * @return {Promise.String}
  */
 Wallet.prototype.generateInputScript = function(transaction, input, index) {
-    return ((input.address[0]!='3')?this.findDeriveNodeByAddess(input.address):this.findDeriveNodeByAddess(input.address))
+    return ((input.address[0] != '3') ? this.findDeriveNodeByAddess(input.address) : this.findDeriveNodeByAddess(input.address))
         .then((node) => Wallet.generateInputScriptParameters(node, transaction, index));
 };
 
@@ -247,13 +248,15 @@ Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
         script_buffer.writeUInt32LE(1, 0);
         var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
         var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
-        let signature = hdnode.sign(sig_hash).toDER().toString('hex')+'01';
-        let parameters = [Buffer.from(signature,'hex'),hdnode.getPublicKeyBuffer() ];
+        let signature = hdnode.sign(sig_hash).toDER().toString('hex') + '01';
+        if (Script.isP2SH(transaction.inputs[index].previous_output.script))
+            console.log(Script.extractP2SHRedeem(transaction.inputs[index].script))
+        let parameters = [Buffer.from(signature, 'hex'), hdnode.getPublicKeyBuffer()];
         //Check if the previous output was locked etp
         let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
-        if(transaction.inputs[index].previous_output.script && transaction.inputs[index].previous_output.script.match(lockregex)){
+        if (transaction.inputs[index].previous_output.script && transaction.inputs[index].previous_output.script.match(lockregex)) {
             let number = lockregex.exec(transaction.inputs[index].previous_output.script.match(lockregex)[0])[1];
-            parameters.push(Buffer.from(number,'hex'));
+            parameters.push(Buffer.from(number, 'hex'));
         }
         resolve(parameters);
     });

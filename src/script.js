@@ -165,7 +165,35 @@ Script.serializeAttenuationModel = function(model) {
         result += key + '=' + ((Array.isArray(model[key])) ? model[key].join(',') : model[key]) + ';';
     });
     return result.substr(0, result.length - 1);
-}
+};
+
+
+Script.isP2SH = (script) => /^hash160 \[ [a-f0-9]{40} \] equal$/.test(script);
+
+Script.extractP2SHSignatures = (script) => {
+    let regex = /(?:\[ ([a-f0-9]+) \])/gi;
+    let signatures = [];
+    var xArray; while((xArray = regex.exec(script))) signatures.push(xArray[1]);
+    if(signatures.length>1)
+        return signatures.splice(0,signatures.length-1);
+    return [];
+};
+
+Script.extractP2SHRedeem = (script) => {
+    let regex = /(?:\[ ([a-f0-9]+) \])/gi;
+    let signatures = [];
+    var xArray; while((xArray = regex.exec(script))) signatures.push(xArray[1]);
+    if(signatures.length)
+        return signatures[signatures.length-1];
+    return null;
+};
+
+Script.combineP2SHSignatures = (signatures, redeem) => {
+    let script = "zero ";
+    signatures.forEach(s=>script+="[ "+s+" ]" );
+    script += " [ "+redeem+" ]";
+    return script;
+};
 
 Script.adjustAttenuationModel = function(model, height_delta) {
     if (!height_delta > 0) {

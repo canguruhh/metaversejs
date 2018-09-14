@@ -17,6 +17,19 @@ describe('Multisignature', function() {
             return wallet;
         })
     );
+    it('Multisignature redeem script extraction', () => {
+        expect(Metaverse.script.extractP2SHRedeem('OP_0 [ 304402206da37c516fa41bdbfcb2f080f64439eb2d0ee33ceaa322427c12b0df31d4c2e50220712cf84e9d095c73d3a3bcd420a2f67a521809870f586fdfd2c509ecf51e36fc01 ] [ 3045022100c25e8f99cb63498857861b9e2b402858918ae38c76dae190b9256925aea653c802203ccf373a88c21004fc7d1f3bb58595cf3021eb439f13df2a0b854ecbeebd8b9901 ] [ 5221035451cebcc2a7fd1058c90ab6df818f083d72362682350b80827037ab3aec70e321036f5cd17f3c6ed0968d248366e90c03ffb8ceb1c86df2c91d1ec7ee78f7e5b18d21037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53ae ]')).to.equal("5221035451cebcc2a7fd1058c90ab6df818f083d72362682350b80827037ab3aec70e321036f5cd17f3c6ed0968d248366e90c03ffb8ceb1c86df2c91d1ec7ee78f7e5b18d21037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53ae");
+    });
+    it('Multisignature signature extraction', () => {
+        expect(Metaverse.script.extractP2SHSignatures('OP_0 [ 304402206da37c516fa41bdbfcb2f080f64439eb2d0ee33ceaa322427c12b0df31d4c2e50220712cf84e9d095c73d3a3bcd420a2f67a521809870f586fdfd2c509ecf51e36fc01 ] [ 3045022100c25e8f99cb63498857861b9e2b402858918ae38c76dae190b9256925aea653c802203ccf373a88c21004fc7d1f3bb58595cf3021eb439f13df2a0b854ecbeebd8b9901 ] [ 5221035451cebcc2a7fd1058c90ab6df818f083d72362682350b80827037ab3aec70e321036f5cd17f3c6ed0968d248366e90c03ffb8ceb1c86df2c91d1ec7ee78f7e5b18d21037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53ae ]')).to.deep.equal(["304402206da37c516fa41bdbfcb2f080f64439eb2d0ee33ceaa322427c12b0df31d4c2e50220712cf84e9d095c73d3a3bcd420a2f67a521809870f586fdfd2c509ecf51e36fc01", "3045022100c25e8f99cb63498857861b9e2b402858918ae38c76dae190b9256925aea653c802203ccf373a88c21004fc7d1f3bb58595cf3021eb439f13df2a0b854ecbeebd8b9901"]);
+        expect(Metaverse.script.extractP2SHSignatures('OP_0 [ 5221035451cebcc2a7fd1058c90ab6df818f083d72362682350b80827037ab3aec70e321036f5cd17f3c6ed0968d248366e90c03ffb8ceb1c86df2c91d1ec7ee78f7e5b18d21037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53ae ]')).to.deep.equal([]);
+        expect(Metaverse.script.extractP2SHSignatures('')).to.deep.equal([]);
+    });
+    it('Multisignature script check', () => {
+        expect(Metaverse.script.isP2SH('3abc')).to.equal(false);
+        expect(Metaverse.script.isP2SH('dup hash160 [ 20317353b6e296cd9d1545134f2d5afdee00f7ae ] equalverify checksig')).to.equal(false);
+        expect(Metaverse.script.isP2SH('hash160 [ fb142c5346a3a8091ad9fb70918a81b55b1ef774 ] equal')).to.equal(true);
+    });
     it('Multisignature address check', () => {
         expect(Metaverse.multisig.isMultisigAddress('3abc')).to.equal(false);
         expect(Metaverse.multisig.isMultisigAddress('3abcde12345')).to.equal(false);
