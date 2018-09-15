@@ -3,16 +3,16 @@ let bitcoinjs = require('bitcoinjs-lib');
 var crypto = require('crypto');
 var ripemd160 = require('ripemd160');
 
-function generate(n, pubKeys){
-    let script = redeem(n, pubKeys);
+function generate(m, pubKeys){
+    let script = redeem(m, pubKeys);
     return{
         script: script,
         address: address(script)
     };
 }
 
-function redeem(n, pubKeys){
-    return bitcoinjs.script.multisig.output.encode(2, pubKeys.map(key=>Buffer.from(key,'hex')).sort()).toString('hex');
+function redeem(m, pubKeys){
+    return bitcoinjs.script.multisig.output.encode(m, pubKeys.map(key=>Buffer.from(key,'hex')).sort()).toString('hex');
 };
 
 function address(redeem){
