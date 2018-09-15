@@ -12,7 +12,7 @@ function generate(n, pubKeys){
 }
 
 function redeem(n, pubKeys){
-    return bitcoinjs.script.multisig.output.encode(2, pubKeys.map(key=>Buffer.from(key,'hex'))).toString('hex');
+    return bitcoinjs.script.multisig.output.encode(2, pubKeys.map(key=>Buffer.from(key,'hex')).sort()).toString('hex');
 };
 
 function address(redeem){
