@@ -206,7 +206,6 @@ Script.adjustAttenuationModel = function(model, height_delta) {
             past_blocks = period_size - model.LH;
             for (let period = model.PN; period < model.UN; period++) {
                 if (past_blocks >= height_delta) {
-                    // console.log(height_delta, past_blocks)
                     model.LH = past_blocks - height_delta;
                     model.PN = period;
                     return model;

@@ -3,6 +3,7 @@
 var bip39 = require('bip39');
 var bitcoin = require('bitcoinjs-lib');
 var Networks = require('./networks.js');
+var Transaction = require('./transaction.js');
 var Script = require('./script.js');
 var Message = require('./message.js');
 
@@ -83,6 +84,11 @@ Wallet.findDeriveNodeByAddress = (node, address, maxDepth) => {
         .then((index) => node.derive(index));
 };
 
+Wallet.findDeriveNodeByPublicKey = (node, pubkey, maxDepth) => {
+    return Wallet.findDeriveIndexByPublicKey(node, pubkey, maxDepth)
+        .then((index) => node.derive(index));
+};
+
 /**
  * Finds the wallets HD index thats public key corresponds to the given address.
  * @param {String} address
@@ -151,7 +157,7 @@ Wallet.findDeriveIndexByAddress = (node, address, maxDepth) => {
  * @param {Number} maxDepth
  * @return {Promise.HDNode}
  */
-Wallet.prototype.findDeriveNodeByPublic = function(pubkey, maxDepth) {
+Wallet.prototype.findDeriveNodeByPublicKey = function(pubkey, maxDepth) {
     return Wallet.findDeriveNodeByPublicKey(this.rootnode, pubkey, maxDepth);
 };
 
@@ -214,6 +220,20 @@ Wallet.prototype.sign = function(transaction) {
         .then(() => transaction);
 };
 
+/**
+ * Sign the given transaction from multisig wallet.
+ * @param {Transaction} transaction
+ * @param {Multisig} multisig Multisignature wallet object
+ * @return{Promise.Transaction} Signed transaction.
+ */
+Wallet.prototype.signMultisig = function(transaction, multisig) {
+    return Promise.all(transaction.inputs.map((input, index) => this.generateInputScriptMultisig(transaction, input, index, multisig)))
+        .then((input_scripts) => Promise.all(input_scripts.map((script, index) => {
+            transaction.inputs[index].script = script;
+        })))
+        .then(() => transaction);
+};
+
 Wallet.prototype.signMessage = function(address, message, as_buffer) {
     if (typeof as_buffer === 'undefined')
         as_buffer = false;
@@ -230,8 +250,13 @@ Wallet.prototype.signMessage = function(address, message, as_buffer) {
  * @return {Promise.String}
  */
 Wallet.prototype.generateInputScript = function(transaction, input, index) {
-    return ((input.address[0] != '3') ? this.findDeriveNodeByAddess(input.address) : this.findDeriveNodeByAddess(input.address))
+    return this.findDeriveNodeByAddess(input.address)
         .then((node) => Wallet.generateInputScriptParameters(node, transaction, index));
+};
+
+Wallet.prototype.generateInputScriptMultisig = function(transaction, input, index, multisig) {
+    return this.findDeriveNodeByPublicKey(multisig.s)
+        .then((node) => Wallet.generateInputScriptParametersMultisig(node, transaction, index, multisig.r));
 };
 
 /**
@@ -243,14 +268,14 @@ Wallet.prototype.generateInputScript = function(transaction, input, index) {
  */
 Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
     return new Promise((resolve, reject) => {
+        if (Script.isP2SH(transaction.inputs[index].previous_output.script))
+            throw "Illegal script type P2SH";
         let unsigned_tx = transaction.clone().clearInputScripts().encode(index);
         let script_buffer = new Buffer(4);
         script_buffer.writeUInt32LE(1, 0);
         var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
         var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
         let signature = hdnode.sign(sig_hash).toDER().toString('hex') + '01';
-        if (Script.isP2SH(transaction.inputs[index].previous_output.script))
-            console.log(Script.extractP2SHRedeem(transaction.inputs[index].script))
         let parameters = [Buffer.from(signature, 'hex'), hdnode.getPublicKeyBuffer()];
         //Check if the previous output was locked etp
         let lockregex = /^\[\ ([a-f0-9]+)\ \]\ numequalverify dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
@@ -258,6 +283,29 @@ Wallet.generateInputScriptParameters = function(hdnode, transaction, index) {
             let number = lockregex.exec(transaction.inputs[index].previous_output.script.match(lockregex)[0])[1];
             parameters.push(Buffer.from(number, 'hex'));
         }
+        resolve(parameters);
+    });
+};
+
+Wallet.generateInputScriptParametersMultisig = function(hdnode, transaction, index, redeem) {
+    return new Promise((resolve, reject) => {
+        if (!Script.isP2SH(transaction.inputs[index].previous_output.script))
+            throw "Illegal script type. Only P2SH is supported for multisignature signing";
+        let unsigned_tx = transaction.clone().clearInputScripts().encode(index);
+        let script_buffer = new Buffer(4);
+        script_buffer.writeUInt32LE(1, 0);
+        var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
+        var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
+        let signature = hdnode.sign(sig_hash).toDER().toString('hex') + '01';
+        let parameters = Script.extractP2SHSignatures(transaction.inputs[index].script);
+        parameters.forEach(s=>{
+            if(s==signature)
+                throw "Signature already included";
+        });
+        parameters.push(signature);
+        parameters.push(redeem);
+        parameters=parameters.map(p=>Buffer.from(p,'hex'));
+        parameters=[0].concat(parameters);
         resolve(parameters);
     });
 };

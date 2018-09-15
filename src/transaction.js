@@ -81,8 +81,8 @@ Transaction.prototype.addOutput = function(address, symbol, value, to_did) {
     let output = (symbol === 'ETP') ?
         this.addETPOutput(address, value, to_did) :
         this.addMSTOutput(address, symbol, value, to_did);
-    if(Multisig.isMultisigAddress(address)){
-        if(to_did) throw Error('Digital identity incompatible with P2SH');
+    if (Multisig.isMultisigAddress(address)) {
+        if (to_did) throw Error('Digital identity incompatible with P2SH');
         output.setP2SH();
     }
     return output;
@@ -412,8 +412,12 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
                     if (Script.hasAttenuationModel(input.previous_output.script)) {
                         let params = Script.getAttenuationParams(input.previous_output.script);
                         offset = writeAttenuationScript(params.model, (params.hash !== '0000000000000000000000000000000000000000000000000000000000000000') ? params.hash : undefined, (params.index >= 0) ? params.index : undefined, input.previous_output.address, buffer, offset);
-                    } else
-                        offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
+                    } else {
+                        if (Script.isP2SH(input.previous_output.script))
+                            offset = writeScriptPayToScriptHash(input.previous_output.address, buffer, offset);
+                        else
+                            offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
+                    }
                 }
             } else {
                 offset = buffer.writeUInt8(0, offset);
@@ -421,7 +425,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
         } else {
             //input script
             let script_buffer = Transaction.encodeInputScript(input.script);
-            offset = buffer.writeInt8(script_buffer.length, offset);
+            offset += bufferutils.writeVarInt(buffer, script_buffer.length, offset);
             offset += script_buffer.copy(buffer, offset);
         }
 
