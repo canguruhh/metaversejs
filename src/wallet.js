@@ -291,21 +291,23 @@ Wallet.generateInputScriptParametersMultisig = function(hdnode, transaction, ind
     return new Promise((resolve, reject) => {
         if (!Script.isP2SH(transaction.inputs[index].previous_output.script))
             throw "Illegal script type. Only P2SH is supported for multisignature signing";
-        let unsigned_tx = transaction.clone().clearInputScripts().encode(index);
+        let unsigned_tx = transaction.clone().clearInputScripts();
+        unsigned_tx.inputs[index].redeem = redeem;
+        unsigned_tx = unsigned_tx.encode(index);
         let script_buffer = new Buffer(4);
         script_buffer.writeUInt32LE(1, 0);
         var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
         var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
         let signature = hdnode.sign(sig_hash).toDER().toString('hex') + '01';
         let parameters = Script.extractP2SHSignatures(transaction.inputs[index].script);
-        parameters.forEach(s=>{
-            if(s==signature)
+        parameters.forEach(s => {
+            if (s == signature)
                 throw "Signature already included";
         });
-        parameters.push(signature);
+        parameters = [signature].concat(parameters);
         parameters.push(redeem);
-        parameters=parameters.map(p=>Buffer.from(p,'hex'));
-        parameters=[0].concat(parameters);
+        parameters = parameters.map(p => Buffer.from(p, 'hex'));
+        parameters = [0].concat(parameters);
         resolve(parameters);
     });
 };

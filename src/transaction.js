@@ -413,9 +413,11 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
                         let params = Script.getAttenuationParams(input.previous_output.script);
                         offset = writeAttenuationScript(params.model, (params.hash !== '0000000000000000000000000000000000000000000000000000000000000000') ? params.hash : undefined, (params.index >= 0) ? params.index : undefined, input.previous_output.address, buffer, offset);
                     } else {
-                        if (Script.isP2SH(input.previous_output.script))
-                            offset = writeScriptPayToScriptHash(input.previous_output.address, buffer, offset);
-                        else
+                        if (Script.isP2SH(input.previous_output.script)) {
+                            let script_buffer = Buffer.from(input.redeem,'hex');
+                            offset += bufferutils.writeVarInt(buffer, script_buffer.length, offset);
+                            offset += script_buffer.copy(buffer, offset);
+                        } else
                             offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
                     }
                 }
