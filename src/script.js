@@ -1,5 +1,6 @@
 var assert = require('assert');
 var bufferutils = require('./bufferutils');
+var bitcoinScript = require('bitcoinjs-lib').script;
 var OPS = require('bitcoin-ops');
 
 let Script = function(buffer, chunks) {
@@ -101,6 +102,12 @@ Script.prototype.toASM = function() {
             return reverseOps[chunk];
         }
     }).join(' ');
+};
+
+Script.fromASM = function(script){
+    script = script.replace(/\[\ /g, '');
+    script = script.replace(/\ \]/g, '');
+    return Script.fromBuffer(bitcoinScript.fromASM(script));
 };
 
 Script.hasAttenuationModel = function(script) {

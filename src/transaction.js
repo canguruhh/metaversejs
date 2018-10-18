@@ -309,25 +309,33 @@ function encodeOutputs(outputs) {
         //Write value as 8byte integer
         offset = bufferutils.writeUInt64LE(buffer, output.value, offset);
         //Output script
-        switch (output.script_type) {
-            case 'p2sh':
-                offset = writeScriptPayToScriptHash(output.address, buffer, offset);
-                break;
-            case 'pubkeyhash':
-                offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
-                break;
-            case 'lock':
-                let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
-                offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
-                break;
-            case 'attenuation':
-                let model = Script.deserializeAttenuationModel(output.attenuation.model);
-                if (output.attenuation.height_delta > 0)
-                    model = Script.adjustAttenuationModel(model, output.attenuation.height_delta);
-                offset = writeAttenuationScript(Script.serializeAttenuationModel(model), output.attenuation.from_tx, output.attenuation.from_index, output.address, buffer, offset);
-                break;
-            default:
-                throw 'Unknown script type: ' + output.script_type;
+        if (output.script_type) {
+            switch (output.script_type) {
+                case 'p2sh':
+                    offset = writeScriptPayToScriptHash(output.address, buffer, offset);
+                    break;
+                case 'pubkeyhash':
+                    offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
+                    break;
+                case 'lock':
+                    let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
+                    offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
+                    break;
+                case 'attenuation':
+                    let model = Script.deserializeAttenuationModel(output.attenuation.model);
+                    if (output.attenuation.height_delta > 0)
+                        model = Script.adjustAttenuationModel(model, output.attenuation.height_delta);
+                    offset = writeAttenuationScript(Script.serializeAttenuationModel(model), output.attenuation.from_tx, output.attenuation.from_index, output.address, buffer, offset);
+                    break;
+                default:
+                    throw 'Unknown script type: ' + output.script_type;
+            }
+        } else if (output.script) {
+            let script = Script.fromASM(output.script).buffer;
+            offset += bufferutils.writeVarInt(buffer, script.length, offset);
+            offset += script.copy(buffer, offset);
+        } else {
+            throw 'Neither script not script type present';
         }
 
         // attachment
@@ -414,7 +422,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
                         offset = writeAttenuationScript(params.model, (params.hash !== '0000000000000000000000000000000000000000000000000000000000000000') ? params.hash : undefined, (params.index >= 0) ? params.index : undefined, input.previous_output.address, buffer, offset);
                     } else {
                         if (Script.isP2SH(input.previous_output.script)) {
-                            let script_buffer = Buffer.from(input.redeem,'hex');
+                            let script_buffer = Buffer.from(input.redeem, 'hex');
                             offset += bufferutils.writeVarInt(buffer, script_buffer.length, offset);
                             offset += script_buffer.copy(buffer, offset);
                         } else

@@ -43,12 +43,12 @@ describe('Multisignature', function() {
             .should.become("3HvBi1ecp1yep6geL91pPDHgREFnNcSJTh");
     });
     it('Generate 4/4 multisignature wallet', () => {
-        let multisig = Metaverse.multisig.generate(4, ['02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3','036f5cd17f3c6ed0968d248366e90c03ffb8ceb1c86df2c91d1ec7ee78f7e5b18d','03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9','037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c']);
+        let multisig = Metaverse.multisig.generate(4, ['02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3', '036f5cd17f3c6ed0968d248366e90c03ffb8ceb1c86df2c91d1ec7ee78f7e5b18d', '03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9', '037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c']);
         return Promise.resolve(multisig.address)
             .should.become("3Pz8MznF5ynzNKntQSbLEuTVYC17Pbwsmy");
     });
     it('Generate 1/2 multisignature wallet', () => {
-        let multisig = Metaverse.multisig.generate(1, ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9','037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c']);
+        let multisig = Metaverse.multisig.generate(1, ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9', '037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c']);
         return Promise.resolve(multisig.address)
             .should.become("36ogHBUc4d3SZBAtXWX2xYg7dRYLR3K8DY");
     });
@@ -66,7 +66,7 @@ describe('Multisignature', function() {
     it('Send ETP from multisig address', () => {
         var tx = new Metaverse.transaction();
         let multisig = {
-            k: ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9','037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c','02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3'],
+            k: ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9', '037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c', '02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3'],
             m: 2,
             n: 3,
             s: '03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9',
@@ -84,7 +84,7 @@ describe('Multisignature', function() {
     it('Send ETP from multisig address last signature', () => {
         var tx = new Metaverse.transaction();
         let multisig = {
-            k: ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9','037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c','02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3'],
+            k: ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9', '037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c', '02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3'],
             m: 2,
             n: 3,
             s: '03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9',
@@ -92,7 +92,7 @@ describe('Multisignature', function() {
         };
         multisig.r = Metaverse.multisig.generate(multisig.m, multisig.k).script;
         tx.addInput("3QabhM8fsQMxTQerGKfiuteZNCfsSKxPRX", "84b8af0263e898d192d626e5d2e44c304917cfacfe92d0afc656fea5049f4730", 0, 'hash160 [ fb142c5346a3a8091ad9fb70918a81b55b1ef774 ] equal');
-        tx.inputs[0].script="OP_0 [ 3045022100fe9811c0dd1e9a548d3b28418c4e4386c438bf9b418321574ac95ec208aff9e6022046a5d9c279b529a6bd1da9b30a17e2b9d71700e686394ca4001d1acebbd987b401 ] [ 522102b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb32103731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca921037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53ae ]";
+        tx.inputs[0].script = "OP_0 [ 3045022100fe9811c0dd1e9a548d3b28418c4e4386c438bf9b418321574ac95ec208aff9e6022046a5d9c279b529a6bd1da9b30a17e2b9d71700e686394ca4001d1acebbd987b401 ] [ 522102b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb32103731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca921037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53ae ]";
         tx.addOutput("tFhuyTYeNAttzvEN8FUM5h52GGAujkrKbs", "ETP", 10000);
         tx.addOutput("3QabhM8fsQMxTQerGKfiuteZNCfsSKxPRX", "ETP", 80000);
         return wallet.signMultisig(tx, multisig)
@@ -104,7 +104,7 @@ describe('Multisignature', function() {
     it('Send ETP from multisig m=1 address', () => {
         var tx = new Metaverse.transaction();
         let multisig = {
-            k: ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9','037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c'],
+            k: ['03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9', '037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c'],
             m: 1,
             n: 2,
             s: '03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9',
@@ -118,6 +118,23 @@ describe('Multisignature', function() {
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
             .should.become("04000000019a0114a3886338819d2f5d5c9ec164e419c3eecac612d7b5bf183008a1146e38000000009100473044022019e210f46cffa34facbbb31fc668f4aafb1edf60927e6cf8aee14d5cab2099c90220080e1dee4f9be19723fba26133f3a574a3e505d4efa085bf40f4a8afd48f05a90147512103731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca921037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c52aeffffffff0200e1f505000000001976a9143282bd54b4a4b8cd577926fff45954ff0e00253588ac0100000000000000f0c1a4350000000017a914381b247c07294ea4f7c7d162a71bacf630a031eb87010000000000000000000000");
+    });
+    
+    it('Add multisig signature to raw tx', () => {
+        var tx = Metaverse.transaction.decode("04000000016bc26bfa09fe26e99e600a0c465c2401c325fb8e55ef43f895089353f5594a6d00000000b500483045022100ddd228ab2b6b37b9bbc928bcad921ef557de588351d241389c42004d81e9ff04022016cf017373b7f9bdca69b31f055478a1bde65826ba12f3d66f5ae29025c81923014c69522102b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb32103731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca921037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53aeffffffff0200e1f505000000001976a9143282bd54b4a4b8cd577926fff45954ff0e00253588ac0100000000000000f0e90f240100000017a914fb142c5346a3a8091ad9fb70918a81b55b1ef77487010000000000000000000000");
+        let multisig = {
+            k: ["02b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb3","03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9","037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c"],
+            m: 2,
+            n: 3,
+            s: '03731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca9',
+            a: "3QabhM8fsQMxTQerGKfiuteZNCfsSKxPRX"
+        };
+        multisig.r = Metaverse.multisig.generate(multisig.m, multisig.k).script;
+        tx.inputs[0].previous_output.script="hash160 [ fb142c5346a3a8091ad9fb70918a81b55b1ef774 ] equal";
+        return wallet.signMultisig(tx, multisig)
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become("04000000016bc26bfa09fe26e99e600a0c465c2401c325fb8e55ef43f895089353f5594a6d00000000fdfe0000483045022100daa6d6dd4c32c8cfb7c8062242c74422926bb3c9bb60d525fe801e9c58b0e2d60220075548b8b8f35a71005acd9e52646e90aa5c080f5eb3eeac3922a84c3eb13c9a01483045022100ddd228ab2b6b37b9bbc928bcad921ef557de588351d241389c42004d81e9ff04022016cf017373b7f9bdca69b31f055478a1bde65826ba12f3d66f5ae29025c81923014c69522102b9afe4139cca542f2c554fb4d304935b68894297495da45c426dcea3cd615fb32103731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca921037bfb27945a6e40e3621f2559f8a8fc3c4317f5d48dc61ec02fcbd7e8a52c079c53aeffffffff0200e1f505000000001976a9143282bd54b4a4b8cd577926fff45954ff0e00253588ac0100000000000000f0e90f240100000017a914fb142c5346a3a8091ad9fb70918a81b55b1ef77487010000000000000000000000");
     });
 
 });
