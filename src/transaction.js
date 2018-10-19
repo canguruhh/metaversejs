@@ -287,8 +287,8 @@ Transaction.prototype.encode = function(add_address_to_previous_output_index) {
  * @param {} string hex encoded string
  * @returns Transaction
  */
-Transaction.decode = function(string) {
-    return Transaction.fromBuffer(Buffer.from(string, 'hex'));
+Transaction.decode = function(string, network) {
+    return Transaction.fromBuffer(Buffer.from(string, 'hex'), network);
 };
 
 /**
@@ -699,7 +699,7 @@ function encodeString(buffer, str, offset, encoding = 'utf-8') {
 
 Transaction.isAddress = (address) => (address.length == 34) && (address.charAt(0) == 'M' || address.charAt(0) == 't' || address.charAt(0) == '3');
 
-Transaction.fromBuffer = function(buffer) {
+Transaction.fromBuffer = function(buffer, network) {
     var offset = 0;
 
     function readSlice(n) {
@@ -830,11 +830,13 @@ Transaction.fromBuffer = function(buffer) {
 
     var output_length = readVarInt();
     for (i = 0; i < output_length; ++i) {
-        tx.outputs.push({
+        let output = {
             value: readUInt64(),
             script: readScript(),
             attachment: readAttachment()
-        });
+        };
+        output.address=Script.getAddressFromOutputScript(output.script, network);
+        tx.outputs.push(output);
     }
 
     tx.lock_time = readUInt32();

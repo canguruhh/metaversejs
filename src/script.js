@@ -1,7 +1,8 @@
-var assert = require('assert');
-var bufferutils = require('./bufferutils');
-var bitcoinScript = require('bitcoinjs-lib').script;
-var OPS = require('bitcoin-ops');
+var assert = require('assert'),
+    bufferutils = require('./bufferutils'),
+    bitcoinScript = require('bitcoinjs-lib').script,
+    base58check = require('base58check'),
+    OPS = require('bitcoin-ops');
 
 let Script = function(buffer, chunks) {
     this.buffer = buffer;
@@ -37,6 +38,39 @@ Script.fromBuffer = function(buffer) {
     }
 
     return new Script(buffer, chunks);
+};
+
+Script.getAddressFromOutputScript = function(script, network = 'mainnet') {
+    let prefix = null;
+    switch (Script.getType(script)) {
+        case 'p2pkh':
+        case 'lock':
+            prefix = (network == 'mainnet') ? '32' : '7F';
+            break;
+        case 'p2sh':
+            prefix = '05';
+            break;
+        default:
+            return undefined;
+    }
+    let address = / ([0-9a-fA-F]{40}) /.exec(script);
+    return (address) ? base58check.encode(address[1], prefix, 'hex') : undefined;
+};
+
+Script.getType = function(script) {
+    return (Script.isP2PKH(script)) ? 'p2pkh' : (Script.isP2SH(script)) ? 'p2sh' : (Script.isLock(script)) ? 'lock' : 'custom';
+};
+
+Script.isLock = function(script) {
+    return /^\[ ([0-9a-f]+) \] (?:op_numequalverify|numequalverify) (?:op_dup|dup) (?:op_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op_equalverify|equalverify) (?:op_checksig|checksig)$/i.test(script);
+};
+
+Script.isP2SH = function(script) {
+    return /^(?:op\_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op\_equal|equal)$/i.test(script);
+};
+
+Script.isP2PKH = function(script) {
+    return /^(?:op_dup|dup) (?:op_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op_equalverify|equalverify) (?:op_checksig|checksig)$/i.test(script);
 };
 
 Script.fromChunks = function(chunks) {
@@ -104,7 +138,7 @@ Script.prototype.toASM = function() {
     }).join(' ');
 };
 
-Script.fromASM = function(script){
+Script.fromASM = function(script) {
     script = script.replace(/\[\ /g, '');
     script = script.replace(/\ \]/g, '');
     return Script.fromBuffer(bitcoinScript.fromASM(script));
@@ -175,30 +209,30 @@ Script.serializeAttenuationModel = function(model) {
 };
 
 
-Script.isP2SH = (script) => /^hash160 \[ [a-f0-9]{40} \] equal$/.test(script);
-
 Script.extractP2SHSignatures = (script) => {
     let regex = /(?:\[ ([a-f0-9]+) \])/gi;
     let signatures = [];
-    var xArray; while((xArray = regex.exec(script))) signatures.push(xArray[1]);
-    if(signatures.length>1)
-        return signatures.splice(0,signatures.length-1);
+    var xArray;
+    while ((xArray = regex.exec(script))) signatures.push(xArray[1]);
+    if (signatures.length > 1)
+        return signatures.splice(0, signatures.length - 1);
     return [];
 };
 
 Script.extractP2SHRedeem = (script) => {
     let regex = /(?:\[ ([a-f0-9]+) \])/gi;
     let signatures = [];
-    var xArray; while((xArray = regex.exec(script))) signatures.push(xArray[1]);
-    if(signatures.length)
-        return signatures[signatures.length-1];
+    var xArray;
+    while ((xArray = regex.exec(script))) signatures.push(xArray[1]);
+    if (signatures.length)
+        return signatures[signatures.length - 1];
     return null;
 };
 
 Script.combineP2SHSignatures = (signatures, redeem) => {
     let script = "zero ";
-    signatures.forEach(s=>script+="[ "+s+" ]" );
-    script += " [ "+redeem+" ]";
+    signatures.forEach(s => script += "[ " + s + " ]");
+    script += " [ " + redeem + " ]";
     return script;
 };
 
