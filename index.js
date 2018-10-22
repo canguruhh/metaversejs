@@ -13,6 +13,7 @@ var transaction_builder = require('./src/transaction_builder');
 var output = require('./src/output');
 var networks = require('./src/networks');
 var message = require('./src/message');
+var encoder = require('./src/encoder');
 var multisig = require('./src/multisig');
 var constants = require('./src/constants');
 var script = require('./src/script');
@@ -25,6 +26,7 @@ module.exports = {
     output: output,
     transaction_builder: transaction_builder,
     networks: networks,
+    encoder: encoder,
     message: message,
     constants: constants
 };
