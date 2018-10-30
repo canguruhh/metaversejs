@@ -524,7 +524,7 @@ function fromBuffer(tx, buffer, network) {
                         attachment.description = readString();
                         break;
                     case Constants.MST.STATUS.TRANSFER:
-                        attachment.asset = readString();
+                        attachment.symbol = readString();
                         attachment.quantity = readUInt64();
                         break;
                     default:
