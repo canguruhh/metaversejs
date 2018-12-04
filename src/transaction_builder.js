@@ -216,7 +216,7 @@ class TransactionBuilder {
      * @param {String} change_address Change address
      * @param {Object} change Definition of change assets
      */
-    static issueDid(utxo, avatar_address, symbol, change_address, change, bounty_fee, network = 'mainnet') {
+    static issueDid(utxo, avatar_address, symbol, change_address, change, bounty_fee, network = 'mainnet', messages=[]) {
         return new Promise((resolve, reject) => {
             //Set fee
             var fee = Constants.FEE.AVATAR_REGISTER;
@@ -231,6 +231,8 @@ class TransactionBuilder {
             });
             //add avatar output to the avatar address
             tx.addDidIssueOutput(avatar_address, symbol, avatar_address);
+            messages.forEach((message) => tx.addMessage(utxo[0].address, message));
+            messages.forEach((message) => tx.addMessage(utxo[0].address, message));
             //add the change outputs
             Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
             if (change.ETP)
