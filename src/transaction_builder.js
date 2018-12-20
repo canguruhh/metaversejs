@@ -232,7 +232,6 @@ class TransactionBuilder {
             //add avatar output to the avatar address
             tx.addDidIssueOutput(avatar_address, symbol, avatar_address);
             messages.forEach((message) => tx.addMessage(utxo[0].address, message));
-            messages.forEach((message) => tx.addMessage(utxo[0].address, message));
             //add the change outputs
             Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
             if (change.ETP)
