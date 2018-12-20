@@ -260,7 +260,7 @@ class Wallet {
             if (Script.isP2SH(transaction.inputs[index].previous_output.script))
                 throw "Illegal script type P2SH";
             let unsigned_tx = transaction.clone().clearInputScripts().encode(index);
-            let script_buffer = new Buffer(4);
+            let script_buffer = Buffer.alloc(4);
             script_buffer.writeUInt32LE(1, 0);
             var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
             var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));
@@ -282,7 +282,7 @@ class Wallet {
             let unsigned_tx = transaction.clone().clearInputScripts();
             unsigned_tx.inputs[index].redeem = redeem;
             unsigned_tx = unsigned_tx.encode(index);
-            let script_buffer = new Buffer(4);
+            let script_buffer = Buffer.alloc(4);
             script_buffer.writeUInt32LE(1, 0);
             var prepared_buffer = Buffer.concat([unsigned_tx, script_buffer]);
             var sig_hash = bitcoin.crypto.sha256(bitcoin.crypto.sha256(prepared_buffer));

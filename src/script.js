@@ -84,7 +84,7 @@ Script.fromChunks = function(chunks) {
         return accum + 1;
     }, 0.0);
 
-    var buffer = new Buffer(bufferSize);
+    var buffer = Buffer.alloc(bufferSize);
     var offset = 0;
 
     chunks.forEach(function(chunk) {

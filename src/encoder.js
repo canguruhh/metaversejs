@@ -10,11 +10,11 @@ const varuint = require('varuint-bitcoin'),
 class Encoder {
 
     static UInt32LE(number) {
-        var buffer = new Buffer(8);
+        var buffer = Buffer.alloc(8);
         return buffer.slice(0, buffer.writeUInt32LE(number, 0));
     }
     static UInt8(number) {
-        var buffer = new Buffer(2);
+        var buffer = Buffer.alloc(2);
         return buffer.slice(0, buffer.writeUInt8(number, 0));
     }
 
@@ -60,7 +60,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
 
     inputs.forEach((input, index) => {
         //Write reversed hash
-        offset += new Buffer(input.previous_output.hash, 'hex').reverse().copy(buffer, offset);
+        offset += Buffer.from(input.previous_output.hash, 'hex').reverse().copy(buffer, offset);
         //Index
         offset = buffer.writeUInt32LE(input.previous_output.index, offset);
         if (add_address_to_previous_output_index !== undefined) {
@@ -198,7 +198,7 @@ function encodeOutputs(outputs) {
 }
 
 function encodeString(buffer, str, offset, encoding = 'utf-8') {
-    var payload = new Buffer.from(str, encoding);
+    var payload = Buffer.from(str, encoding);
     offset += bufferutils.writeVarInt(buffer, payload.length, offset);
     return payload.copy(buffer, offset) + 1;
 }
@@ -209,7 +209,7 @@ function encodeString(buffer, str, offset, encoding = 'utf-8') {
  * @returns {Buffer}
  */
 function encodeLockTime(lock_time) {
-    var buffer = Buffer.allocUnsafe(4);
+    var buffer = Buffer.alloc(4);
     buffer.writeInt32LE(lock_time, 0);
     return buffer;
 }
@@ -366,7 +366,7 @@ function writeScriptPayToScriptHash(scripthash, buffer, offset) {
     offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address
     offset = buffer.writeUInt8(20, offset); //Address length
-    offset += new Buffer(base58check.decode(scripthash, 'hex').data, 'hex').copy(buffer, offset);
+    offset += Buffer.from(base58check.decode(scripthash, 'hex').data, 'hex').copy(buffer, offset);
     //Static transfer stuff
     offset = buffer.writeUInt8(OPS.OP_EQUAL, offset);
     return offset;
@@ -385,7 +385,7 @@ function writeScriptPayToPubKeyHash(address, buffer, offset) {
     offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address
     offset = buffer.writeUInt8(20, offset); //Address length
-    offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
+    offset += Buffer.from(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
     //Static transfer stuff
     offset = buffer.writeUInt8(OPS.OP_EQUALVERIFY, offset);
     offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
@@ -419,7 +419,7 @@ function writeAttenuationScript(attenuation_string, from_tx, from_index, address
     offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address
     offset = buffer.writeUInt8(20, offset); //Address length
-    offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
+    offset += Buffer.from(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
     //Static transfer stuff
     offset = buffer.writeUInt8(OPS.OP_EQUALVERIFY, offset);
     offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
@@ -435,7 +435,7 @@ function writeAttenuationScript(attenuation_string, from_tx, from_index, address
  * @returns {Number} new offset
  */
 function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
-    let locktime_buffer = new Buffer(locktime, 'hex');
+    let locktime_buffer = Buffer.from(locktime, 'hex');
     offset = buffer.writeUInt8(27 + locktime_buffer.length, offset); //Script length
     offset = buffer.writeUInt8(locktime_buffer.length, offset); //Length of locktime
     offset += locktime_buffer.copy(buffer, offset);
@@ -444,7 +444,7 @@ function writeScriptLockedPayToPubKeyHash(address, locktime, buffer, offset) {
     offset = buffer.writeUInt8(OPS.OP_HASH160, offset);
     //Write previous output address
     offset = buffer.writeUInt8(20, offset); //Address length
-    offset += new Buffer(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
+    offset += Buffer.from(base58check.decode(address, 'hex').data, 'hex').copy(buffer, offset);
     offset = buffer.writeUInt8(OPS.OP_EQUALVERIFY, offset);
     offset = buffer.writeUInt8(OPS.OP_CHECKSIG, offset);
     return offset;
