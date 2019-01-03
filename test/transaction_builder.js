@@ -105,7 +105,7 @@ describe('Transaction builder', function () {
                 value: 0
             },
         ];
-        return Metaverse.transaction_builder.sendLockedAsset(inputs, "tU2j3z4LjUtFJuSdQdwDqpzSNhj4ssBU1N", "MVS.TEST", 10, 'PN=0;LH=10000;TYPE=1;LQ=10;LP=10000;UN=1', "t9rpuoySrPJH46GkpdUtJMCyvfuR9XKa8N", { ETP: -21617351438, 'MVS.TEST':  -9999999989})
+        return Metaverse.transaction_builder.sendLockedAsset(inputs, "tU2j3z4LjUtFJuSdQdwDqpzSNhj4ssBU1N", undefined, "MVS.TEST", 10, 'PN=0;LH=10000;TYPE=1;LQ=10;LP=10000;UN=1', "t9rpuoySrPJH46GkpdUtJMCyvfuR9XKa8N", { ETP: -21617351438, 'MVS.TEST':  -9999999989})
         .then(tx => {
             tx.outputs[2].address = 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ'
             return tx

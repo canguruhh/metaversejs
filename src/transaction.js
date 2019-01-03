@@ -71,10 +71,9 @@ class Transaction {
         return output;
     }
 
-    addLockedAssetOutput(address, asset, value, attenuation_model, height_delta, from_tx, from_index) {
-        var output = new Output();
-        this.outputs.push(output.setAssetTransfer(address, asset, value).setAttenuation(attenuation_model, height_delta, from_tx, from_index));
-        return output;
+    addLockedAssetOutput(recipient_address, recipient_avatar, symbol, quantity, attenuation_model, height_delta, from_tx, from_index) {
+        return this.addMSTOutput(recipient_address, symbol, quantity, recipient_avatar)
+            .setAttenuation(attenuation_model, height_delta, from_tx, from_index)
     }
 
     addAssetIssueOutput(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue) {
@@ -178,8 +177,8 @@ function hash256(buffer) {
     return sha256(sha256(buffer));
 }
 
-function isAddress(address){
-   return (address.length == 34) && (address.charAt(0) == 'M' || address.charAt(0) == 't' || address.charAt(0) == '3');
+function isAddress(address) {
+    return (address.length == 34) && (address.charAt(0) == 'M' || address.charAt(0) == 't' || address.charAt(0) == '3');
 };
 
 module.exports = Transaction;
