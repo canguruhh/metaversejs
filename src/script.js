@@ -240,11 +240,11 @@ Script.adjustAttenuationModel = function(model, height_delta) {
     if (!height_delta > 0) {
         return model;
     }
-    let past_blocks = null;
+    let blocks_left = null;
     switch (model.TYPE) {
         case 1:
             let period_size = model.LP / model.UN;
-            let blocks_left = model.LH;
+            blocks_left = model.LH;
             for (let period = model.PN; period < model.UN; period++) {
                 if (blocks_left >= height_delta) {
                     model.LH = blocks_left - height_delta;
@@ -259,7 +259,7 @@ Script.adjustAttenuationModel = function(model, height_delta) {
         case 3:
             blocks_left = model.LH;
             for (let period = model.PN; period < model.UC.length; period++) {
-                if (past_blocks >= height_delta) {
+                if (blocks_left >= height_delta) {
                     model.LH = blocks_left - height_delta;
                     model.PN = period;
                     return model;
