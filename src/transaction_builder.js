@@ -321,7 +321,7 @@ class TransactionBuilder {
      * @param {Boolean} issue_domain indication if the toplevel domain certificate should be included as an output
      * @param {Number} fee Optional fee definition (default 10000 bits)
      */
-    static issueAsset(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network = 'mainnet') {
+    static issueAsset(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network = 'mainnet', attenuation_model=null) {
         return new Promise((resolve, reject) => {
             var etpcheck = 0;
             //create new transaction
@@ -348,7 +348,10 @@ class TransactionBuilder {
                 }
             });
             //add lock output to the recipient
-            tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description, secondaryissue_threshold, is_secondaryissue).specifyDid(issuer, issuer);
+            let issue_output = tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description, secondaryissue_threshold, is_secondaryissue).specifyDid(issuer, issuer);
+            if(attenuation_model)
+                issue_output.setAttenuation(attenuation_model, 0)
+            
             //add certificate to secondaryissue if necessary
             if (secondaryissue_threshold !== 0)
                 tx.addCertOutput(symbol, issuer, recipient_address, 'issue', 'autoissue').specifyDid(issuer, issuer);
