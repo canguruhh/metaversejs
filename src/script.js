@@ -280,7 +280,7 @@ Script.adjustAttenuationModel = function (model, height_delta) {
                     model.PN = period;
                     return model;
                 }
-                blocks_left += model.UC[period];
+                blocks_left += model.UC[period+1];
             }
             throw Error('ERR_ADJUST_ATTENUATION_MODEL');
             break;
