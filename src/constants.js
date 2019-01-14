@@ -6,7 +6,8 @@ module.exports = Object.freeze({
             MESSAGE: 3,
             AVATAR: 4,
             CERT: 5,
-            MIT: 6
+            MIT: 6,
+            COINSTAKE: 4294967295
         },
         VERSION: {
             DEFAULT: 1,

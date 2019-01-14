@@ -554,6 +554,8 @@ function fromBuffer(tx, buffer, network) {
                 attachment.cert = readUInt32();
                 attachment.status = readUInt8();
                 break;
+            case Constants.ATTACHMENT.TYPE.COINSTAKE:
+                break;
             default:
                 throw 'Unknown attachment type: ' + attachment.type;
         }
