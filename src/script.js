@@ -4,12 +4,12 @@ var assert = require('assert'),
     base58check = require('base58check'),
     OPS = require('bitcoin-ops');
 
-let Script = function (buffer, chunks) {
+let Script = function(buffer, chunks) {
     this.buffer = buffer;
     this.chunks = chunks;
 };
 
-Script.fromBuffer = function (buffer) {
+Script.fromBuffer = function(buffer) {
     var chunks = [];
     var i = 0;
 
@@ -40,7 +40,7 @@ Script.fromBuffer = function (buffer) {
     return new Script(buffer, chunks);
 };
 
-Script.getAddressFromOutputScript = function (script, network = 'mainnet') {
+Script.getAddressFromOutputScript = function(script, network = 'mainnet') {
     let prefix = null;
     switch (Script.getType(script)) {
         case 'p2pkh':
@@ -57,29 +57,29 @@ Script.getAddressFromOutputScript = function (script, network = 'mainnet') {
     return (address) ? base58check.encode(address[1], prefix, 'hex') : undefined;
 };
 
-Script.getType = function (script) {
+Script.getType = function(script) {
     return (Script.isP2PKH(script)) ? 'p2pkh' : (Script.isP2SH(script)) ? 'p2sh' : (Script.isLock(script)) ? 'lock' : (Script.isStakeLock(script)) ? 'stakelock' : 'custom';
 };
 
-Script.isLock = function (script) {
+Script.isLock = function(script) {
     return /^\[ ([0-9a-f]+) \] (?:op_numequalverify|numequalverify) (?:op_dup|dup) (?:op_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op_equalverify|equalverify) (?:op_checksig|checksig)$/i.test(script);
 };
 
-Script.isStakeLock = function (script) {
+Script.isStakeLock = function(script) {
     return /^\[ ([0-9a-f]+) \] (?:op_checksequenceverify|checksequenceverify) (?:op_drop|drop) (?:op_dup|dup) (?:op_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op_equalverify|equalverify) (?:op_checksig|checksig)$/i.test(script);
 };
 
-Script.isP2SH = function (script) {
+Script.isP2SH = function(script) {
     return /^(?:op\_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op\_equal|equal)$/i.test(script);
 };
 
-Script.isP2PKH = function (script) {
+Script.isP2PKH = function(script) {
     return /^(?:op_dup|dup) (?:op_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op_equalverify|equalverify) (?:op_checksig|checksig)$/i.test(script);
 };
 
-Script.fromChunks = function (chunks) {
+Script.fromChunks = function(chunks) {
 
-    var bufferSize = chunks.reduce(function (accum, chunk) {
+    var bufferSize = chunks.reduce(function(accum, chunk) {
         // data chunk
         if (Buffer.isBuffer(chunk)) {
             return accum + bufferutils.pushDataSize(chunk.length) + chunk.length;
@@ -91,7 +91,7 @@ Script.fromChunks = function (chunks) {
     var buffer = Buffer.alloc(bufferSize);
     var offset = 0;
 
-    chunks.forEach(function (chunk) {
+    chunks.forEach(function(chunk) {
         // data chunk
         if (Buffer.isBuffer(chunk)) {
             offset += bufferutils.writePushDataInt(buffer, chunk.length, offset);
@@ -110,32 +110,32 @@ Script.fromChunks = function (chunks) {
     return new Script(buffer, chunks);
 };
 
-Script.fromHex = function (hex) {
+Script.fromHex = function(hex) {
     return Script.fromBuffer(new Buffer(hex, 'hex'));
 };
 
 Script.EMPTY = Script.fromChunks([]);
 
-Script.prototype.toBuffer = function () {
+Script.prototype.toBuffer = function() {
     return this.buffer;
 };
 
-Script.prototype.toHex = function () {
+Script.prototype.toHex = function() {
     return this.toBuffer().toString('hex');
 };
 
-Script.prototype.getType = function () {
+Script.prototype.getType = function() {
     return Script.getType(this.toASM())
 }
 
-Script.prototype.toASM = function () {
+Script.prototype.toASM = function() {
     var reverseOps = [];
     for (var op in OPS) {
         var code = OPS[op];
         reverseOps[code] = op;
     }
 
-    return this.chunks.map(function (chunk) {
+    return this.chunks.map(function(chunk) {
         // data chunk
         if (Buffer.isBuffer(chunk)) {
             return '[ ' + chunk.toString('hex') + ' ]';
@@ -146,26 +146,29 @@ Script.prototype.toASM = function () {
     }).join(' ');
 };
 
-Script.prototype.getLockLength = function () {
+Script.prototype.getLockLength = function() {
     if (['lock', 'stakelock'].includes(this.getType())) {
         if (!Buffer.isBuffer(this.chunks[0])) throw 'Illegal lock length'
-        return this.chunks[0].readInt32LE(0)
+        if (this.chunks[0].length > 4) return -1
+        let buffer = new Buffer.from('00000000', 'hex')
+        this.chunks[0].copy(buffer, 0)
+        return buffer.readInt32LE(0)
     }
     return 0
 }
 
-Script.fromASM = function (script) {
+Script.fromASM = function(script) {
     script = script.replace(/\[\ /g, '');
     script = script.replace(/\ \]/g, '');
     return Script.fromBuffer(bitcoinScript.fromASM(script));
 };
 
-Script.hasAttenuationModel = function (script) {
+Script.hasAttenuationModel = function(script) {
     let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
     return regex.test(script);
 };
 
-Script.getAttenuationModel = function (script) {
+Script.getAttenuationModel = function(script) {
     let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
     if (Script.hasAttenuationModel(script)) {
         let b = regex.exec(script.match(regex)[0])[1];
@@ -174,7 +177,7 @@ Script.getAttenuationModel = function (script) {
     return null;
 };
 
-Script.getAttenuationParams = function (script) {
+Script.getAttenuationParams = function(script) {
     let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
     if (Script.hasAttenuationModel(script)) {
         let p = regex.exec(script.match(regex)[0]);
@@ -188,13 +191,13 @@ Script.getAttenuationParams = function (script) {
     return null;
 };
 
-Script.makeAttenuationScript = function (attenuation_string, from_tx, from_index, to_address) {
+Script.makeAttenuationScript = function(attenuation_string, from_tx, from_index, to_address) {
     let hash = Buffer.from(from_tx || '0000000000000000000000000000000000000000000000000000000000000000', 'hex').reverse();
     let index = Buffer.from('ffffffff', 'hex').writeInt32LE(from_index || 4294967295);;
     return `[ ${attenuation_string} ] [ ${Buffer.concat([hash, index]).toString('hex')} ]  checkattenuationverify dup hash160 [ ${to_address} ] equalverify checksig`;
 };
 
-Script.deserializeAttenuationModel = function (string) {
+Script.deserializeAttenuationModel = function(string) {
     let tmp = {};
     string.split(';').forEach(part => {
         let t = part.split('=');
@@ -216,7 +219,7 @@ Script.deserializeAttenuationModel = function (string) {
     }
 };
 
-Script.serializeAttenuationModel = function (model) {
+Script.serializeAttenuationModel = function(model) {
     let result = '';
     Object.keys(model).forEach(key => {
         result += key + '=' + ((Array.isArray(model[key])) ? model[key].join(',') : model[key]) + ';';
@@ -252,7 +255,7 @@ Script.combineP2SHSignatures = (signatures, redeem) => {
     return script;
 };
 
-Script.adjustAttenuationModel = function (model, height_delta) {
+Script.adjustAttenuationModel = function(model, height_delta) {
     if (!height_delta > 0) {
         return model;
     }
@@ -280,7 +283,7 @@ Script.adjustAttenuationModel = function (model, height_delta) {
                     model.PN = period;
                     return model;
                 }
-                blocks_left += model.UC[period+1];
+                blocks_left += model.UC[period + 1];
             }
             throw Error('ERR_ADJUST_ATTENUATION_MODEL');
             break;
