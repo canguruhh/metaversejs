@@ -157,9 +157,14 @@ Script.prototype.getLockLength = function() {
     return 0
 }
 
+Script.fromFullnode = function(script){
+    script = script.replace(/(?:\ )(?<!(\[\ ))([\w]+)/g, (x1, x2, match) => " OP_" + match.toUpperCase())
+    return Script.fromASM(script)
+}
+
 Script.fromASM = function(script) {
-    script = script.replace(/\[\ /g, '');
-    script = script.replace(/\ \]/g, '');
+    script = script.replace(/\[\ |\ \]/g, '');
+    script = script.replace(/\s+/g, ' ');
     return Script.fromBuffer(bitcoinScript.fromASM(script));
 };
 
