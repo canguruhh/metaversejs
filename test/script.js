@@ -45,4 +45,7 @@ describe('Script', function() {
         expect(Metaverse.script.getAddressFromOutputScript("dup hash160 [ 3282bd54b4a4b8cd577926fff45954ff0e002535 ] equalverify checksig")).to.equal('MCWEdy1iLVaoVyffgrQbgvbRAZDFWkFQ1q');
         expect(Metaverse.script.getAddressFromOutputScript("OP_HASH160 [ fb142c5346a3a8091ad9fb70918a81b55b1ef774 ] OP_EQUAL")).to.equal('3QabhM8fsQMxTQerGKfiuteZNCfsSKxPRX');
     });
+    it('Transform fullnode script', ()=>{
+        expect(Metaverse.script.fullnodeFormat("dup hash160 [ 4700cec0e9bcc3cfe137eba720cdf72670ad27f8 ] equalverify checksig")).to.equal('OP_DUP OP_HASH160 [ 4700cec0e9bcc3cfe137eba720cdf72670ad27f8 ] OP_EQUALVERIFY OP_CHECKSIG');
+    })
 });

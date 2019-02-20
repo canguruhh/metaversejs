@@ -157,9 +157,23 @@ Script.prototype.getLockLength = function() {
     return 0
 }
 
+Script.fullnodeFormat = function(script){
+    let level = 0
+    script = script.split(' ').map(token=>{
+        if(token=='['){
+            level++
+        } else if(token==']') {
+            level--
+        } else if (level==0){
+            return 'OP_'+token.toUpperCase()
+        }
+        return token;
+    }).join(' ')
+    return script 
+}
+
 Script.fromFullnode = function(script){
-    script = script.replace(/(?:\ )(?<!(\[\ ))([\w]+)/g, (x1, x2, match) => " OP_" + match.toUpperCase())
-    return Script.fromASM(script)
+    return Script.fromASM(Script.fullnodeFormat(script))
 }
 
 Script.fromASM = function(script) {
