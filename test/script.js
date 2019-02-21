@@ -7,18 +7,22 @@ var chai = require("chai"),
 chai.use(chaiAsPromised);
 
 describe('Script', function() {
-    let p2pkh = [
+    const p2pkh = [
         "OP_DUP OP_HASH160 [ 3282bd54b4a4b8cd577926fff45954ff0e002535 ] OP_EQUALVERIFY OP_CHECKSIG",
         "dup hash160 [ 3282bd54b4a4b8cd577926fff45954ff0e002535 ] equalverify checksig"
-    ];
-    let p2sh = [
+    ],
+    p2sh = [
         "OP_HASH160 [ fb142c5346a3a8091ad9fb70918a81b55b1ef774 ] OP_EQUAL",
         "hash160 [ 5ab9a731c4df5c51d0fe395928b3da03ff4ece7d ] equal"
-    ];
-    let lock = [
+    ],
+    lock = [
         "[ 32 ] numequalverify dup hash160 [ 4700cec0e9bcc3cfe137eba720cdf72670ad27f8 ] equalverify checksig"
-    ];
-    let others = [
+    ],
+    stakelock = [
+        '[ 04 ] checksequenceverify drop dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig',
+        '[ 1004 ] checksequenceverify drop dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig',
+    ], 
+    others = [
         "dsafhdksfhhfkdsa",
         "dsfaklj dslkfjadlk flk  dsljfalsdfjaflksdajfl ljdfsal df"
     ];
@@ -32,7 +36,11 @@ describe('Script', function() {
     });
     it('Detect lock script', () => {
         lock.forEach(s=>chai.expect(Metaverse.script.isLock(s)).to.equal(true));
-        p2sh.concat(p2pkh, others).forEach(s=>chai.expect(Metaverse.script.isLock(s)).to.equal(false));
+        [].concat(p2pkh, others, p2sh, stakelock).forEach(s=>chai.expect(Metaverse.script.isLock(s)).to.equal(false));
+    });
+    it('Detect stakelock script', () => {
+        stakelock.forEach(s=>chai.expect(Metaverse.script.isStakeLock(s)).to.equal(true));
+        [].concat(p2pkh, others, p2sh, lock).forEach(s=>chai.expect(Metaverse.script.isStakeLock(s)).to.equal(false));
     });
     it('Get script type', () => {
         lock.forEach(s=>chai.expect(Metaverse.script.getType(s)).to.equal('lock'));

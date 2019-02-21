@@ -4,6 +4,8 @@ var assert = require('assert'),
     base58check = require('base58check'),
     OPS = require('metaverse-ops');
 
+const OP_INT_BASE = OPS.OP_1 - 1
+
 let Script = function (buffer, chunks) {
     this.buffer = buffer;
     this.chunks = chunks;
@@ -58,7 +60,16 @@ Script.getAddressFromOutputScript = function (script, network = 'mainnet') {
 };
 
 Script.getType = function (script) {
-    return (Script.isP2PKH(script)) ? 'p2pkh' : (Script.isP2SH(script)) ? 'p2sh' : (Script.isLock(script)) ? 'lock' : (Script.isStakeLock(script)) ? 'stakelock' : 'custom';
+    if (Script.isP2PKH(script)) {
+        return 'p2pkh'
+    } else if (Script.isP2SH(script)) {
+        return 'p2sh'
+    } else if (Script.isStakeLock(script)) {
+        return 'stakelock'
+    } else if (Script.isLock(script)) {
+        return 'lock'
+    }
+    return 'custom'
 };
 
 Script.isLock = function (script) {
@@ -105,6 +116,7 @@ Script.fromChunks = function (chunks) {
             offset += 1;
         }
     });
+
 
     assert.equal(offset, buffer.length, 'Could not decode chunks');
     return new Script(buffer, chunks);
@@ -228,17 +240,22 @@ function compile(chunks) {
     return buffer
 }
 
-function asmToBuffer(asm) {
-    return compile(asm.split(' ').map(function (chunkStr) {
-        if (OPS[chunkStr] !== undefined) return OPS[chunkStr]
-        return Buffer.from(chunkStr, 'hex')
-    }))
+function fromASM(asm) {
+    let level = 0
+    let chunks = []
+    asm.split(' ').forEach(chunkStr => {
+        if (chunkStr == '[') level++
+        else if (chunkStr == ']') level--
+        else {
+            chunks.push((level == 0) ? OPS[chunkStr] : Buffer.from(chunkStr, 'hex'))
+        }
+    })
+    return Script.fromChunks(chunks)
 }
 
 Script.fromASM = function (script) {
-    script = script.replace(/\[\ |\ \]/g, '');
     script = script.replace(/\s+/g, ' ');
-    return Script.fromBuffer(asmToBuffer(script));
+    return fromASM(script);
 };
 
 Script.hasAttenuationModel = function (script) {
