@@ -39,7 +39,7 @@ class Transaction {
             "sequence": 4294967295
         }
         if (Script.isStakeLock(input.previous_output.script)) {
-            input.sequence = Script.fromFullnode(input.previous_output.script).getLockLength()
+            input.sequence = Script.fromASM(input.previous_output.script).getLockLength()
         }
         this.inputs.push(input);
     };

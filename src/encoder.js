@@ -79,7 +79,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
                             offset += script_buffer.copy(buffer, offset);
                         } else {
                             if (input.previous_output.script) {
-                                let script_buffer = Script.fromFullnode(input.previous_output.script).toBuffer()
+                                let script_buffer = Script.fromASM(input.previous_output.script).toBuffer()
                                 offset += bufferutils.writeVarInt(buffer, script_buffer.length, offset);
                                 offset += script_buffer.copy(buffer, offset);
                             } else {
