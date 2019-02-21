@@ -27,7 +27,7 @@ class Transaction {
         return tx;
     }
     addInput(previous_output_address, previous_output_hash, previous_output_index, previous_output_script) {
-        this.inputs.push({
+        const input = {
             "address": previous_output_address,
             "previous_output": {
                 "address": previous_output_address,
@@ -37,7 +37,11 @@ class Transaction {
             },
             "script": "",
             "sequence": 4294967295
-        });
+        }
+        if (Script.isStakeLock(input.previous_output.script)) {
+            input.sequence = Script.fromFullnode(input.previous_output.script).getLockLength()
+        }
+        this.inputs.push(input);
     };
     addMessage(address, message) {
         var output = new Output().setMessage(address, message);

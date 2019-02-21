@@ -69,11 +69,24 @@ describe('Transactions', function() {
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "e713a445c67cd4333dde1c21ab144eb7cf9afad23b7cb4b4ae8854f688a7e6d0", 0, "dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
         tx.addOutput("MJ38G9d3HXy2HrAfnzTVM6FgmQ8s5kLhcG", "FOX", 1);
         tx.addOutput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "ETP", 9);
-        Metaverse.wallet.fromMnemonic("nephew six select talk tennis embark inhale omit brush typical program elegant off stage profit floor avocado essay caught borrow minute acquire wreck pill")
+        return Metaverse.wallet.fromMnemonic("nephew six select talk tennis embark inhale omit brush typical program elegant off stage profit floor avocado essay caught borrow minute acquire wreck pill")
             .then((wallet) => wallet.sign(tx))
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
             .should.become("020000000367e9d3d56b9b0274b0fd1408325be540f2c0d8f429f7b936bf809c203955e053000000006e483045022100f5d25ffff4f5f41d8e9ef9b9d9fc2d3ed077795bc7f90da4e524b577cbb27ff602205f4936d88c6e0c4dab90289885ed376698aa881df142366adc056b26a1173b01012103ad6500c83d2ea2d731b297a8d7d463eed3784d2dc0a089678bb81f88d0ae743d027062ffffffffdcb3542012fe98bd146c22085054804f764c9d847302cb6c847d7a27fd8a2bca000000006e483045022100830ff87902afe06c793994c0a8dde531a6ffc6ef259a5235dd98c6f24ead4099022034d40a5ab67d61010f276b5a9ed08f10f1b1ef2415eee3d0b46ce8d380a5a176012103ad6500c83d2ea2d731b297a8d7d463eed3784d2dc0a089678bb81f88d0ae743d027062ffffffffd0e6a788f65488aeb4b47c3bd2fa9acfb74e14ab211cde3d33d47cc645a413e7000000006b483045022100859b934954e6a124588e7984e80d7abe07b5bf271da41a13479a4adff39001c902200bb1394bbc74aab277cc5d8b4c870603a80868fdab4aea3530cab92b2ce5bd2e012103ad6500c83d2ea2d731b297a8d7d463eed3784d2dc0a089678bb81f88d0ae743dffffffff0200000000000000001976a9146f32f0d5afb05dd98a20df07946479440dde3e0088ac01000000020000000200000003464f58010000000000000009000000000000001976a9144fd34a03c3e140700c9324202a335bda6b5fddc388ac010000000000000000000000");
+    });
+
+    it('ETP transaction with previously stakelocked output', () => {
+        var tx = new Metaverse.transaction();
+        tx.addInput("tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ", "a4425f7e072a954b31db86c8dde42f13831e4a01b19b5f9a7306006382837210", 1, 'dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig');
+        tx.addInput("tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ", "a4425f7e072a954b31db86c8dde42f13831e4a01b19b5f9a7306006382837210", 0, '[ 14 ] checksequenceverify drop dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig');
+        tx.addOutput("tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ", "ETP", 10000000000, "metaverse").specifyDid("metaverse", 'metaverse');
+        tx.addOutput("tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ", "ETP", 7813848630);
+        return Metaverse.wallet.fromMnemonic("lunar there win define minor shadow damage lounge bitter abstract sail alcohol yellow left lift vapor tourist rent gloom sustain gym dry congress zero", 'testnet')
+            .then((wallet) => wallet.sign(tx))
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become("040000000210728382630006739a5f9bb1014a1e83132fe4ddc886db314b952a077e5f42a4010000006a473044022030b698ace5161d3660a466a269b9784061591a5557aa7ad1efd0f068b48553e102207fe278564305fa08acb1ced0f6a96e7d1a6d7f4e6789446c2e8ee0242c0c0cce01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff10728382630006739a5f9bb1014a1e83132fe4ddc886db314b952a077e5f42a4000000006a473044022048b7c634478334483080f4c65a74d271b79bf4df06343650de3231014ed78a7902201a3cbb0f624ba1b3988375819dc8d22f946014cf5a34a3734eb4d36c1dfd573d01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445140000000200e40b54020000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88accf00000000000000096d6574617665727365096d657461766572736536debdd1010000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000");
     });
 
 });

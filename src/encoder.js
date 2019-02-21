@@ -1,11 +1,10 @@
 'use strict';
 
-const varuint = require('varuint-bitcoin'),
-    bufferutils = require('./bufferutils.js'),
+const bufferutils = require('./bufferutils.js'),
     base58check = require('base58check'),
     Script = require('./script'),
     Constants = require('./constants'),
-    OPS = require('bitcoin-ops');
+    OPS = require('metaverse-ops');
 
 class Encoder {
 
@@ -78,8 +77,15 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
                             let script_buffer = Buffer.from(input.redeem, 'hex');
                             offset += bufferutils.writeVarInt(buffer, script_buffer.length, offset);
                             offset += script_buffer.copy(buffer, offset);
-                        } else
-                            offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
+                        } else {
+                            if (input.previous_output.script) {
+                                let script_buffer = Script.fromFullnode(input.previous_output.script).toBuffer()
+                                offset += bufferutils.writeVarInt(buffer, script_buffer.length, offset);
+                                offset += script_buffer.copy(buffer, offset);
+                            } else {
+                                offset = writeScriptPayToPubKeyHash(input.previous_output.address, buffer, offset);
+                            }
+                        }
                     }
                 }
             } else {
@@ -92,8 +98,7 @@ function encodeInputs(inputs, add_address_to_previous_output_index) {
             offset += script_buffer.copy(buffer, offset);
         }
 
-        buffer.writeUInt32BE(input.sequence, offset);
-        offset += 4;
+        offset = buffer.writeUInt32LE(input.sequence, offset);
     });
     return buffer.slice(0, offset);
 }
