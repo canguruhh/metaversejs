@@ -65,8 +65,8 @@ module.exports = Object.freeze({
                 symbol: "developer-community"
             },
             testnet: {
-                address: "tJNo92g6DavpaCZbYjrH45iQ8eAKnLqmms",
-                symbol: "developer-community"
+                address: "tBELxsiiaMVGQcY2Apf7hmzAaipD4YWTTj",
+                symbol: "yoyo"
             }
         }
     }
