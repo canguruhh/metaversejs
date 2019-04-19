@@ -321,7 +321,7 @@ class TransactionBuilder {
      * @param {Boolean} issue_domain indication if the toplevel domain certificate should be included as an output
      * @param {Number} fee Optional fee definition (default 10000 bits)
      */
-    static issueAsset(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network = 'mainnet', attenuation_model=null, minable=false) {
+    static issueAsset(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network = 'mainnet', attenuation_model=null, mining_model=undefined) {
         return new Promise((resolve, reject) => {
             var etpcheck = 0;
             //create new transaction
@@ -362,8 +362,8 @@ class TransactionBuilder {
             //add toplevel domain certificate if wanted
             if (issue_domain)
                 tx.addCertOutput(symbol.split(".")[0], issuer, recipient_address, 'domain', 'autoissue').specifyDid(issuer, issuer);
-            if (minable)
-                tx.addCertOutput(symbol, issuer, recipient_address, 'mining', 'autoissue').specifyDid(issuer, issuer);
+            if (mining_model)
+                tx.addCertOutput(symbol, issuer, recipient_address, 'mining', 'autoissue', mining_model).specifyDid(issuer, issuer);
             //add the change outputs
             Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
             if (change.ETP)
