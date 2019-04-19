@@ -129,11 +129,12 @@ class Output {
         return this;
     };
 
-    setCert(symbol, owner, address, cert, status) {
+    setCert(symbol, owner, address, cert, status, content) {
         this.address = address;
         this.attachment.type = Constants.ATTACHMENT.TYPE.CERT;
         this.attachment.owner = owner;
         this.attachment.symbol = symbol;
+        this.attachment.content = content;
         switch ((typeof cert == 'string') ? cert.toLowerCase() : cert) {
             case 'domain':
                 this.attachment.cert = Constants.CERT.TYPE.DOMAIN;
@@ -143,6 +144,9 @@ class Output {
                 break;
             case 'naming':
                 this.attachment.cert = Constants.CERT.TYPE.NAMING;
+                break;
+            case 'mining':
+                this.attachment.cert = Constants.CERT.TYPE.MINING;
                 break;
             default:
                 throw ('ERR_UNKNOWN_CERT');

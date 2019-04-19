@@ -33,7 +33,8 @@ module.exports = Object.freeze({
         TYPE: {
             ISSUE: 1,
             DOMAIN: 2,
-            NAMING: 3
+            NAMING: 3,
+            MINING: 0x60000000 + 4,
         },
         STATUS: {
             DEFAULT: 0,

@@ -283,6 +283,9 @@ function encodeAttachmentCert(buffer, offset, attachment_data) {
     offset += encodeString(buffer, attachment_data.address, offset);
     offset = buffer.writeUInt32LE(attachment_data.cert, offset);
     offset = buffer.writeUInt8(attachment_data.status, offset);
+    if (attachment_data.content) {
+        offset += encodeString(buffer, attachment_data.content, offset);
+    }
     return offset;
 };
 
@@ -558,6 +561,9 @@ function fromBuffer(tx, buffer, network) {
                 attachment.address = readString();
                 attachment.cert = readUInt32();
                 attachment.status = readUInt8();
+                if (certHasContent(attachment.cert)) {
+                    attachment.content = readString();
+                }
                 break;
             case Constants.ATTACHMENT.TYPE.COINSTAKE:
                 break;
@@ -565,6 +571,14 @@ function fromBuffer(tx, buffer, network) {
                 throw 'Unknown attachment type: ' + attachment.type;
         }
         return attachment;
+    }
+
+    function certHasContent(certType) {
+        switch (certType) {
+            case Constants.CERT.TYPE.MINING:
+                return true
+        }
+        return false
     }
 
     function readGenerationScript() {

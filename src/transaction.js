@@ -80,7 +80,7 @@ class Transaction {
             .setAttenuation(attenuation_model, height_delta, from_tx, from_index)
     }
 
-    addAssetIssueOutput(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue) {
+    addAssetIssueOutput(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue, issue_to_did) {
         if (!/^([A-Z0-9\.]{3,63})$/.test(symbol))
             throw Error('ERR_SYMBOL_NAME');
         else if (!/^([A-Za-z0-9\.@_-]{3,63})$/.test(issuer))
@@ -99,14 +99,18 @@ class Transaction {
             throw Error('ERR_SECONDARYISSUE_THRESHOLD_OUT_OF_RANGE');
         else {
             let output = new Output().setAssetIssue(symbol, max_supply, precision, issuer, address, description, secondaryissue_threshold, is_secondaryissue);
+            if(issue_to_did){
+                output.specifyDid(issuer, '')
+            }
             this.outputs.push(output);
             return output;
         }
     }
 
-    addCertOutput(symbol, owner, address, cert, status) {
+    addCertOutput(symbol, owner, address, cert, status, content) {
         let output = new Output();
-        this.outputs.push(output.setCert(symbol, owner, address, cert, status));
+        output.specifyDid(owner, "")
+        this.outputs.push(output.setCert(symbol, owner, address, cert, status, content));
         return output;
     }
 
