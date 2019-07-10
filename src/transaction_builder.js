@@ -47,7 +47,7 @@ class TransactionBuilder {
     /**
      * Generates a send more (etp and or asset) transaction with the given utxos as inputs, assets and the change.
      * @param {Array<Output>} utxo Inputs for the transaction
-     * @param {String} recipients Recipients [ { address: "xxx", "target": { "ETP": 123, "MST": { "SDG": 18 } }, "avatar": "EricGu" } ]
+     * @param {String} recipients Recipients [ { address: "xxx", "target": { "ETP": 123, "MST": { "SDG": 18 } }, "avatar": "EricGu", "attenuation_model": "TYPE=1;LQ=9000;LP=60000;UN=3" } ]
      * @param {String} change_address Change address
      * @param {Object} change Definition of change assets
      * @param {Array<Object>} locked_asset_change Definition of locked asset changes
@@ -78,7 +78,12 @@ class TransactionBuilder {
                 }
                 if (recipient.target.MST) {
                     Object.keys(recipient.target.MST).forEach(symbol => {
-                        tx.addMSTOutput(recipient.address, symbol, recipient.target.MST[symbol], recipient.avatar);
+                        console.log("Attenuation model: " + recipient.attenuation_model)
+                        if(recipient.attenuation_model) {
+                            tx.addLockedAssetOutput(recipient.address, recipient.avatar, symbol, recipient.target.MST[symbol], recipient.attenuation_model, 0);
+                        } else {
+                            tx.addMSTOutput(recipient.address, symbol, recipient.target.MST[symbol], recipient.avatar);
+                        }
                     });
                 }
             });
@@ -157,6 +162,58 @@ class TransactionBuilder {
             messages.forEach((message) => tx.addMessage(recipient_address, message));
             //add the target outputs to the recipient
             tx.addLockedAssetOutput(recipient_address, recipient_avatar, symbol, quantity, attenuation_model, 0);
+            //add the change outputs
+            Object.keys(change).forEach((symbol) => {
+                if (change[symbol] !== 0)
+                    tx.addOutput(change_address, symbol, -change[symbol]);
+            });
+            if (locked_asset_change != undefined)
+                locked_asset_change.forEach((change) => tx.addLockedAssetOutput(change_address, undefined, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
+            if (change.ETP)
+                etpcheck += change.ETP;
+            if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+            resolve(tx);
+        });
+    };
+
+    /**
+     * Generates a send more (etp and or asset) transaction with the given utxos as inputs, assets and the change.
+     * @param {Array<Output>} utxo Inputs for the transaction
+     * @param {String} recipients Recipients [ { address: "xxx", "target": { "ETP": 123, "MST": { "SDG": 18 } }, "avatar": "EricGu" } ]
+     * @param {String} change_address Change address
+     * @param {Object} change Definition of change assets
+     * @param {Array<Object>} locked_asset_change Definition of locked asset changes
+     * @param {Number} fee Transaction fee
+     * @param {Array<String>} messages Messages to add to the transaction
+     */
+    static sendMoreLockedAsset(utxo, recipients, attenuation_model, change_address, change, locked_asset_change, fee = Constants.FEE.DEFAULT, messages = []) {
+        return new Promise((resolve, reject) => {
+            if (recipients == undefined || !recipients.length)
+                throw Error('ERR_NO_RECIPIENTS');
+            var etpcheck = 0;
+            //create new transaction
+            let tx = new Transaction();
+            //add inputs
+            utxo.forEach((output) => {
+                if (output.value)
+                    etpcheck += output.value;
+                tx.addInput(output.address, output.hash, output.index, output.script);
+            });
+            if (messages == undefined)
+                messages = [];
+            messages.forEach((message) => tx.addMessage(utxo[0].address, message));
+            //add the target outputs to the recipients
+            recipients.forEach(recipient => {
+                if (recipient.target.ETP) {
+                    tx.addETPOutput(recipient.address, recipient.target.ETP, recipient.avatar);
+                    etpcheck -= recipient.target.ETP;
+                }
+                if (recipient.target.MST) {
+                    Object.keys(recipient.target.MST).forEach(symbol => {
+                        tx.addLockedAssetOutput(recipient_address, recipient_avatar, symbol, quantity, attenuation_model, 0);
+                    });
+                }
+            });
             //add the change outputs
             Object.keys(change).forEach((symbol) => {
                 if (change[symbol] !== 0)
