@@ -550,10 +550,10 @@ function fromBuffer(tx, buffer, network) {
             case Constants.ATTACHMENT.TYPE.MIT:
                 attachment.status = readUInt8();
                 attachment.symbol = readString();
+                attachment.address = readString();
                 if (attachment.status == Constants.MIT.STATUS.REGISTER) {
                     attachment.content = readString();
                 }
-                attachment.address = readString();
                 break;
             case Constants.ATTACHMENT.TYPE.CERT:
                 attachment.symbol = readString();
