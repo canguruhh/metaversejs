@@ -112,7 +112,7 @@ function encodeOutputs(outputs) {
 
     //Initialize buffer and offset
     let offset = 0;
-    var buffer = Buffer.allocUnsafe(100000);
+    var buffer = Buffer.allocUnsafe(1000000);
     //Write number of inputs
     offset += bufferutils.writeVarInt(buffer, outputs.length, offset);
 

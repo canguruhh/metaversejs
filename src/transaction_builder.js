@@ -78,7 +78,6 @@ class TransactionBuilder {
                 }
                 if (recipient.target.MST) {
                     Object.keys(recipient.target.MST).forEach(symbol => {
-                        console.log("Attenuation model: " + recipient.attenuation_model)
                         if(recipient.attenuation_model) {
                             tx.addLockedAssetOutput(recipient.address, recipient.avatar, symbol, recipient.target.MST[symbol], recipient.attenuation_model, 0);
                         } else {
