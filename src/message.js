@@ -64,6 +64,7 @@ function verify(message, address, signature, messagePrefix) {
 
     var actual = hash160(publicKey);
     var expected = bs58check.decode(address).slice(1);
+    if (!Buffer.isBuffer(expected)) expected = Buffer.from(expected, 'hex');
 
     return Buffer.compare(actual, expected) == 0;
 }
