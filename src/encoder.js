@@ -592,11 +592,12 @@ function fromBuffer(tx, buffer, network) {
         tx.inputs.push({
             previous_output: {
                 hash: readSlice(32).reverse().toString('hex'),
-                index: readUInt32()
+                index: readUInt32(),
             },
             script: readScript(),
-            sequence: readUInt32()
+            sequence: readUInt32(),
         });
+
     }
 
     var output_length = readVarInt();
@@ -606,6 +607,12 @@ function fromBuffer(tx, buffer, network) {
             script: readScript(),
             attachment: readAttachment()
         };
+        console.log(output.script)
+        if (Script.hasAttenuationModel(output.script)) {
+            output.script_type = 'attenuation'
+            output.attenuation = { model: Script.getAttenuationModel(output.script)}
+            output.address = Script.getAddressFromOutputScript(output.script, network)
+        }
         output.address = Script.getAddressFromOutputScript(output.script, network);
         tx.outputs.push(output);
     }

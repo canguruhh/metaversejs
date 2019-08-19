@@ -45,6 +45,7 @@ Script.fromBuffer = function (buffer) {
 Script.getAddressFromOutputScript = function (script, network = 'mainnet') {
     let prefix = null;
     switch (Script.getType(script)) {
+        case 'attenuation':
         case 'p2pkh':
         case 'lock':
             prefix = (network == 'mainnet') ? '32' : '7F';
@@ -56,7 +57,7 @@ Script.getAddressFromOutputScript = function (script, network = 'mainnet') {
             return undefined;
     }
     let address = / ([0-9a-fA-F]{40}) /.exec(script);
-    return (address) ? base58check.encode(address[1], prefix, 'hex') : undefined;
+    return (address) ? base58check.encode(address[address.length-1], prefix, 'hex') : undefined;
 };
 
 Script.getType = function (script) {
@@ -68,6 +69,8 @@ Script.getType = function (script) {
         return 'stakelock'
     } else if (Script.isLock(script)) {
         return 'lock'
+    } else if (Script.hasAttenuationModel(script)){
+        return 'attenuation'
     }
     return 'custom'
 };
@@ -189,6 +192,7 @@ Script.fromFullnode = function (script) {
 }
 
 function fromASM(asm) {
+    console.log(asm)
     let level = 0
     let chunks = []
     asm.split(' ').forEach(chunkStr => {
@@ -214,12 +218,12 @@ Script.fromASM = function (script) {
 };
 
 Script.hasAttenuationModel = function (script) {
-    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
+    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ (checkattenuationverify|op_checkattenuationverify)\ (dup|op_dup)\ (hash160|op_hash160)\ \[ [a-f0-9]+\ \]\ (equalverify|op_equalverify)\ (checksig|op_checksig)$/gi;
     return regex.test(script);
 };
 
 Script.getAttenuationModel = function (script) {
-    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ checkattenuationverify\ dup\ hash160\ \[ [a-f0-9]+\ \]\ equalverify\ checksig$/gi;
+    let regex = /^\[\ ([a-f0-9]+)\ \]\ \[\ ([a-f0-9]+)\ \]\ (checkattenuationverify|op_checkattenuationverify)\ (dup|op_dup)\ (hash160|op_hash160)\ \[ [a-f0-9]+\ \]\ (equalverify|op_equalverify)\ (checksig|op_checksig)$/gi;
     if (Script.hasAttenuationModel(script)) {
         let b = regex.exec(script.match(regex)[0])[1];
         return Buffer.from(b, 'hex').toString();
