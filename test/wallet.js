@@ -1,7 +1,6 @@
 var assert = require('assert')
 var Metaverse = require('../');
 
-
 describe('Wallet recreation', function() {
     var signed_tx, wallet;
     beforeEach(function(done) {
@@ -73,3 +72,10 @@ describe('Wallet recreation', function() {
     });
 
 })
+
+describe('Key operations', function() {
+    it('create node from WIF', () => {
+        var wif = 'L4gHAbCrWqTneuWJVmjLjFQck7jtkBQzGvmbvvJJEs21LJy1Tp2h';
+        assert.equal(Metaverse.wallet.getNodeFromWIF(wif).toWIF(), wif);
+    });
+});

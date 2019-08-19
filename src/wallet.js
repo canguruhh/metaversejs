@@ -173,6 +173,10 @@ class Wallet {
         return Wallet.findDeriveNodeByAddress(this.rootnode, address, maxDepth);
     };
 
+    static getNodeFromWIF(wif, network='mainnet'){
+        return bitcoin.ECPair.fromWIF(wif, Networks[network]);
+    }
+
     /**
      * Gets the address for the given hd index of the wallet.
      * @param {Number} index
