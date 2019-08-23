@@ -5,7 +5,7 @@ var chai = require("chai"),
     Metaverse = require('../');
 chai.use(chaiAsPromised);
 
-describe('Transactions', function() {
+describe('Transactions', function () {
 
     //Generate the wallet
     var wallet;
@@ -24,7 +24,7 @@ describe('Transactions', function() {
 
     it('Signle input ETP transaction', () => {
         var tx = new Metaverse.transaction();
-        tx.version=2;
+        tx.version = 2;
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "5554b27dbf657d008511df56e747ffb2173749fd933b03317cee3c1fde271aea", 1);
         tx.addOutput("MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd", "ETP", 1);
         tx.addOutput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "ETP", 4939995);
@@ -36,7 +36,7 @@ describe('Transactions', function() {
 
     it('Multi input ETP transaction', () => {
         var tx = new Metaverse.transaction();
-        tx.version=2;
+        tx.version = 2;
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "c9c32b0723a57ce087f42df5bb5f98db404a886ef651842f844d59eca6412b27", 0);
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "707cd4f639e292bd7cbf15c40e9c86d3bbec4c505ca09f6a72eded8313a927be", 1);
         tx.addOutput("MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd", "ETP", 729995);
@@ -49,7 +49,7 @@ describe('Transactions', function() {
 
     it('Asset transaction', () => {
         var tx = new Metaverse.transaction();
-        tx.version=2;
+        tx.version = 2;
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "795481c6fca77b699830d3e6c3b38ed9e89a74b4a9ea01a9d0f2c43fab91f9df", 1);
         tx.addInput("MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf", "068096506bfb962f8ea661514c0221602dcff20502eb91aa8e57e65db3e1dc3f", 0);
         tx.addInput("MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB", "376fb20af80491dc29f8539a85522d9260060c82fb347584f78702918e2c6707", 0);
@@ -63,7 +63,7 @@ describe('Transactions', function() {
 
     it('Asset transaction with previously locked ETP fee input', () => {
         var tx = new Metaverse.transaction();
-        tx.version=2;
+        tx.version = 2;
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "53e05539209c80bf36b9f729f4d8c0f240e55b320814fdb074029b6bd5d3e967", 0, "[ 7062 ] numequalverify dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "ca2b8afd277a7d846ccb0273849d4c764f80545008226c14bd98fe122054b3dc", 0, "[ 7062 ] numequalverify dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
         tx.addInput("MFBEjD9QwgTxnRiUGd2qXATYxcReyG5ZtB", "e713a445c67cd4333dde1c21ab144eb7cf9afad23b7cb4b4ae8854f688a7e6d0", 0, "dup hash160 [ 4fd34a03c3e140700c9324202a335bda6b5fddc3 ] equalverify checksig");
@@ -88,5 +88,26 @@ describe('Transactions', function() {
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
             .should.become("040000000210728382630006739a5f9bb1014a1e83132fe4ddc886db314b952a077e5f42a4010000006a473044022030b698ace5161d3660a466a269b9784061591a5557aa7ad1efd0f068b48553e102207fe278564305fa08acb1ced0f6a96e7d1a6d7f4e6789446c2e8ee0242c0c0cce01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff10728382630006739a5f9bb1014a1e83132fe4ddc886db314b952a077e5f42a4000000006a473044022048b7c634478334483080f4c65a74d271b79bf4df06343650de3231014ed78a7902201a3cbb0f624ba1b3988375819dc8d22f946014cf5a34a3734eb4d36c1dfd573d01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445140000000200e40b54020000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88accf00000000000000096d6574617665727365096d657461766572736536debdd1010000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000");
     });
+
+    it('Encode decoded transaction with attenuation model', () => {
+        var tx = Metaverse.transaction.decode('04000000021357535806f9fa8f3070cbbd1cff579067867ea501f28973be68a33184e36637000000000005000000fe8b8a9872b3b6af4708fb8515a7a08e1975bf71222c675228daec4cb31d9fff0100000000ffffffff030000000000000000634d2100504e3d303b4c483d31303b545950453d313b4c513d313b4c503d31303b554e3d31240000000000000000000000000000000000000000000000000000000000000000ffffffffb276a9146052b015d31cfeb403fe50128e440bde5d2650ec88accf00000002000000076c617572656e7400020000000548414c4c4f010000000000000000000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac0100000002000000020000000548414c4c4f7900000000000000f0bc0b54020000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000', Metaverse.networks.testnet)
+        return Promise.resolve(tx.encode().toString('hex'))
+            .should.become("04000000021357535806f9fa8f3070cbbd1cff579067867ea501f28973be68a33184e36637000000000005000000fe8b8a9872b3b6af4708fb8515a7a08e1975bf71222c675228daec4cb31d9fff0100000000ffffffff030000000000000000634d2100504e3d303b4c483d31303b545950453d313b4c513d313b4c503d31303b554e3d31240000000000000000000000000000000000000000000000000000000000000000ffffffffb276a9146052b015d31cfeb403fe50128e440bde5d2650ec88accf00000002000000076c617572656e7400020000000548414c4c4f010000000000000000000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac0100000002000000020000000548414c4c4f7900000000000000f0bc0b54020000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000");
+    });
+
+    it('Sign decoded asset transaction with attenuation model', () => {
+        var tx = Metaverse.transaction.decode('0400000002da6931b45b5ab033e0dc4135234a4d1f25ae67f66e912a414bea1caf8ee33eb90100000000ffffffffda6931b45b5ab033e0dc4135234a4d1f25ae67f66e912a414bea1caf8ee33eb90200000000ffffffff0300000000000000006525504e3d303b4c483d31303b545950453d313b4c513d31303030303b4c503d31303b554e3d31240000000000000000000000000000000000000000000000000000000000000000ffffffffb276a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88accf00000002000000096d657461766572736500020000000754455354312e31102700000000000000000000000000001976a91485df6dc5a453fcaba91531e4d6b21e8fe3ee359088ac0100000002000000020000000754455354312e31e051724e18090000c0a9106c2a0800001976a91485df6dc5a453fcaba91531e4d6b21e8fe3ee359088ac010000000000000000000000', Metaverse.networks.testnet)
+        tx.inputs[0].address = 'tK8TaQix9QSgaAAPTaUj7NwKMfbkWRKgVf'
+        tx.inputs[0].previous_output.address = 'tK8TaQix9QSgaAAPTaUj7NwKMfbkWRKgVf'
+        tx.inputs[1].address = 'tK8TaQix9QSgaAAPTaUj7NwKMfbkWRKgVf'
+        tx.inputs[1].previous_output.address = 'tK8TaQix9QSgaAAPTaUj7NwKMfbkWRKgVf'
+        return Metaverse.wallet.fromMnemonic("trial lion inner game clap alpha divide blame elder because alien immune deer tenant artwork book fiber pond rather dragon bread utility lecture obscure", 'testnet')
+            .then((wallet) => wallet.sign(tx))
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become('0400000002da6931b45b5ab033e0dc4135234a4d1f25ae67f66e912a414bea1caf8ee33eb9010000006b4830450221009f62e933d296ec72517bb4517aecc54a04e04132e86d96724da19ef276383ad602202eb3c472534932588f667b55029bb21bba3380497eaf0524d988120a61cec77a012102cfa7977da665ed17840813c0afa4e6b3be7bcd6c33fca12561e0ffab5a823adfffffffffda6931b45b5ab033e0dc4135234a4d1f25ae67f66e912a414bea1caf8ee33eb9020000006b483045022100b4f13015a10228c88d3ccb88d9604dcb7faa7e799c0926bcfc8b5619dc1697c8022076ac6017d83816b204b22b88faf1a030430263e37db5d1404d7fdd60a5101a4f012102cfa7977da665ed17840813c0afa4e6b3be7bcd6c33fca12561e0ffab5a823adfffffffff030000000000000000674d2500504e3d303b4c483d31303b545950453d313b4c513d31303030303b4c503d31303b554e3d31240000000000000000000000000000000000000000000000000000000000000000ffffffffb276a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88accf00000002000000096d657461766572736500020000000754455354312e31102700000000000000000000000000001976a91485df6dc5a453fcaba91531e4d6b21e8fe3ee359088ac0100000002000000020000000754455354312e31e051724e18090000c0a9106c2a0800001976a91485df6dc5a453fcaba91531e4d6b21e8fe3ee359088ac010000000000000000000000');
+    });
+
+
 
 });
