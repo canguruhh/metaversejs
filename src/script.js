@@ -192,7 +192,6 @@ Script.fromFullnode = function (script) {
 }
 
 function fromASM(asm) {
-    console.log(asm)
     let level = 0
     let chunks = []
     asm.split(' ').forEach(chunkStr => {

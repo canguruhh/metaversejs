@@ -607,7 +607,6 @@ function fromBuffer(tx, buffer, network) {
             script: readScript(),
             attachment: readAttachment()
         };
-        console.log(output.script)
         if (Script.hasAttenuationModel(output.script)) {
             output.script_type = 'attenuation'
             output.attenuation = { model: Script.getAttenuationModel(output.script)}
