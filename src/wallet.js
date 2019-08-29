@@ -247,7 +247,7 @@ class Wallet {
             .then((node) => Wallet.generateInputScriptParameters(node, transaction, index))
             .catch(error => {
                 if (throwWhenUnknown || error.message !== 'ERR_NO_HDNODE_FOR_ADDRESS') throw error;
-                return;
+                return input.script;
             });
     };
 
