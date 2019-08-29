@@ -173,7 +173,7 @@ class Wallet {
         return Wallet.findDeriveNodeByAddress(this.rootnode, address, maxDepth);
     };
 
-    static getNodeFromWIF(wif, network='mainnet'){
+    static getNodeFromWIF(wif, network = 'mainnet') {
         return bitcoin.ECPair.fromWIF(wif, Networks[network]);
     }
 
@@ -207,12 +207,12 @@ class Wallet {
      * @param {Transaction} transaction
      * @return{Promise.Transaction} Signed transaction.
      */
-    sign(transaction) {
-        return Promise.all(transaction.inputs.map((input, index) => this.generateInputScript(transaction, input, index)))
-            .then((input_scripts) => Promise.all(input_scripts.map((script, index) => {
-                transaction.inputs[index].script = script;
-            })))
-            .then(() => transaction);
+    async sign(transaction, throwWhenUnknown = true) {
+        transaction.inputs = await Promise.all(transaction.inputs.map(async (input, index) => {
+            input.script = await this.generateInputScript(transaction, input, index, throwWhenUnknown);
+            return input;
+        }));
+        return transaction;
     };
 
     /**
@@ -242,9 +242,13 @@ class Wallet {
      * @param {Number} index
      * @return {Promise.String}
      */
-    generateInputScript(transaction, input, index) {
+    generateInputScript(transaction, input, index, throwWhenUnknown) {
         return this.findDeriveNodeByAddess(input.address)
-            .then((node) => Wallet.generateInputScriptParameters(node, transaction, index));
+            .then((node) => Wallet.generateInputScriptParameters(node, transaction, index))
+            .catch(error => {
+                if (throwWhenUnknown || error.message !== 'ERR_NO_HDNODE_FOR_ADDRESS') throw error;
+                return;
+            });
     };
 
     generateInputScriptMultisig(transaction, input, index, multisig) {
