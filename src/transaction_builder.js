@@ -9,10 +9,11 @@ class TransactionBuilder {
      * @param {Array<Output>} utxo Inputs for the transaction
      * @param {String} recipient_address Recipient address
      * @param {Object} target Definition of assets to send
-     * @param {String} change_address Change address
+     * @param {String} etp_change_address ETP change address
      * @param {Object} change Definition of change assets
+     * @param {String} asset_change_address Asset change address
      */
-    static send(utxo, recipient_address, recipient_avatar, target, change_address, change, locked_asset_change, fee = Constants.FEE.DEFAULT, messages = []) {
+    static send(utxo, recipient_address, recipient_avatar, target, etp_change_address, change, locked_asset_change, fee = Constants.FEE.DEFAULT, messages = [], asset_change_address = etp_change_address) {
         return new Promise((resolve, reject) => {
             var etpcheck = 0;
             //create new transaction
@@ -33,10 +34,10 @@ class TransactionBuilder {
             //add the change outputs
             Object.keys(change).forEach((symbol) => {
                 if (change[symbol] !== 0)
-                    tx.addOutput(change_address, symbol, -change[symbol]);
+                    tx.addOutput(symbol.toLowerCase()==='etp' ? etp_change_address : asset_change_address, symbol, -change[symbol]);
             });
             if (locked_asset_change != undefined)
-                locked_asset_change.forEach((change) => tx.addLockedAssetOutput(change_address, undefined, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
+                locked_asset_change.forEach((change) => tx.addLockedAssetOutput(etp_change_address, undefined, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
             if (change.ETP)
                 etpcheck += change.ETP;
             if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
