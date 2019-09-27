@@ -17,8 +17,10 @@ var encoder = require('./src/encoder');
 var multisig = require('./src/multisig');
 var constants = require('./src/constants');
 var script = require('./src/script');
+var address = require('./src/address');
 
 module.exports = {
+    address: address,
     wallet: wallet,
     transaction: transaction,
     script: script,
