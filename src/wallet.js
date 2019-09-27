@@ -229,6 +229,10 @@ class Wallet {
             .then(() => transaction);
     };
 
+    getMasterPublicKey(){
+        return this.rootnode.neutered().toBase58();
+    }
+
     signMessage(address, message, as_buffer = false) {
         return this.findDeriveNodeByAddess(address)
             .then(node => Message.sign(message, node.keyPair.d.toBuffer(32), node.keyPair.compressed))

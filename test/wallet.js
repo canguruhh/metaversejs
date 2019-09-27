@@ -1,55 +1,58 @@
-var assert = require('assert')
+var chai = require("chai"),
+    chaiAsPromised = require("chai-as-promised");
+var assert = require('assert');
 var Metaverse = require('../');
+chai.use(chaiAsPromised);
 
-describe('Wallet recreation', function() {
+describe('Wallet recreation', function () {
     var signed_tx, wallet;
-    beforeEach(function(done) {
+    beforeEach(function (done) {
         var w = Metaverse.wallet.fromMnemonic("lunar there win define minor shadow damage lounge bitter abstract sail alcohol yellow left lift vapor tourist rent gloom sustain gym dry congress zero")
             .then((w) => {
                 wallet = w;
                 var tx = new Metaverse.transaction();
-                tx.version=2;
+                tx.version = 2;
                 tx.inputs = [{
+                    "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
+                    "previous_output": {
                         "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "previous_output": {
-                            "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                            "hash": "c9c32b0723a57ce087f42df5bb5f98db404a886ef651842f844d59eca6412b27",
-                            "index": 0
-                        },
-                        "script": "",
-                        "sequence": 4294967295
+                        "hash": "c9c32b0723a57ce087f42df5bb5f98db404a886ef651842f844d59eca6412b27",
+                        "index": 0
                     },
-                    {
+                    "script": "",
+                    "sequence": 4294967295
+                },
+                {
+                    "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
+                    "previous_output": {
                         "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                        "previous_output": {
-                            "address": "MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB",
-                            "hash": "707cd4f639e292bd7cbf15c40e9c86d3bbec4c505ca09f6a72eded8313a927be",
-                            "index": 1
-                        },
-                        "script": "",
-                        "sequence": 4294967295
-                    }
+                        "hash": "707cd4f639e292bd7cbf15c40e9c86d3bbec4c505ca09f6a72eded8313a927be",
+                        "index": 1
+                    },
+                    "script": "",
+                    "sequence": 4294967295
+                }
                 ];
                 tx.outputs = [{
-                        "index": 0,
-                        "address": "MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd",
-                        "script_type": "pubkeyhash",
-                        "value": 729995,
-                        "attachment": {
-                            type: 0,
-                            version: 1
-                        }
-                    },
-                    {
-                        "index": 1,
-                        "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
-                        "script_type": "pubkeyhash",
-                        "value": 619995,
-                        "attachment": {
-                            type: 0,
-                            version: 1
-                        }
+                    "index": 0,
+                    "address": "MVpxH8aAa3BAXvbdqUUJwEP6s2ajGKKtyd",
+                    "script_type": "pubkeyhash",
+                    "value": 729995,
+                    "attachment": {
+                        type: 0,
+                        version: 1
                     }
+                },
+                {
+                    "index": 1,
+                    "address": "MV1HEd7A4bCnLXhxXLHgWB2rurtS7xVWJf",
+                    "script_type": "pubkeyhash",
+                    "value": 619995,
+                    "attachment": {
+                        type: 0,
+                        version: 1
+                    }
+                }
                 ];
                 return wallet.sign(tx);
             })
@@ -73,9 +76,16 @@ describe('Wallet recreation', function() {
 
 })
 
-describe('Key operations', function() {
+describe('Key operations', function () {
     it('create node from WIF', () => {
         var wif = 'L4gHAbCrWqTneuWJVmjLjFQck7jtkBQzGvmbvvJJEs21LJy1Tp2h';
         assert.equal(Metaverse.wallet.getNodeFromWIF(wif).toWIF(), wif);
+    });
+});
+
+describe('Public key operations', function () {
+    it('Extract xpub', async () => {
+        const wallet = await Metaverse.wallet.fromMnemonic("lunar there win define minor shadow damage lounge bitter abstract sail alcohol yellow left lift vapor tourist rent gloom sustain gym dry congress zero")
+        chai.expect(wallet.getMasterPublicKey()).equal('xpub661MyMwAqRbcFGEYvcM26P4niKVBVM9GyVpo6zV8h5bEP2fYLeiTBESZC164gQwznARj6YaNAh3zACWigRLRenpXLbDqrHxXoRJQmDgvnxk');
     });
 });
