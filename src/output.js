@@ -240,8 +240,8 @@ class Output {
      * @param {Array<Output>} utxo
      * @param {Object} target definition
      */
-    static findUtxo(utxo, target, current_height, fee = Constants.FEE.DEFAULT) {
-        target = JSON.parse(JSON.stringify(target));
+    static findUtxo(utxo, originalTarget, current_height, fee = Constants.FEE.DEFAULT, useLargestEtpUtxo = false) {
+        const target = JSON.parse(JSON.stringify(originalTarget));
         return new Promise((resolve, reject) => {
             //Add fee
             if (target["ETP"])
@@ -252,6 +252,13 @@ class Output {
             var change = JSON.parse(JSON.stringify(target));
             var lockedAssetChange = [];
             var list = [];
+
+            if (useLargestEtpUtxo) {
+                utxo = utxo.sort(function (a, b) {
+                    return b.value - a.value;
+                })
+            }
+
             utxo.forEach((output) => {
                 if (!targetComplete(change)) {
                     switch (output.attachment.type) {
@@ -286,6 +293,12 @@ class Output {
                 }
             });
             if (!targetComplete(change)) throw Error('ERR_INSUFFICIENT_UTXO');
+            if (list.length > Constants.UTXO.MAX_COUNT) {
+                if (!useLargestEtpUtxo) {
+                    return this.findUtxo(utxo, originalTarget, current_height, fee, true)
+                }
+                throw Error('ERR_TOO_MANY_INPUTS');
+            }
             resolve({
                 utxo: list,
                 change: change,

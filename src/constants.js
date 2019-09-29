@@ -69,5 +69,10 @@ module.exports = Object.freeze({
                 symbol: "yoyo"
             }
         }
+    },
+
+    UTXO: {
+        MAX_COUNT: 600,
     }
+
 });
