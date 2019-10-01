@@ -207,12 +207,18 @@ class Wallet {
      * @param {Transaction} transaction
      * @return{Promise.Transaction} Signed transaction.
      */
-    async sign(transaction, throwWhenUnknown = true) {
-        transaction.inputs = await Promise.all(transaction.inputs.map(async (input, index) => {
-            input.script = await this.generateInputScript(transaction, input, index, throwWhenUnknown);
-            return input;
-        }));
-        return transaction;
+    sign(transaction, throwWhenUnknown = true) {
+        return Promise.all(transaction.inputs.map((input, index) => {
+            return this.generateInputScript(transaction, input, index, throwWhenUnknown)
+                .then((script) => {
+                    input.script = script;
+                    return input;
+                });
+        }))
+            .then(inputs => {
+                transaction.inputs = inputs;
+                return transaction;
+            });
     };
 
     /**
@@ -229,7 +235,7 @@ class Wallet {
             .then(() => transaction);
     };
 
-    getMasterPublicKey(){
+    getMasterPublicKey() {
         return this.rootnode.neutered().toBase58();
     }
 
