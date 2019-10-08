@@ -296,8 +296,11 @@ class Output {
             if (list.length > Constants.UTXO.MAX_COUNT) {
                 if (!useLargestEtpUtxo) {
                     return this.findUtxo(utxo, originalTarget, current_height, fee, true)
+                        .then(result => resolve(result))
+                        .catch(error => reject(Error(error.message)))
+                } else {
+                    reject(Error('ERR_TOO_MANY_INPUTS'));
                 }
-                throw Error('ERR_TOO_MANY_INPUTS');
             }
             resolve({
                 utxo: list,
