@@ -1,6 +1,5 @@
 var assert = require('assert'),
     bufferutils = require('./bufferutils'),
-    pushdata = require('pushdata-bitcoin'),
     base58check = require('base58check'),
     OPS = require('metaverse-ops');
 
