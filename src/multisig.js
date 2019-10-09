@@ -72,11 +72,16 @@ function getSignatureStatus(transaction, inputIndex, redeem, network, targetPubl
         return -1;
     });
 
-    return {
-        signatureMap,
-        ...(targetPublicKey && { targetSigned }),
+    var result = {
         complete: numberOfSignatures>=multisigConfig.m,
+        signatureMap,
     }
+
+    if(targetPublicKey){
+        result.targetSigned = targetSigned;
+    }
+
+    return result;
 }
 
 function isMultisigAddress(address) {
