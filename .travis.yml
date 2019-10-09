@@ -7,7 +7,7 @@ cache:
 before_script:
 - npm install grunt-cli -g
 before_deploy:
-- grunt
+- grunt package
 deploy:
   provider: npm
   email: canguruhh@mutzl.org
