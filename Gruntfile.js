@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         mochaTest: {
@@ -7,7 +7,7 @@ module.exports = function(grunt) {
                     reporter: 'spec',
                     captureFile: './dist/result.txt',
                     quiet: false,
-		    timeout: 10000,
+                    timeout: 10000,
                     clearRequireCache: false,
                     noFail: false
                 },
@@ -28,7 +28,13 @@ module.exports = function(grunt) {
         babel: {
             options: {
                 sourceMap: true,
-                presets: ['env']
+                presets: [[
+                    "@babel/preset-env",
+                    {
+                        "corejs": "3",
+                        "useBuiltIns": "entry"
+                    }
+                ]]
             },
             dist: {
                 files: {
