@@ -261,6 +261,13 @@ class Output {
 
             utxo.forEach((output) => {
                 if (!targetComplete(change)) {
+                    // prepare output locking information
+                    if (output.locked_until === undefined &&
+                        output.locked_height_range !== undefined &&
+                        output.height !== undefined
+                    ) {
+                        output.locked_until = output.height + output.locked_height_range;
+                    }
                     switch (output.attachment.type) {
                         case 'etp':
                             if (output.locked_until <= current_height && change.ETP > 0 && output.value > 0) {
