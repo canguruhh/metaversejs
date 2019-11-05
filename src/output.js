@@ -268,6 +268,16 @@ class Output {
                     ) {
                         output.locked_until = output.height + output.locked_height_range;
                     }
+                    if (output.previous_output === undefined) {
+                        output.previous_output = {
+                            hash: output.tx,
+                            index: output.index,
+                            script: output.script,
+                        };
+                    }
+                    if(output.hash===undefined && output.tx!==undefined){
+                        output.hash=output.tx;
+                    }
                     switch (output.attachment.type) {
                         case 'etp':
                             if ( current_height==undefined || output.locked_until <= current_height && change.ETP > 0 && output.value > 0) {
