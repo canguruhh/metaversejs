@@ -270,7 +270,7 @@ class Output {
                     }
                     switch (output.attachment.type) {
                         case 'etp':
-                            if (output.locked_until <= current_height && change.ETP > 0 && output.value > 0) {
+                            if ( current_height==undefined || output.locked_until <= current_height && change.ETP > 0 && output.value > 0) {
                                 change.ETP -= output.value;
                                 list.push(output);
                             }
