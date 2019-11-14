@@ -230,6 +230,9 @@ class TransactionBuilder {
 
     /**
      * Generates an etp deposit transaction.
+     * 
+     * @deprecated ETP deposit has been deactivated by supernova hardfork
+     * 
      * @param {Array<Output>} utxo Inputs for the transaction
      * @param {String} recipient_address Recipient address
      * @param {Number} quantity Quantity of ETP to deposit (in bits)
@@ -433,6 +436,39 @@ class TransactionBuilder {
             resolve(tx);
         });
     };
+
+    static burn(utxos, target, burn_avatar, etp_change_address, change, locked_asset_change, messages = [], asset_change_address = etp_change_address, fee = Constants.FEE.DEFAULT) {
+        return new Promise((resolve) => {
+            var etpcheck = 0;
+            //create new transaction
+            let tx = new Transaction();
+            //add inputs
+            utxos.forEach((output) => {
+                if (output.value)
+                    etpcheck += output.value;
+                tx.addInput(output.address, output.hash, output.index, output.script);
+            });
+            if (messages == undefined)
+                messages = [];
+            messages.forEach((message) => tx.addMessage(recipient_address, message));
+            //add the target outputs to the recipient
+            Object.keys(target).forEach((symbol) => (target[symbol]) ? tx.addOutput("", symbol, target[symbol], burn_avatar).setBurn() : null);
+            if (target.ETP)
+                etpcheck -= target.ETP;
+            //add the change outputs
+            Object.keys(change).forEach((symbol) => {
+                if (change[symbol] !== 0)
+                    tx.addOutput(symbol.toLowerCase()==='etp' ? etp_change_address : asset_change_address, symbol, -change[symbol]);
+            });
+            if (locked_asset_change != undefined)
+                locked_asset_change.forEach((change) => tx.addLockedAssetOutput(etp_change_address, undefined, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
+            if (change.ETP)
+                etpcheck += change.ETP;
+            if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+            resolve(tx);
+        });
+    };
+
 }
 
 

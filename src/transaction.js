@@ -139,6 +139,16 @@ class Transaction {
         return output;
     }
 
+    /**
+     * Add ETP deposit lock output
+     * 
+     * @deprecated ETP deposit has been deactivated by supernova hardfork
+     * 
+     * @param {} address 
+     * @param {*} value 
+     * @param {*} locktime 
+     * @param {*} network 
+     */
     addLockOutput(address, value, locktime, network) {
 
         if (network == undefined)

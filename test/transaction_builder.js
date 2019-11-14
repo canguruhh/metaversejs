@@ -115,4 +115,51 @@ describe('Transaction builder', function () {
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
             .should.become("0400000002d2a206ead3b966f9b0e266ac5ee1a7a9f2bd14ad886c0f609892015dcdd6f243000000006c473044022002280be7b727556aad62e7ceefb60c887c704c378aff72d4cb716304020d04ae02204670a464ae5d0e541f42310f4502d6abb653b1272b5beedc79364f47404ca8ac012103731c8999b75e35ecfcc5acad89ef45621a7145c31890c1493a29a36c73822ca90132fffffffffbe923684235aa31f678affc5e9e1d8016c7fb32b8d21e16b67386ccdb38ef71040000006a47304402201e78b57e625c16d87ad2be7bb4382078720db0c5ef0bca42fffe318352a0267502204fa66758fb2d29de825b654bff4b6a7278b893066bdc861720d96a98dfeb374901210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff0300000000000000006a4d2800504e3d303b4c483d31303030303b545950453d313b4c513d31303b4c503d31303030303b554e3d31240000000000000000000000000000000000000000000000000000000000000000ffffffffb276a914e782fbba93466771c63d7a9fcc54d85efa26fd3488ac010000000200000002000000084d56532e544553540a000000000000000e9b7e08050000001976a91420317353b6e296cd9d1545134f2d5afdee00f7ae88ac010000000000000000000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000200000002000000084d56532e54455354f5e30b540200000000000000");
     });
+
+    it('Burn ETP', () => {
+        var inputs = [
+            {
+                address: "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                hash: "4ccc4c55ff6c41b96135b1b899ae4deeaef5f7826109c4854872d42192133e14",
+                script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
+                index: 1,
+                value: 99990000
+            },
+        ];
+        return Metaverse.transaction_builder.burn(inputs, {ETP: 1}, undefined, 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {ETP: -99979999})
+            .then(tx => wallet2.sign(tx))
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become('0400000001143e139221d4724885c4096182f7f5aeee4dae99b8b13561b9416cff554ccc4c010000006a473044022031ffc44735f51b75945b8bbca09d8d7f4be78f9263e8e98ecfea19b32b4ce3fe0220127208a6d6f510e0d3797b961597992f977ee09c97a27450a55df131676cd33601210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff020100000000000000016a0100000000000000df92f505000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000');
+    });
+
+    it('Burn MST', () => {
+        var inputs = [
+            {
+                address: "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                hash: "89295f40603487cd3f69c464e9a17414ee0c8d00b7292217663f425d5b57dcc1",
+                script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
+                index: 0,
+                value: 0,
+                attachment: {
+                    type: 'asset-transfer',
+                    quantity: 10000000000,
+                    symbol: "AAAA",
+                    decimals: 4,
+                },
+            },
+            {
+                address: "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                hash: "ac52a47443fac0425a1af28325d23a40bd884f88e1b13f7fa4f17482ecfbfc97",
+                script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
+                index: 0,
+                value: 100000000
+            }
+        ];
+        return Metaverse.transaction_builder.burn(inputs, {AAAA: 1}, 'BLACKHOLE', 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {ETP: -99990000, AAAA: -9999999999})
+            .then(tx => wallet2.sign(tx))
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become('0400000002c1dc575b5d423f66172229b7008d0cee1474a1e964c4693fcd873460405f2989000000006a47304402206a985ce6f58a89089fd8900e76ceb08f2134fc219af5f70030f1db71366d432602203b1d418492afb2eb418a7e03ae6c2507526202f31dddbe281381145058f2a2a901210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff97fcfbec8274f1a47f3fb1e1884f88bd403ad22583f21a5a42c0fa4374a452ac000000006a47304402202d4b281d1c6e3d78cf4b6c48bb2df39ea46f428012a521c4c7828447d6e95a4e02202c2099238deccb1475c9e3ae65c5a8329e7171c9d5a4c847d11aabfd6469f7cb01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff030000000000000000016acf0000000200000009424c41434b484f4c45000200000004414141410100000000000000f0b9f505000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac0100000002000000020000000441414141ffe30b540200000000000000');
+    }); 
 });

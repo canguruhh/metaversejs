@@ -38,6 +38,11 @@ class Output {
         return this;
     };
 
+    setBurn(){
+        this.script_type='op_return';
+        return this;
+    }
+
     setAssetTransfer(address, symbol, quantity) {
         this.address = address;
         this.attachment.type = Constants.ATTACHMENT.TYPE.MST;

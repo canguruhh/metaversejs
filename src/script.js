@@ -64,6 +64,8 @@ Script.getType = function (script) {
         return 'p2pkh'
     } else if (Script.isP2SH(script)) {
         return 'p2sh'
+    } else if (Script.isOpReturn(script)) {
+        return 'op_return'
     } else if (Script.isStakeLock(script)) {
         return 'stakelock'
     } else if (Script.isLock(script)) {
@@ -76,6 +78,10 @@ Script.getType = function (script) {
 
 Script.isLock = function (script) {
     return /^\[ ([0-9a-f]+) \] (?:op_numequalverify|numequalverify) (?:op_dup|dup) (?:op_hash160|hash160) \[ ([0-9a-f]{40}) \] (?:op_equalverify|equalverify) (?:op_checksig|checksig)$/i.test(script);
+};
+
+Script.isOpReturn = function (script) {
+    return /(?:op_return|return)/i.test(script);
 };
 
 Script.isStakeLock = function (script) {

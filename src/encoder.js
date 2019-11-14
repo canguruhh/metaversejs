@@ -128,6 +128,9 @@ function encodeOutputs(outputs) {
                 case 'pubkeyhash':
                     offset = writeScriptPayToPubKeyHash(output.address, buffer, offset);
                     break;
+                case 'op_return':
+                    offset = writeScriptOpReturn(buffer, offset);
+                    break;
                 case 'lock':
                     let locktime_le_string = parseInt(output.locktime).toString(16).replace(/^(.(..)*)$/, "0$1").match(/../g).reverse().join("");
                     offset = writeScriptLockedPayToPubKeyHash(output.address, locktime_le_string, buffer, offset);
@@ -400,6 +403,12 @@ function writeScriptPayToPubKeyHash(address, buffer, offset) {
     return offset;
 }
 
+function writeScriptOpReturn(buffer, offset) {
+    offset = buffer.writeUInt8(1, offset); //Script length
+    offset = buffer.writeUInt8(OPS.OP_RETURN, offset);
+    return offset;
+}
+
 /**
  * Write p2pkh attenuation script to the given buffer.
  * @param {String} attenuation_string
@@ -608,7 +617,7 @@ function fromBuffer(tx, buffer, network) {
             attachment: readAttachment()
         };
         if (Script.hasAttenuationModel(output.script)) {
-            output.script_type = 'attenuation'
+            output.script_type = 'attenuation';
             output.attenuation = { model: Script.getAttenuationModel(output.script)}
             output.address = Script.getAddressFromOutputScript(output.script, network)
         }
