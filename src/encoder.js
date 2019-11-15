@@ -309,6 +309,8 @@ function encodeAttachmentAssetIssue(buffer, offset, attachment_data) {
     //Encode precision
     offset = buffer.writeUInt8(attachment_data.precision, offset);
     //Encode secondary issue threshold
+    if(attachment_data.secondaryissue_threshold == -1)
+        attachment_data.secondaryissue_threshold = 127;
     offset = buffer.writeUInt8((attachment_data.secondaryissue_threshold) ? attachment_data.secondaryissue_threshold : 0, offset);
     offset += buffer.write("0000", offset, 2, 'hex');
     //Encode issuer
