@@ -450,7 +450,7 @@ class TransactionBuilder {
             });
             if (messages == undefined)
                 messages = [];
-            messages.forEach((message) => tx.addMessage(recipient_address, message));
+            messages.forEach((message) => tx.addMessage(utxos[0].address, message));
             //add the target outputs to the recipient
             Object.keys(target).forEach((symbol) => (target[symbol]) ? tx.addOutput("", symbol, target[symbol], burn_avatar).setBurn() : null);
             if (target.ETP)
