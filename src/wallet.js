@@ -38,6 +38,21 @@ class Wallet {
     };
 
     /**
+     * Generates a new wallet from the given xpub.
+     * @param {Buffer} seed
+     * @param {network} network (optional)
+     * @return {Promise.Wallet}
+     */
+    static fromXPub(xpub, network = 'mainnet') {
+        return Promise.resolve()
+            .then(() => {
+                var wallet = new Wallet();
+                wallet.rootnode = bitcoin.HDNode.fromBase58(xpub, Networks[network]);
+                return wallet;
+            });
+    };
+
+    /**
      * Generates a new wallet from the given mnemonic.
      * @param {String} mnemonic Menmonic words
      * @param {network} network (optional)

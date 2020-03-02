@@ -84,8 +84,14 @@ describe('Key operations', function () {
 });
 
 describe('Public key operations', function () {
+    const xpub = 'xpub661MyMwAqRbcFGEYvcM26P4niKVBVM9GyVpo6zV8h5bEP2fYLeiTBESZC164gQwznARj6YaNAh3zACWigRLRenpXLbDqrHxXoRJQmDgvnxk';
+
     it('Extract xpub', async () => {
         const wallet = await Metaverse.wallet.fromMnemonic("lunar there win define minor shadow damage lounge bitter abstract sail alcohol yellow left lift vapor tourist rent gloom sustain gym dry congress zero")
-        chai.expect(wallet.getMasterPublicKey()).equal('xpub661MyMwAqRbcFGEYvcM26P4niKVBVM9GyVpo6zV8h5bEP2fYLeiTBESZC164gQwznARj6YaNAh3zACWigRLRenpXLbDqrHxXoRJQmDgvnxk');
+        chai.expect(wallet.getMasterPublicKey()).equal(xpub);
     });
+    it('Import xpub', async()=>{
+        const wallet = await Metaverse.wallet.fromXPub(xpub)
+        chai.expect(wallet.getAddress(0)).equals('MKXYH2MhpvA3GU7kMk8y3SoywGnyHEj5SB')
+    })
 });
