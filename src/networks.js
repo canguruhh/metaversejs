@@ -15,10 +15,10 @@ module.exports = {
     },
     testnet: {
         messagePrefix: '\x18Bitcoin Signed Message:\n',
-        bech32: 'tb',
+        bech32: 'bc',
         bip32: {
-            public: 0x043587cf,
-            private: 0x04358394
+            public: 0x0488b21e,
+            private: 0x0488ade4
         },
         pubKeyHash: 0x7f,
         scriptHash: 0xc4,
