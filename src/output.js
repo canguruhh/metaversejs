@@ -229,6 +229,9 @@ class Output {
                         output.hash = tx.hash;
                         list[tx.hash + '-' + output.index] = output;
                     }
+                    if(output.attenuation_model_param && output.attenuation_model_param.lock_period > 100000000) {
+                        list[tx.hash + '-' + output.index] = 'spent';
+                    }
                 });
             });
             let utxo = [];
@@ -375,6 +378,7 @@ class Output {
             let model = Script.deserializeAttenuationModel(Script.getAttenuationModel(output.script));
             let locked = 0;
             let step_target = model.LH;
+            console.log("Hello")
             switch (model.TYPE) {
                 case 1:
                     for (let period = model.PN; period < model.UN; period++) {
