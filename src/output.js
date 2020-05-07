@@ -378,7 +378,6 @@ class Output {
             let model = Script.deserializeAttenuationModel(Script.getAttenuationModel(output.script));
             let locked = 0;
             let step_target = model.LH;
-            console.log("Hello")
             switch (model.TYPE) {
                 case 1:
                     for (let period = model.PN; period < model.UN; period++) {
