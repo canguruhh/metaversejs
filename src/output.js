@@ -38,8 +38,8 @@ class Output {
         return this;
     };
 
-    setBurn(){
-        this.script_type='op_return';
+    setBurn() {
+        this.script_type = 'op_return';
         return this;
     }
 

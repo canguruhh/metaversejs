@@ -34,7 +34,7 @@ class TransactionBuilder {
             //add the change outputs
             Object.keys(change).forEach((symbol) => {
                 if (change[symbol] !== 0)
-                    tx.addOutput(symbol.toLowerCase()==='etp' ? etp_change_address : asset_change_address, symbol, -change[symbol]);
+                    tx.addOutput(symbol.toLowerCase() === 'etp' ? etp_change_address : asset_change_address, symbol, -change[symbol]);
             });
             if (locked_asset_change != undefined)
                 locked_asset_change.forEach((change) => tx.addLockedAssetOutput(etp_change_address, undefined, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
@@ -79,7 +79,7 @@ class TransactionBuilder {
                 }
                 if (recipient.target.MST) {
                     Object.keys(recipient.target.MST).forEach(symbol => {
-                        if(recipient.attenuation_model) {
+                        if (recipient.attenuation_model) {
                             tx.addLockedAssetOutput(recipient.address, recipient.avatar, symbol, recipient.target.MST[symbol], recipient.attenuation_model, 0);
                         } else {
                             tx.addMSTOutput(recipient.address, symbol, recipient.target.MST[symbol], recipient.avatar);
@@ -276,7 +276,7 @@ class TransactionBuilder {
      * @param {String} change_address Change address
      * @param {Object} change Definition of change assets
      */
-    static issueDid(utxo, avatar_address, symbol, change_address, change, bounty_fee, network = 'mainnet', messages=[]) {
+    static issueDid(utxo, avatar_address, symbol, change_address, change, bounty_fee, network = 'mainnet', messages = []) {
         return new Promise((resolve, reject) => {
             //Set fee
             var fee = Constants.FEE.AVATAR_REGISTER;
@@ -381,7 +381,7 @@ class TransactionBuilder {
      * @param {Boolean} issue_domain indication if the toplevel domain certificate should be included as an output
      * @param {Number} fee Optional fee definition (default 10000 bits)
      */
-    static issueAsset(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network = 'mainnet', attenuation_model=null, mining_model=undefined) {
+    static issueAsset(inputs, recipient_address, symbol, max_supply, precision, issuer, description, secondaryissue_threshold, is_secondaryissue, change_address, change, issue_domain, bounty_fee, network = 'mainnet', attenuation_model = null, mining_model = undefined) {
         return new Promise((resolve, reject) => {
             var etpcheck = 0;
             //create new transaction
@@ -409,9 +409,9 @@ class TransactionBuilder {
             });
             //add lock output to the recipient
             let issue_output = tx.addAssetIssueOutput(symbol, max_supply, precision, issuer, recipient_address, description, secondaryissue_threshold, is_secondaryissue).specifyDid(issuer, issuer);
-            if(attenuation_model)
+            if (attenuation_model)
                 issue_output.setAttenuation(attenuation_model, 0)
-            
+
             //add certificate to secondaryissue if necessary
             if (secondaryissue_threshold !== 0)
                 tx.addCertOutput(symbol, issuer, recipient_address, 'issue', 'autoissue').specifyDid(issuer, issuer);
@@ -458,7 +458,7 @@ class TransactionBuilder {
             //add the change outputs
             Object.keys(change).forEach((symbol) => {
                 if (change[symbol] !== 0)
-                    tx.addOutput(symbol.toLowerCase()==='etp' ? etp_change_address : asset_change_address, symbol, -change[symbol]);
+                    tx.addOutput(symbol.toLowerCase() === 'etp' ? etp_change_address : asset_change_address, symbol, -change[symbol]);
             });
             if (locked_asset_change != undefined)
                 locked_asset_change.forEach((change) => tx.addLockedAssetOutput(etp_change_address, undefined, change.symbol, change.quantity, change.attenuation_model, change.delta, change.hash, change.index));
