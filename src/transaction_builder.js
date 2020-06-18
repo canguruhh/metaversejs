@@ -505,7 +505,6 @@ class TransactionBuilder {
             if (change.ETP)
                 etpcheck += change.ETP;
             if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
-          console.log(tx)
             resolve(tx);
         });
     };
