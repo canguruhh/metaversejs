@@ -172,7 +172,7 @@ describe('Transaction builder', function() {
             .should.become('0400000002c1dc575b5d423f66172229b7008d0cee1474a1e964c4693fcd873460405f2989000000006a47304402206a985ce6f58a89089fd8900e76ceb08f2134fc219af5f70030f1db71366d432602203b1d418492afb2eb418a7e03ae6c2507526202f31dddbe281381145058f2a2a901210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff97fcfbec8274f1a47f3fb1e1884f88bd403ad22583f21a5a42c0fa4374a452ac000000006a47304402202d4b281d1c6e3d78cf4b6c48bb2df39ea46f428012a521c4c7828447d6e95a4e02202c2099238deccb1475c9e3ae65c5a8329e7171c9d5a4c847d11aabfd6469f7cb01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff030000000000000000016acf0000000200000009424c41434b484f4c45000200000004414141410100000000000000f0b9f505000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac0100000002000000020000000441414141ffe30b540200000000000000');
     });
 
-    it('Sign decoded certificate transfer transaction', async () => {
+    it('Certificate transfer transaction', async () => {
         const utxos = [{
                 "address": "tUWSrd3c4gdzd3ei7FTtiNRUJaJs5mBwdG",
                 "hash": "5da2b4e69a115d7edf4cea6e41d09b9b2c6016a0eb15a7bdfc1b3d7067267250",
@@ -196,12 +196,44 @@ describe('Transaction builder', function() {
                 },
             }
         ]
-      Metaverse.transaction_builder.transferCert(utxos, 'tFhuyTYeNAttzvEN8FUM5h52GGAujkrKbs', 'laurent', 'tUWSrd3c4gdzd3ei7FTtiNRUJaJs5mBwdG', {
-            ETP: -90000
-        })
+        return Metaverse.transaction_builder.transferCert(utxos, 'tFhuyTYeNAttzvEN8FUM5h52GGAujkrKbs', 'laurent', 'tUWSrd3c4gdzd3ei7FTtiNRUJaJs5mBwdG', {
+                ETP: -90000
+            })
             .then(tx => wallet2.sign(tx))
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
             .should.become('040000000250722667703d1bfcbda715eba016602c9b9bd0416eea4cdf7e5d119ae6b4a25d000000006b48304502210092ff71d4f327b8ba310d6439dbb2b95b894ae1d70beefa553cadf7c6735ec193022021e3cdae90c19b68fa9969a9219f884072866abd3babf01421b7f43088d9c80c012102fc2b91cf675b83a4b62894e8a3778a431829aa783b5fcacbba2a8c1775570c5effffffffa38192c93307835bc430ac77f5f8cf80a02ac60c855754f1b5fb420865b311a6010000006a47304402207866e0c9494ec2a743ba6428354293021eb602779e8760685ffc72d409de39b102202424ead9eb982edb31bb8b99d57960577e70612669c91da5475e7e858ce5522801210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff0200000000000000001976a9146052b015d31cfeb403fe50128e440bde5d2650ec88accf00000005000000076c617572656e740003444e41076c617572656e742274466875795459654e4174747a76454e3846554d35683532474741756a6b724b62730200000002905f0100000000001976a914ecc11c4f7f339c2973bda305faceb02833e8004588ac010000000000000000000000');
+    });
+
+    it('Naming certificate issue transaction', async () => {
+        const utxos = [{
+                "address": "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                "hash": "5da2b4e69a115d7edf4cea6e41d09b9b2c6016a0eb15a7bdfc1b3d7067267250",
+                "index": 1,
+          value: 99890000
+            },
+            {
+                "address": "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                "hash": "a611b3650842fbb5f15457850cc62aa080cff8f577ac30c45b830733c99281a3",
+                "index": 1,
+                "attachment": {
+                    "address": "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                    "cert": "domain",
+                    "from_did": "",
+                    "owner": "metaverse",
+                    "symbol": "DNA",
+                    "to_did": "metaverse",
+                    "type": "asset-cert"
+                },
+                "sequence": "4294967295"
+            },
+        ]
+      return Metaverse.transaction_builder.issueNameCert(utxos, 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', 'metaverse', 'DNA.123','tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {
+                ETP: -99880000
+            })
+            .then(tx => wallet2.sign(tx))
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become('040000000250722667703d1bfcbda715eba016602c9b9bd0416eea4cdf7e5d119ae6b4a25d010000006a473044022054c399b146675fa506711d4372caec6cacf5a01410fa61e51ebb1a52d5155ac2022065203346bf6c8a79e874f3ffb86dae33c1e28e27dbaa325d8916beee8b3c46a301210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffffa38192c93307835bc430ac77f5f8cf80a02ac60c855754f1b5fb420865b311a6010000006a4730440220570cef102b37ba1d757dd30f597a6f0614f434f119ccf908b4008c82f281823b0220584d14967bb314aedbef14a2d8136492f802579be3660ec09ff754fe3fa373ac01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff0300000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88accf00000005000000096d65746176657273650007444e412e313233096d65746176657273652274436462674550326b4e533971416f536e526e6f4e366e444d68764375674e56675a030000000100000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88accf00000005000000096d65746176657273650003444e41096d65746176657273652274436462674550326b4e533971416f536e526e6f4e366e444d68764375674e56675a0200000000400cf405000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000');
     });
 });

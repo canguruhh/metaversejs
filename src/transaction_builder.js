@@ -508,6 +508,62 @@ class TransactionBuilder {
             resolve(tx);
         });
     };
+
+    /**
+     * Generates a mst naming certificate.
+     * @param {Array<Output>} inputs Inputs for the transaction. Domain certificate must be present
+     * @param {String} recipient_address Recipient address
+     * @param {String} recipient_avatar Recipient avatar
+     * @param {String} symbol Symbol of the new asset
+     * @param {String} change_address Change address
+     * @param {Object} change Definition of change assets
+     * @param {Boolean} issue_domain indication if the toplevel domain certificate should be included as an output
+     * @param {Number} fee Optional fee definition (default 10000 bits)
+     */
+    static issueNameCert(inputs, recipient_address, recipient_avatar, symbol, change_address, change, fee = Constants.FEE.DEFAULT) {
+        return new Promise((resolve, reject) => {
+            var etpcheck = 0;
+            //create new transaction
+            let tx = new Transaction();
+
+            //reissue used certs
+            let certs = [];
+            //add inputs
+            inputs.forEach((input) => {
+                if (input.value)
+                    etpcheck += input.value;
+                tx.addInput(input.address, input.hash, input.index, input.script);
+                if (input.attachment && input.attachment.type == 'asset-cert') {
+                    if (certs.length) {
+                        throw Error('ERR_ONLY_SINGLE_DOMAIN_CERT')
+                    }
+                    switch (input.attachment.cert) {
+                        case 'domain':
+                            certs.push(input)
+                            break;
+                        default:
+                            console.error('Unknown cert type: ' + input.attachment.cert);
+                            throw ('ERR_UNKNOWN_CERT');
+                    }
+                }
+            });
+            //add lock output to the recipient
+            tx.addCertOutput(symbol, recipient_avatar, recipient_address, 'naming', 'issue')
+                .specifyDid(recipient_avatar, '');
+            //reissue used certs
+            certs.forEach(cert => {
+                tx.addCertOutput(cert.attachment.symbol, cert.attachment.owner, cert.address, cert.attachment.cert).specifyDid(cert.attachment.to_did, cert.attachment.from_did);
+            });
+            //add the change outputs
+            Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+            if (change.ETP)
+                etpcheck += change.ETP;
+            if (etpcheck !== fee) {
+                throw Error('ERR_FEE_CHECK_FAILED');
+            }
+            resolve(tx);
+        });
+    };
 }
 
 
