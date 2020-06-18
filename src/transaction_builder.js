@@ -469,6 +469,46 @@ class TransactionBuilder {
         });
     };
 
+    /**
+     * Generates a certificate transfer transaction.
+     * @param {Array<Output>} utxo Inputs for the transaction. Must contain exactly one certificate utxo with attachment information.
+     * @param {String} recipient_address Recipient address
+     * @param {String} symbol Symbol of MIT
+     * @param {String} change_address Change address
+     * @param {Object} change Definition of change assets
+     * @param {Number} fee Optional fee definition (default 10000 bits)
+     */
+    static transferCert(inputs, recipient_address, recipient_avatar, change_address, change, fee = Constants.FEE.DEFAULT) {
+        return new Promise((resolve, reject) => {
+            var etpcheck = 0;
+            //create new transaction
+            let tx = new Transaction();
+            //add inputs
+            let certInput
+            inputs.forEach((input) => {
+                if (input.attachment && input.attachment.type == 'asset-cert') {
+                    if (certInput) {
+                        throw Error('ERR_TOO_MANY_CERTIFICATES')
+                    }
+                    certInput = input
+                }
+                if (input.value)
+                    etpcheck += input.value;
+                tx.addInput(input.address, input.hash, input.index, input.script);
+            });
+            if (!certInput) {
+                throw Error('ERR_CERT_INPUT_MISSING')
+            }
+            tx.addCertOutput(certInput.attachment.symbol, recipient_avatar, recipient_address, certInput.attachment.cert, Constants.CERT.STATUS.TRANSFER)
+            //add the change outputs
+            Object.keys(change).forEach((symbol) => tx.addOutput(change_address, symbol, -change[symbol]));
+            if (change.ETP)
+                etpcheck += change.ETP;
+            if (etpcheck !== fee) throw Error('ERR_FEE_CHECK_FAILED');
+          console.log(tx)
+            resolve(tx);
+        });
+    };
 }
 
 

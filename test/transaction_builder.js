@@ -5,7 +5,7 @@ var chai = require("chai"),
 
 chai.use(chaiAsPromised);
 
-describe('Transaction builder', function () {
+describe('Transaction builder', function() {
 
     //Generate the wallet
     var wallet;
@@ -24,8 +24,7 @@ describe('Transaction builder', function () {
     );
 
     it('Issue subdomain asset', () => {
-        var inputs = [
-            {
+        var inputs = [{
                 address: "tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz",
                 hash: "f9c6bf38dd9dbe64844b950b48a3aa70530f550673eaee150a7a50f84d6450c6",
                 index: 0,
@@ -76,7 +75,9 @@ describe('Transaction builder', function () {
                 value: 0
             },
         ];
-        return Metaverse.transaction_builder.issueAsset(inputs, "tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t", "SUPER.NOVA", 10, 0, "nova", "Supernova is comming", 0, false, "tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz", { "ETP": -134448932 })
+        return Metaverse.transaction_builder.issueAsset(inputs, "tGBMcLr6dwfaMaoYiJgtZ3cYUbbGsbpb8t", "SUPER.NOVA", 10, 0, "nova", "Supernova is comming", 0, false, "tFHAbEiLQi3Tdw94Xf9Y5Xkj39CrCMXZFz", {
+                "ETP": -134448932
+            })
             .then(tx => wallet.sign(tx))
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
@@ -84,8 +85,7 @@ describe('Transaction builder', function () {
     });
 
     it('Send MST with attenuation model', () => {
-        var inputs = [
-            {
+        var inputs = [{
                 address: "t9rpuoySrPJH46GkpdUtJMCyvfuR9XKa8N",
                 hash: "43f2d6cd5d019298600f6c88ad14bdf2a9a7e15eac66e2b0f966b9d3ea06a2d2",
                 script: "[ 32 ] numequalverify dup hash160 [ 20317353b6e296cd9d1545134f2d5afdee00f7ae ] equalverify checksig",
@@ -105,11 +105,14 @@ describe('Transaction builder', function () {
                 value: 0
             },
         ];
-        return Metaverse.transaction_builder.sendLockedAsset(inputs, "tU2j3z4LjUtFJuSdQdwDqpzSNhj4ssBU1N", undefined, "MVS.TEST", 10, 'PN=0;LH=10000;TYPE=1;LQ=10;LP=10000;UN=1', "t9rpuoySrPJH46GkpdUtJMCyvfuR9XKa8N", { ETP: -21617351438, 'MVS.TEST':  -9999999989})
-        .then(tx => {
-            tx.outputs[2].address = 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ'
-            return tx
-        })
+        return Metaverse.transaction_builder.sendLockedAsset(inputs, "tU2j3z4LjUtFJuSdQdwDqpzSNhj4ssBU1N", undefined, "MVS.TEST", 10, 'PN=0;LH=10000;TYPE=1;LQ=10;LP=10000;UN=1', "t9rpuoySrPJH46GkpdUtJMCyvfuR9XKa8N", {
+                ETP: -21617351438,
+                'MVS.TEST': -9999999989
+            })
+            .then(tx => {
+                tx.outputs[2].address = 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ'
+                return tx
+            })
             .then(tx => wallet2.sign(tx))
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
@@ -117,16 +120,18 @@ describe('Transaction builder', function () {
     });
 
     it('Burn ETP', () => {
-        var inputs = [
-            {
-                address: "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
-                hash: "4ccc4c55ff6c41b96135b1b899ae4deeaef5f7826109c4854872d42192133e14",
-                script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
-                index: 1,
-                value: 99990000
-            },
-        ];
-        return Metaverse.transaction_builder.burn(inputs, {ETP: 1}, undefined, 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {ETP: -99979999})
+        var inputs = [{
+            address: "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+            hash: "4ccc4c55ff6c41b96135b1b899ae4deeaef5f7826109c4854872d42192133e14",
+            script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
+            index: 1,
+            value: 99990000
+        }, ];
+        return Metaverse.transaction_builder.burn(inputs, {
+                ETP: 1
+            }, undefined, 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {
+                ETP: -99979999
+            })
             .then(tx => wallet2.sign(tx))
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
@@ -134,8 +139,7 @@ describe('Transaction builder', function () {
     });
 
     it('Burn MST', () => {
-        var inputs = [
-            {
+        var inputs = [{
                 address: "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
                 hash: "89295f40603487cd3f69c464e9a17414ee0c8d00b7292217663f425d5b57dcc1",
                 script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
@@ -156,10 +160,48 @@ describe('Transaction builder', function () {
                 value: 100000000
             }
         ];
-        return Metaverse.transaction_builder.burn(inputs, {AAAA: 1}, 'BLACKHOLE', 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {ETP: -99990000, AAAA: -9999999999})
+        return Metaverse.transaction_builder.burn(inputs, {
+                AAAA: 1
+            }, 'BLACKHOLE', 'tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ', {
+                ETP: -99990000,
+                AAAA: -9999999999
+            })
             .then(tx => wallet2.sign(tx))
             .then((stx) => stx.encode())
             .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
             .should.become('0400000002c1dc575b5d423f66172229b7008d0cee1474a1e964c4693fcd873460405f2989000000006a47304402206a985ce6f58a89089fd8900e76ceb08f2134fc219af5f70030f1db71366d432602203b1d418492afb2eb418a7e03ae6c2507526202f31dddbe281381145058f2a2a901210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff97fcfbec8274f1a47f3fb1e1884f88bd403ad22583f21a5a42c0fa4374a452ac000000006a47304402202d4b281d1c6e3d78cf4b6c48bb2df39ea46f428012a521c4c7828447d6e95a4e02202c2099238deccb1475c9e3ae65c5a8329e7171c9d5a4c847d11aabfd6469f7cb01210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff030000000000000000016acf0000000200000009424c41434b484f4c45000200000004414141410100000000000000f0b9f505000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac010000000000000000000000000000001976a9143e995f80739ecbfad8d92e3e523c540bd2847ffd88ac0100000002000000020000000441414141ffe30b540200000000000000');
-    }); 
+    });
+
+    it('Sign decoded certificate transfer transaction', async () => {
+        const utxos = [{
+                "address": "tUWSrd3c4gdzd3ei7FTtiNRUJaJs5mBwdG",
+                "hash": "5da2b4e69a115d7edf4cea6e41d09b9b2c6016a0eb15a7bdfc1b3d7067267250",
+                "index": 0,
+                script: 'dup hash160 [ ecc11c4f7f339c2973bda305faceb02833e80045 ] equalverify checksig',
+                value: 100000
+            },
+            {
+                "address": "tCdbgEP2kNS9qAoSnRnoN6nDMhvCugNVgZ",
+                "hash": "a611b3650842fbb5f15457850cc62aa080cff8f577ac30c45b830733c99281a3",
+                "index": 1,
+                script: "dup hash160 [ 3e995f80739ecbfad8d92e3e523c540bd2847ffd ] equalverify checksig",
+                attachment: {
+                    "address": "tFhuyTYeNAttzvEN8FUM5h52GGAujkrKbs",
+                    "cert": "domain",
+                    "from_did": "",
+                    "owner": "laurent",
+                    "symbol": "DNA",
+                    "to_did": "laurent",
+                    "type": "asset-cert"
+                },
+            }
+        ]
+      Metaverse.transaction_builder.transferCert(utxos, 'tFhuyTYeNAttzvEN8FUM5h52GGAujkrKbs', 'laurent', 'tUWSrd3c4gdzd3ei7FTtiNRUJaJs5mBwdG', {
+            ETP: -90000
+        })
+            .then(tx => wallet2.sign(tx))
+            .then((stx) => stx.encode())
+            .then((signed_raw_tx) => signed_raw_tx.toString('hex'))
+            .should.become('040000000250722667703d1bfcbda715eba016602c9b9bd0416eea4cdf7e5d119ae6b4a25d000000006b48304502210092ff71d4f327b8ba310d6439dbb2b95b894ae1d70beefa553cadf7c6735ec193022021e3cdae90c19b68fa9969a9219f884072866abd3babf01421b7f43088d9c80c012102fc2b91cf675b83a4b62894e8a3778a431829aa783b5fcacbba2a8c1775570c5effffffffa38192c93307835bc430ac77f5f8cf80a02ac60c855754f1b5fb420865b311a6010000006a47304402207866e0c9494ec2a743ba6428354293021eb602779e8760685ffc72d409de39b102202424ead9eb982edb31bb8b99d57960577e70612669c91da5475e7e858ce5522801210358068a43bb405201db2a19fd488431a34ed0949891b206a30d1d5d120ba90445ffffffff0200000000000000001976a9146052b015d31cfeb403fe50128e440bde5d2650ec88accf00000005000000076c617572656e740003444e41076c617572656e742274466875795459654e4174747a76454e3846554d35683532474741756a6b724b62730200000002905f0100000000001976a914ecc11c4f7f339c2973bda305faceb02833e8004588ac010000000000000000000000');
+    });
 });

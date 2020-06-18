@@ -140,21 +140,18 @@ class Output {
         this.attachment.owner = owner;
         this.attachment.symbol = symbol;
         this.attachment.content = content;
-        switch ((typeof cert == 'string') ? cert.toLowerCase() : cert) {
-            case 'domain':
-                this.attachment.cert = Constants.CERT.TYPE.DOMAIN;
-                break;
-            case 'issue':
-                this.attachment.cert = Constants.CERT.TYPE.ISSUE;
-                break;
-            case 'naming':
-                this.attachment.cert = Constants.CERT.TYPE.NAMING;
-                break;
-            case 'mining':
-                this.attachment.cert = Constants.CERT.TYPE.MINING;
+        if (typeof cert === 'string') {
+            cert = certTypeFromString(cert)
+        }
+        switch (cert) {
+            case Constants.CERT.TYPE.DOMAIN:
+            case Constants.CERT.TYPE.ISSUE:
+            case Constants.CERT.TYPE.NAMING:
+            case Constants.CERT.TYPE.MINING:
+                this.attachment.cert = cert
                 break;
             default:
-                throw ('ERR_UNKNOWN_CERT');
+                throw ('ERR_UNKNOWN_CERT_TYPE_ID');
         }
         switch ((typeof status == 'string') ? status.toLowerCase() : status) {
             case 'issue':
@@ -229,7 +226,7 @@ class Output {
                         output.hash = tx.hash;
                         list[tx.hash + '-' + output.index] = output;
                     }
-                    if(output.attenuation_model_param && output.attenuation_model_param.lock_period > 100000000) {
+                    if (output.attenuation_model_param && output.attenuation_model_param.lock_period > 100000000) {
                         list[tx.hash + '-' + output.index] = 'spent';
                     }
                 });
@@ -262,7 +259,7 @@ class Output {
             var list = [];
 
             if (useLargestEtpUtxo) {
-                utxo = utxo.sort(function (a, b) {
+                utxo = utxo.sort(function(a, b) {
                     return b.value - a.value;
                 })
             }
@@ -283,12 +280,12 @@ class Output {
                             script: output.script,
                         };
                     }
-                    if(output.hash===undefined && output.tx!==undefined){
-                        output.hash=output.tx;
+                    if (output.hash === undefined && output.tx !== undefined) {
+                        output.hash = output.tx;
                     }
                     switch (output.attachment.type) {
                         case 'etp':
-                            if ( current_height==undefined || output.locked_until <= current_height && change.ETP > 0 && output.value > 0) {
+                            if (current_height == undefined || output.locked_until <= current_height && change.ETP > 0 && output.value > 0) {
                                 change.ETP -= output.value;
                                 list.push(output);
                             }
@@ -402,6 +399,21 @@ class Output {
         }
     };
 
+}
+
+function certTypeFromString(certType) {
+    switch (certType.toLowerCase()) {
+        case 'domain':
+            return Constants.CERT.TYPE.DOMAIN;
+        case 'issue':
+            return Constants.CERT.TYPE.ISSUE;
+        case 'naming':
+            return Constants.CERT.TYPE.NAMING;
+        case 'mining':
+            return Constants.CERT.TYPE.MINING;
+        default:
+            throw ('ERR_UNKNOWN_CERT_TYPE');
+    }
 }
 
 /**
