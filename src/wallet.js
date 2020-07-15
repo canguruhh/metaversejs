@@ -61,6 +61,8 @@ class Wallet {
     static fromMnemonic(mnemonic, network = 'mainnet') {
         if (Networks[network] == undefined)
             throw "illegal network";
+        if(!Wallet.validateMnemonic(mnemonic))
+            throw "illegal mnemonic";
         return Wallet.mnemonicToSeed(mnemonic)
             .then((seed) => Wallet.fromSeed(seed, Networks[network]));
     };
@@ -71,6 +73,8 @@ class Wallet {
      * @return {Promise.Buffer} Seed for wallet generation.
      */
     static mnemonicToSeed(mnemonic) {
+        if(!Wallet.validateMnemonic(mnemonic))
+            throw "illegal mnemonic";
         return Promise.resolve(bip39.mnemonicToSeed(mnemonic));
     };
 
